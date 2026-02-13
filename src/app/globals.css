@@ -28,8 +28,8 @@
 /* Custom Utilities for Altrafit Emerald */
 @layer utilities {
   .soft-shadow {
-    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
-    /* Darker shadow for dark mode */
+    box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.2);
+    /* Sombra suavizada - reduzida em 60% */
   }
 
   .ambient-glow {
