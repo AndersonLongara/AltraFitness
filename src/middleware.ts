@@ -8,9 +8,9 @@ export default clerkMiddleware(async (auth, req) => {
 
 export const config = {
     matcher: [
-        // Skip Next.js internals, static files, and health check
-        '/((?!_next|api/health|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-        // Always run for API routes (except health)
-        '/(api(?!/health)|trpc)(.*)',
+        // Skip Next.js internals, static files, and diagnostic endpoints
+        '/((?!_next|api/health|api/debug|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
+        // Always run for API routes (except health and debug)
+        '/(api(?!/health)(?!/debug)|trpc)(.*)',
     ],
 };
