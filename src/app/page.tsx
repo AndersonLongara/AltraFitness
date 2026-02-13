@@ -18,6 +18,23 @@ import { syncTrainer } from "./actions/auth";
 export const dynamic = 'force-dynamic';
 
 export default async function DashboardPage() {
+  try {
+    return await DashboardPageContent();
+  } catch (error) {
+    console.error('[DashboardPage] Error:', error);
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ice-white">
+        <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md">
+          <h1 className="text-xl font-bold text-red-600 mb-2">Erro ao carregar dashboard</h1>
+          <p className="text-slate-600 text-sm">{error instanceof Error ? error.message : 'Erro desconhecido'}</p>
+          <a href="/" className="mt-4 inline-block text-emerald-600 font-medium hover:underline">Tentar novamente</a>
+        </div>
+      </div>
+    );
+  }
+}
+
+async function DashboardPageContent() {
   const { userId } = await auth();
   if (!userId) return null;
 
