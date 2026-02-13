@@ -13,19 +13,22 @@ interface WorkoutRunnerProps {
         items: {
             id: string;
             exerciseId: string;
-            exercise: { name: string; videoUrl?: string };
+            exercise: { name: string; videoUrl?: string | null };
             sets: number;
             reps: string;
-            restSeconds?: number;
-            notes?: string;
+            restSeconds?: number | null;
+            notes?: string | null;
+            [key: string]: unknown;
         }[];
+        [key: string]: unknown;
     };
     initialLogSets?: {
         exerciseId: string;
         setNumber: number;
         weight: number | null;
-        reps: number;
         completed: boolean | null;
+        reps: number;
+        [key: string]: unknown;
     }[];
 }
 
@@ -172,7 +175,7 @@ export default function WorkoutRunner({ logId, workout, initialLogSets = [] }: W
                     <div className="flex gap-2 mb-8">
                         {currentItem?.exercise.videoUrl && (
                             <button
-                                onClick={() => window.open(currentItem.exercise.videoUrl, '_blank')}
+                                onClick={() => window.open(currentItem.exercise.videoUrl ?? undefined, '_blank')}
                                 className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-xs font-bold hover:bg-blue-500/20 transition-colors"
                             >
                                 <VideoCamera weight="fill" /> Vídeo

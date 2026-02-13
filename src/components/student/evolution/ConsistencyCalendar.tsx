@@ -16,7 +16,7 @@ export default function ConsistencyCalendar({ workoutDates }: ConsistencyCalenda
     const days = eachDayOfInterval({ start: startDate, end: endDate });
 
     // Group by month for labeling
-    const months = [];
+    const months: { date: Date; name: string }[] = [];
     let currentMonth = -1;
 
     days.forEach(day => {

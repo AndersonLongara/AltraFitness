@@ -207,14 +207,14 @@ export default function AssessmentForm({ studentId, studentName, studentGender }
                                     <label className="block text-sm font-bold text-slate-500 mb-2 ml-1">% Gordura Corporal</label>
                                     <input
                                         type="number" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="ex: 15.5"
-                                        onChange={(e) => setFormData(p => ({ ...p, bioimpedance: { ...p.bioimpedance, bodyFat: Number(e.target.value) } }))}
+                                        onChange={(e) => setFormData(p => ({ ...p, bioimpedance: { bodyFat: Number(e.target.value), leanMass: p.bioimpedance?.leanMass } }))}
                                     />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-bold text-slate-500 mb-2 ml-1">Massa Magra (kg) (Opcional)</label>
                                     <input
                                         type="number" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all" placeholder="ex: 65.2"
-                                        onChange={(e) => setFormData(p => ({ ...p, bioimpedance: { ...p.bioimpedance, leanMass: Number(e.target.value) } }))}
+                                        onChange={(e) => setFormData(p => ({ ...p, bioimpedance: { bodyFat: p.bioimpedance?.bodyFat ?? 0, leanMass: Number(e.target.value) } }))}
                                     />
                                 </div>
                             </div>

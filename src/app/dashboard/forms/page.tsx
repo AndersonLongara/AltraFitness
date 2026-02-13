@@ -53,7 +53,7 @@ export default async function FormsPage() {
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Trigger</p>
                                     <p className="text-sm font-bold text-slate-700 capitalize">
-                                        {form.triggerType === 'manual' ? 'Manual' : form.triggerType.replace('_', ' ')}
+                                        {form.triggerType === 'manual' ? 'Manual' : form.triggerType?.replace('_', ' ') || 'N/A'}
                                     </p>
                                 </div>
                                 <div className="text-right">

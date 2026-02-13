@@ -187,7 +187,7 @@ export async function createNutritionalPlan(data: CreateNutritionalPlanParams) {
                 meal.items.map(item => ({
                     mealId: mealId,
                     foodName: item.foodName,
-                    portion: item.portion,
+                    portion: Number(item.portion) || 0,
                     calories: item.calories,
                     protein: item.protein,
                     carbs: item.carbs,

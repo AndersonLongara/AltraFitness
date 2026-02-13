@@ -16,7 +16,7 @@
 export type AssessmentMethod = 'pollock3' | 'pollock7' | 'guedes' | 'bioimpedance';
 export type Gender = 'male' | 'female';
 
-interface AssessmentInput {
+export interface AssessmentInput {
     weight: number; // kg
     height: number; // cm
     age: number;
@@ -36,7 +36,7 @@ interface AssessmentInput {
     }
 }
 
-interface AssessmentResult {
+export interface AssessmentResult {
     bodyFat: number; // percentage (0-100)
     leanMass: number; // kg
     fatMass: number; // kg

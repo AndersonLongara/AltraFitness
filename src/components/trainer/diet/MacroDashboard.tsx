@@ -220,7 +220,7 @@ export default function MacroDashboard({ student, targets, current }: MacroDashb
                             <Tooltip
                                 contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
                                 itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
-                                formatter={(value: number) => `${Math.round(value)} kcal`}
+                                formatter={(value: number | undefined) => `${Math.round(value ?? 0)} kcal`}
                             />
                         </PieChart>
                     </ResponsiveContainer>

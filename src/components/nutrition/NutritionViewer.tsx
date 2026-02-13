@@ -194,5 +194,3 @@ export default function NutritionViewer({ plan }: NutritionViewerProps) {
         </div>
     );
 }
-    );
-}

@@ -1,11 +1,13 @@
-import { Icon, ArrowUpRight, ArrowDownRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowUpRight, ArrowDownRight } from "@phosphor-icons/react/dist/ssr";
+import type { ComponentType } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface MetricCardProps {
     title: string;
     value: string;
     trend: string;
     trendUp?: boolean;
-    icon: Icon;
+    icon: ComponentType<any>;
     iconColor: string; // e.g. "text-orange-500"
     iconBg: string; // e.g. "bg-orange-100"
 }

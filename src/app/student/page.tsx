@@ -245,7 +245,7 @@ export default async function StudentDashboardPage(props: {
 
                 {/* Pending Forms */}
                 {(!searchParams.cat || searchParams.cat === 'all' || searchParams.cat === 'forms') && pendingForms.length > 0 && (
-                    <PendingFormsList forms={pendingForms} />
+                    <PendingFormsList pendingForms={pendingForms} />
                 )}
 
             </div>

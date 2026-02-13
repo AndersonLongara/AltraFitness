@@ -12,6 +12,9 @@ interface FoodSearchPanelProps {
 export default function FoodSearchPanel({ onAddFood }: FoodSearchPanelProps) {
     const [query, setQuery] = useState('');
     const [selectedFilter, setSelectedFilter] = useState<'protein' | 'carbs' | 'fat' | null>(null);
+    const [results, setResults] = useState<any[]>([]);
+    const [isPending, startTransition] = useTransition();
+    const [debouncedQuery] = useDebounce(query, 300);
 
     useEffect(() => {
         // If query is too short AND no filter is selected, don't search

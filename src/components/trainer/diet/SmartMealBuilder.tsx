@@ -620,21 +620,21 @@ export default function SmartMealBuilder({ studentId: propStudentId, initialPlan
                                     current={totals.protein}
                                     target={targets.protein}
                                     color="emerald"
-                                    onChange={v => setTargets({ ...targets, protein: v })}
+                                    onChange={(v: number) => setTargets({ ...targets, protein: v })}
                                 />
                                 <MacroInput
                                     label="Carb"
                                     current={totals.carbs}
                                     target={targets.carbs}
                                     color="blue"
-                                    onChange={v => setTargets({ ...targets, carbs: v })}
+                                    onChange={(v: number) => setTargets({ ...targets, carbs: v })}
                                 />
                                 <MacroInput
                                     label="Gord"
                                     current={totals.fat}
                                     target={targets.fat}
                                     color="orange"
-                                    onChange={v => setTargets({ ...targets, fat: v })}
+                                    onChange={(v: number) => setTargets({ ...targets, fat: v })}
                                 />
                             </div>
                         </div>

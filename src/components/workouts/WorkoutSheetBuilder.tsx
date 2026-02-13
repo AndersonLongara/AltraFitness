@@ -345,7 +345,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
         setCardio(prev => {
             const exists = prev.days.includes(dayId);
             const nextDays = exists
-                ? prev.days.filter(d => d !== dayId)
+                ? prev.days.filter((d: string) => d !== dayId)
                 : [...prev.days, dayId];
 
             let nextFrequency = prev.frequency;

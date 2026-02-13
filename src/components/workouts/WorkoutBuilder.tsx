@@ -224,7 +224,7 @@ export default function WorkoutBuilder({ students, exercises, trainerId, initial
             <ExerciseSelector
                 isOpen={isSelectorOpen}
                 onClose={() => setIsSelectorOpen(false)}
-                onSelect={addExercise}
+                onSelectExercises={(exercises) => exercises.forEach(addExercise)}
                 exercises={exercises}
             />
         </div>

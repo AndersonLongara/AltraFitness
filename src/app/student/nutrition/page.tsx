@@ -11,6 +11,7 @@ import AdHocMealButton from "@/components/student/nutrition/AdHocMealButton";
 import AdHocMealList from "@/components/student/nutrition/AdHocMealList";
 import { ArrowLeft, ForkKnife, Trash } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
+import CalendarStrip from "@/components/student/dashboard/CalendarStrip";
 
 export default async function NutritionPage(props: {
     searchParams: Promise<{ date?: string }>

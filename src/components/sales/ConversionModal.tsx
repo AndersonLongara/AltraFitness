@@ -4,12 +4,12 @@ import { useState, useEffect } from "react";
 import { X, Check, Copy, WhatsappLogo } from "@phosphor-icons/react";
 import * as Dialog from "@radix-ui/react-dialog";
 
-interface ConversionModalProps {
+export interface ConversionModalProps {
     isOpen: boolean;
     onClose: () => void;
     inviteToken: string | null; // Null if not yet converted
     studentName: string;
-    onConfirmConversion: (types: string[]) => Promise<void>; // Function to actually convert
+    onConfirmConversion?: (types: string[]) => Promise<void>; // Function to actually convert
 }
 
 export default function ConversionModal({ isOpen, onClose, inviteToken, studentName, onConfirmConversion }: ConversionModalProps) {
@@ -39,7 +39,7 @@ export default function ConversionModal({ isOpen, onClose, inviteToken, studentN
     const handleConfirm = async () => {
         setIsConverting(true);
         try {
-            await onConfirmConversion(selectedTypes);
+            await onConfirmConversion?.(selectedTypes);
             // Parent should update inviteToken, triggering effect to switch to success?
             // Or parent will re-render this modal with token.
         } catch (error) {

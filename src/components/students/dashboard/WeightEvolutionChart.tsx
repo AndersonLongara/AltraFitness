@@ -40,9 +40,10 @@ export default function WeightEvolutionChart({ data }: WeightEvolutionChartProps
         }
     };
 
-    const formatTooltipDate = (dateStr: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formatTooltipDate = (label: any) => {
         try {
-            return format(new Date(dateStr), "dd 'de' MMMM, yyyy", { locale: ptBR });
+            return format(new Date(String(label)), "dd 'de' MMMM, yyyy", { locale: ptBR });
         } catch {
             return "";
         }
@@ -91,7 +92,7 @@ export default function WeightEvolutionChart({ data }: WeightEvolutionChartProps
                             }}
                             labelStyle={{ color: '#64748b', fontSize: '12px', marginBottom: '4px', fontWeight: 600 }}
                             itemStyle={{ color: '#10b981', fontWeight: 700, fontSize: '14px' }}
-                            formatter={(value: number) => [`${value} kg`, 'Peso']}
+                            formatter={(value: number | undefined) => [`${value ?? 0} kg`, 'Peso']}
                             labelFormatter={formatTooltipDate}
                             cursor={{ stroke: '#e2e8f0', strokeWidth: 2 }}
                         />

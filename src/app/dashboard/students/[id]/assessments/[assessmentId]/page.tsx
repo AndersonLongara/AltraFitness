@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { assessments, students } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import BackButton from "@/components/ui/BackButton";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";

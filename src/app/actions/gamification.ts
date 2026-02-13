@@ -79,3 +79,8 @@ export async function logMood(mood: string, note?: string) {
     revalidatePath('/student');
     return { success: true };
 }
+
+export async function awardXP(studentId: string, xp: number) {
+    await addXp(studentId, xp, 'workout_complete');
+    revalidatePath('/student');
+}

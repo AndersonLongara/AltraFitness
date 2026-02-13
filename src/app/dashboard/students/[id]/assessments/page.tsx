@@ -1,5 +1,5 @@
 import { getStudentAssessments } from "@/app/actions/assessments";
-import { Plus, ruler, CaretRight, TrendUp, TrendDown, Minus } from "@phosphor-icons/react/dist/ssr";
+import { Plus, CaretRight, TrendUp, TrendDown, Minus } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -43,7 +43,7 @@ export default async function AssessmentsPage(props: { params: Promise<{ id: str
                             href={`/dashboard/students/${id}/assessments/new`}
                             className="inline-flex items-center gap-2 text-primary font-bold hover:underline"
                         >
-                            Começar agora ->
+                            Começar agora &rarr;
                         </Link>
                     </div>
                 ) : (

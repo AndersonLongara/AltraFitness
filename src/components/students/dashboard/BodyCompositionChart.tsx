@@ -45,9 +45,10 @@ export default function BodyCompositionChart({ data }: BodyCompositionChartProps
         }
     };
 
-    const formatTooltipDate = (dateStr: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const formatTooltipDate = (label: any) => {
         try {
-            return format(new Date(dateStr), "dd 'de' MMMM, yyyy", { locale: ptBR });
+            return format(new Date(String(label)), "dd 'de' MMMM, yyyy", { locale: ptBR });
         } catch {
             return "";
         }

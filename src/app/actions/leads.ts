@@ -1,7 +1,7 @@
 'use server';
 
 import { db } from "@/db";
-import { leads, students, trainers, forms, studentForms } from "@/db/schema";
+import { leads, students, trainers, forms, studentForms, plans, payments } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, desc, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -32,21 +32,6 @@ export async function createLead(data: { name: string; phone?: string; socialHan
     await db.insert(leads).values({
         trainerId: userId,
         name: data.name,
-        name: data.name,
-        phone: data.phone || "", // Fallback to empty string for phone if not provided, or change schema to allow null?
-        // Schema update was: phone: text('phone') -> implies nullable.
-        // But if I pass undefined, Drizzle might skip it.
-        // Let's pass `data.phone ?? null` or just `data.phone!`.
-        // Actually, if I want it to be stored as NULL, I should pass null.
-        // If I want it to be stored as "", I pass "".
-        // User didn't specify. Empty string is safer for "not provided" in some inputs.
-        // But nullable is better for optional.
-        // I will use `data.phone ?? ""` to avoid issues if previous code expects string.
-        // Wait, schema change is `phone: text('phone')` which defaults to nullable.
-        // Ideally should be `data.phone as string`.
-        // Let's stick with `data.phone || ""` to match previous `notNull` behavior preference just in case, OR assume null.
-        // User said "não deve ser obrigatorio".
-        // I'll make it nullable in DB.
         phone: data.phone || "",
         socialHandle: data.socialHandle,
         photoUrl: finalPhotoUrl,

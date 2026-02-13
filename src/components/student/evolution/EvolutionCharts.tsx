@@ -32,9 +32,12 @@ export default function EvolutionCharts({ data }: EvolutionChartsProps) {
         );
     }
 
-    const formatDate = (dateStr: string) => {
-        return format(parseISO(dateStr), 'dd/MM', { locale: ptBR });
+    const formatDate = (dateStr: string | number) => {
+        return format(parseISO(String(dateStr)), 'dd/MM', { locale: ptBR });
     };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const labelFormatDate = (label: any) => formatDate(String(label));
 
     const ChartContainer = ({ children }: { children: React.ReactNode }) => (
         <div className="h-[300px] w-full mt-6">
@@ -104,7 +107,7 @@ export default function EvolutionCharts({ data }: EvolutionChartsProps) {
                             contentStyle={{ backgroundColor: '#1C1C1E', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.5)' }}
                             itemStyle={{ color: '#BDFF00', fontWeight: 'bold' }}
                             labelStyle={{ color: '#fff', marginBottom: '4px', fontWeight: 'bold' }}
-                            labelFormatter={formatDate}
+                            labelFormatter={labelFormatDate}
                         />
                         <Area
                             type="monotone"
@@ -148,7 +151,7 @@ export default function EvolutionCharts({ data }: EvolutionChartsProps) {
                             contentStyle={{ backgroundColor: '#1C1C1E', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.5)' }}
                             itemStyle={{ color: '#f59e0b', fontWeight: 'bold' }}
                             labelStyle={{ color: '#fff', marginBottom: '4px', fontWeight: 'bold' }}
-                            labelFormatter={formatDate}
+                            labelFormatter={labelFormatDate}
                         />
                         <Area
                             type="monotone"
@@ -185,7 +188,7 @@ export default function EvolutionCharts({ data }: EvolutionChartsProps) {
                             cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                             contentStyle={{ backgroundColor: '#1C1C1E', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.5)' }}
                             labelStyle={{ color: '#fff', marginBottom: '4px', fontWeight: 'bold' }}
-                            labelFormatter={formatDate}
+                            labelFormatter={labelFormatDate}
                         />
                         <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', paddingTop: '20px', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                         <Bar dataKey="leanMass" name="Massa Magra" stackId="a" fill="#BDFF00" radius={[0, 0, 4, 4]} />

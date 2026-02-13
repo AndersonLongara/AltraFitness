@@ -12,8 +12,14 @@ interface Meal {
     items: {
         id: string;
         foodName: string;
-        portion: string;
+        portion: number | string;
+        unit?: string | null;
         calories?: number | null;
+        protein?: number | null;
+        carbs?: number | null;
+        fat?: number | null;
+        mealId?: string;
+        foodId?: string | null;
     }[];
 }
 

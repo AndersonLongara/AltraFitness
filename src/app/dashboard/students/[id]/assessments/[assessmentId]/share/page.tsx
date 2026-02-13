@@ -21,11 +21,13 @@ export default async function AssessmentSharePage(props: { params: Promise<{ id:
         where: eq(students.id, id),
     });
 
+    if (!assessment || !student) return notFound();
+
     const trainer = await db.query.trainers.findFirst({
         where: eq(trainers.id, assessment.trainerId),
     });
 
-    if (!assessment || !student || !trainer) return notFound();
+    if (!trainer) return notFound();
 
     // Previous Assessment for Deltas
     const history = await db.query.assessments.findMany({
@@ -91,8 +93,8 @@ export default async function AssessmentSharePage(props: { params: Promise<{ id:
                     <div className="bg-white/60 backdrop-blur-sm rounded-3xl p-4 grid grid-cols-2 gap-4 border border-white/50 shadow-sm">
 
                         <StatBox label="Peso" value={`${(assessment.weight / 1000).toFixed(1)}kg`} delta={weightDelta} inverse={true} />
-                        <StatBox label="% Gordura" value={`${(assessment.bodyFat / 100).toFixed(1)}%`} delta={fatDelta} inverse={true} />
-                        <StatBox label="Massa Magra" value={`${(assessment.leanMass / 1000).toFixed(1)}kg`} delta={leanDelta} inverse={false} colSpan={2} />
+                        <StatBox label="% Gordura" value={`${((assessment.bodyFat ?? 0) / 100).toFixed(1)}%`} delta={fatDelta} inverse={true} />
+                        <StatBox label="Massa Magra" value={`${((assessment.leanMass ?? 0) / 1000).toFixed(1)}kg`} delta={leanDelta} inverse={false} colSpan={2} />
 
                     </div>
                 </div>

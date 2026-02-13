@@ -2,7 +2,7 @@
 
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/db";
-import { foods, nutritionalPlans, meals, mealItems, students, assessments } from "@/db/schema";
+import { foods, nutritionalPlans, meals, mealItems, students, assessments, trainers } from "@/db/schema";
 import { eq, like, or, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { differenceInYears } from "date-fns";

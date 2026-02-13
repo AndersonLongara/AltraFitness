@@ -7,12 +7,13 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
 
-export default async function AssessmentDetailPage({ params }: { params: { id: string } }) {
+export default async function AssessmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { userId } = await auth();
     const user = await currentUser();
     if (!userId || !user) return redirect("/sign-in");
 
-    const assessment = await getAssessment(params.id);
+    const { id } = await params;
+    const assessment = await getAssessment(id);
 
     if (!assessment) {
         return (

@@ -7,7 +7,7 @@ import { CaretRight, FileText } from "@phosphor-icons/react";
 
 interface Assessment {
     id: string;
-    date: string;
+    date: string | Date;
     weight: number;
     bodyFat: number | null;
 }
@@ -42,7 +42,7 @@ export default function AssessmentHistory({ assessments }: AssessmentHistoryProp
                             </div>
                             <div>
                                 <h4 className="font-bold text-white group-hover/item:text-amber-400 transition-colors">
-                                    {format(parseISO(assessment.date), 'dd MMMM yyyy', { locale: ptBR })}
+                                    {format(typeof assessment.date === 'string' ? parseISO(assessment.date) : assessment.date, 'dd MMMM yyyy', { locale: ptBR })}
                                 </h4>
                                 <div className="flex gap-3 text-[10px] text-zinc-500 font-bold uppercase tracking-wider mt-0.5">
                                     <span>{assessment.weight}kg</span>
