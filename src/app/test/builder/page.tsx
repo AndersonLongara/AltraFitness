@@ -1,6 +1,8 @@
 import SmartMealBuilder from "@/components/trainer/diet/SmartMealBuilder";
 import { db } from "@/db";
 
+export const dynamic = 'force-dynamic';
+
 export default async function TestBuilderPage() {
     // Mock student ID for testing
     const student = await db.query.students.findFirst();
