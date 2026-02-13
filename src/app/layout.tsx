@@ -19,7 +19,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/dashboard"
+      afterSignUpUrl="/dashboard"
+    >
       <html lang="pt-BR">
         <body
           className={`${jakarta.variable} antialiased bg-ice-white text-graphite-dark`}
