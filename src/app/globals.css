@@ -1,0 +1,61 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-jakarta);
+
+  /* Altrafit Emerald Palette */
+  --color-deep-black: #050505;
+  --color-acid-lime: #CCFF00;
+  /* Punchier Neon */
+  --color-surface-grey: #1C1C1E;
+  --color-zinc-500: #71717a;
+  --color-white: #FFFFFF;
+
+  /* Legacy/Compat colors (keep if needed or remap) */
+  --color-performance-green: #2ECC71;
+  --color-ice-white: #F8F9FA;
+  --color-pure-white: #FFFFFF;
+  --color-dark-navy: #0D1117;
+  --color-graphite-dark: #2C3E50;
+
+  --radius-4xl: 2rem;
+  /* 32px as per spec */
+  --radius-3xl: 1.5rem;
+  --radius-2xl: 1rem;
+  --radius-xl: 0.75rem;
+}
+
+/* Custom Utilities for Altrafit Emerald */
+@layer utilities {
+  .soft-shadow {
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+    /* Darker shadow for dark mode */
+  }
+
+  .ambient-glow {
+    filter: blur(100px);
+    opacity: 0.15;
+    pointer-events: none;
+  }
+
+  .glass-panel {
+    background-color: rgba(28, 28, 30, 0.6);
+    /* surface-grey with opacity */
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-border {
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+body {
+  font-family: var(--font-jakarta), sans-serif;
+  background-color: var(--color-ice-white);
+  color: var(--color-graphite-dark);
+}

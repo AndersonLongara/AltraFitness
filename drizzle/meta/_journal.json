@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1770800088925,
+      "tag": "0000_volatile_prodigy",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1770800806429,
+      "tag": "0001_lazy_captain_cross",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1770880879036,
+      "tag": "0002_open_king_cobra",
+      "breakpoints": true
+    }
+  ]
+}
