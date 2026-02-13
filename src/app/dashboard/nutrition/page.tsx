@@ -10,24 +10,42 @@ import { format } from "date-fns";
 export const dynamic = 'force-dynamic';
 
 export default async function NutritionHubPage() {
-    const { userId } = await auth();
-    if (!userId) return null;
+    try {
+        const { userId } = await auth();
+        if (!userId) return null;
 
-    const plansList = await db.query.nutritionalPlans.findMany({
-        where: and(
-            eq(nutritionalPlans.trainerId, userId),
-            eq(nutritionalPlans.isTemplate, false)
-        ),
-        with: {
-            student: {
-                columns: {
-                    name: true,
-                    photoUrl: true
+        const plansList = await db.query.nutritionalPlans.findMany({
+            where: and(
+                eq(nutritionalPlans.trainerId, userId),
+                eq(nutritionalPlans.isTemplate, false)
+            ),
+            with: {
+                student: {
+                    columns: {
+                        name: true,
+                        photoUrl: true
+                    }
                 }
-            }
-        },
-        orderBy: (plans: any, { desc }: any) => [desc(plans.createdAt)],
-    });
+            },
+            orderBy: (plans: any, { desc }: any) => [desc(plans.createdAt)],
+        });
+        
+        return renderPage(plansList);
+    } catch (error) {
+        console.error('[NutritionHub] Error:', error);
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-ice-white">
+                <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md">
+                    <h1 className="text-xl font-bold text-red-600 mb-2">Erro ao carregar nutrição</h1>
+                    <p className="text-slate-600 text-sm">{error instanceof Error ? error.message : 'Erro desconhecido'}</p>
+                    <a href="/dashboard" className="mt-4 inline-block text-emerald-600 font-medium hover:underline">Voltar ao Dashboard</a>
+                </div>
+            </div>
+        );
+    }
+}
+
+function renderPage(plansList: any[]) {
 
     return (
         <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
