@@ -5,6 +5,8 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import StudentsPageContent from "@/components/students/StudentsPageContent";
 
+export const dynamic = 'force-dynamic';
+
 export default async function StudentsPage() {
     const { userId } = await auth();
     if (!userId) return null;

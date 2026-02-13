@@ -357,6 +357,73 @@ const statements = [
     FOREIGN KEY (\`log_id\`) REFERENCES \`workout_logs\`(\`id\`) ON UPDATE no action ON DELETE cascade,
     FOREIGN KEY (\`exercise_id\`) REFERENCES \`exercises\`(\`id\`) ON UPDATE no action ON DELETE no action
   )`,
+
+  // 23. foods
+  `CREATE TABLE IF NOT EXISTS \`foods\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`trainer_id\` text REFERENCES trainers(id),
+    \`name\` text NOT NULL,
+    \`calories\` integer NOT NULL,
+    \`protein\` integer NOT NULL,
+    \`carbs\` integer NOT NULL,
+    \`fat\` integer NOT NULL,
+    \`base_unit\` text DEFAULT 'g',
+    \`base_amount\` integer DEFAULT 100,
+    \`category\` text,
+    \`source\` text DEFAULT 'system',
+    \`created_at\` integer DEFAULT (strftime('%s', 'now'))
+  )`,
+
+  // 24. forms
+  `CREATE TABLE IF NOT EXISTS \`forms\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`trainer_id\` text NOT NULL,
+    \`title\` text NOT NULL,
+    \`description\` text,
+    \`type\` text DEFAULT 'checkin',
+    \`trigger_type\` text DEFAULT 'manual',
+    \`is_active\` integer DEFAULT true,
+    \`created_at\` integer DEFAULT (strftime('%s', 'now')),
+    \`updated_at\` integer DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (\`trainer_id\`) REFERENCES \`trainers\`(\`id\`) ON UPDATE no action ON DELETE no action
+  )`,
+
+  // 25. form_questions
+  `CREATE TABLE IF NOT EXISTS \`form_questions\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`form_id\` text NOT NULL,
+    \`order\` integer NOT NULL,
+    \`type\` text NOT NULL,
+    \`question\` text NOT NULL,
+    \`description\` text,
+    \`options\` text,
+    \`required\` integer DEFAULT true,
+    \`created_at\` integer DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (\`form_id\`) REFERENCES \`forms\`(\`id\`) ON UPDATE no action ON DELETE cascade
+  )`,
+
+  // 26. student_forms
+  `CREATE TABLE IF NOT EXISTS \`student_forms\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`student_id\` text NOT NULL,
+    \`form_id\` text NOT NULL,
+    \`status\` text DEFAULT 'pending',
+    \`assigned_at\` integer DEFAULT (strftime('%s', 'now')),
+    \`completed_at\` integer,
+    FOREIGN KEY (\`student_id\`) REFERENCES \`students\`(\`id\`) ON UPDATE no action ON DELETE cascade,
+    FOREIGN KEY (\`form_id\`) REFERENCES \`forms\`(\`id\`) ON UPDATE no action ON DELETE cascade
+  )`,
+
+  // 27. form_answers
+  `CREATE TABLE IF NOT EXISTS \`form_answers\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`response_id\` text NOT NULL,
+    \`question_id\` text NOT NULL,
+    \`answer\` text,
+    \`created_at\` integer DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (\`response_id\`) REFERENCES \`student_forms\`(\`id\`) ON UPDATE no action ON DELETE cascade,
+    FOREIGN KEY (\`question_id\`) REFERENCES \`form_questions\`(\`id\`) ON UPDATE no action ON DELETE no action
+  )`,
 ];
 
 async function run() {
@@ -364,14 +431,7 @@ async function run() {
   const existing = await client.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
   console.log('Existing tables:', existing.rows.map(r => r.name));
 
-  if (existing.rows.length > 0) {
-    console.log('\nDatabase already has tables. Aborting to prevent conflicts.');
-    console.log('If you want to recreate, drop all tables first.');
-    client.close();
-    return;
-  }
-
-  console.log('\nCreating schema...');
+  console.log('\nCreating missing tables...');
   for (let i = 0; i < statements.length; i++) {
     try {
       await client.execute(statements[i]);

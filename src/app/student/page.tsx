@@ -13,6 +13,8 @@ import { getTodaysHydration } from "@/app/actions/gamification";
 import { getStudentPendingForms } from "@/app/actions/forms";
 import PendingFormsList from "@/components/student/dashboard/PendingFormsList";
 
+export const dynamic = 'force-dynamic';
+
 export default async function StudentDashboardPage(props: {
     searchParams: Promise<{ date?: string, cat?: string }>
 }) {

@@ -14,6 +14,8 @@ import RevenueChart from "@/components/dashboard/RevenueChart";
 import StatCard from "@/components/dashboard/StatCard";
 import AiManager from "@/components/dashboard/AiManager";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
     const user = await currentUser();
     const userId = user?.id;
