@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import BackButton from "@/components/ui/BackButton";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AssessmentsPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const { id } = params;

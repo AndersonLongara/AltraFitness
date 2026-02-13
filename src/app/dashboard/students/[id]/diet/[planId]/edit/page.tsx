@@ -8,6 +8,8 @@ import { students } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { getNutritionalPlan } from "@/app/actions/dietUtils";
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
     params: Promise<{ id: string; planId: string }>;
 }

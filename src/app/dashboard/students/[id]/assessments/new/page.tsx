@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 import AssessmentForm from "@/components/assessments/AssessmentForm";
 import BackButton from "@/components/ui/BackButton";
 
+export const dynamic = 'force-dynamic';
+
 export default async function NewAssessmentPage(props: { params: Promise<{ id: string }> }) {
     const params = await props.params;
     const { id } = params;

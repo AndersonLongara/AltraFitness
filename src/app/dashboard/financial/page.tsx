@@ -8,6 +8,8 @@ import { plans, payments, students } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 
+export const dynamic = 'force-dynamic';
+
 export default async function FinancialPage() {
     const { userId } = await auth();
     if (!userId) return null;

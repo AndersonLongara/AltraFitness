@@ -5,6 +5,8 @@ import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 
+export const dynamic = 'force-dynamic';
+
 export default async function NewTemplatePage() {
     const { userId } = await auth();
     if (!userId) return null;

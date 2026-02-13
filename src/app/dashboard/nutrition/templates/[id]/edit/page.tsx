@@ -7,6 +7,8 @@ import { auth } from "@clerk/nextjs/server";
 import { getNutritionalPlan } from "@/app/actions/dietUtils";
 import { notFound } from "next/navigation";
 
+export const dynamic = 'force-dynamic';
+
 export default async function EditTemplatePage({ params }: { params: { id: string } }) {
     const { userId } = await auth();
     if (!userId) return null;

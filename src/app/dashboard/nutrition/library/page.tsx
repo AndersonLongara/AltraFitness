@@ -8,6 +8,8 @@ import { auth } from "@clerk/nextjs/server";
 import { eq, desc } from "drizzle-orm";
 import FoodLibraryList from "@/components/nutrition/FoodLibraryList";
 
+export const dynamic = 'force-dynamic';
+
 export default async function FoodLibraryPage() {
     const { userId } = await auth();
     if (!userId) return null;

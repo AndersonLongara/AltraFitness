@@ -11,6 +11,8 @@ import { ShareNetwork, TrendUp, TrendDown, Minus, Lightning } from "@phosphor-ic
 import CompositionChart from "@/components/assessments/CompositionChart";
 import { getStudentAssessments, generateComparisonReport } from "@/app/actions/assessments";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AssessmentDetailsPage(props: { params: Promise<{ id: string, assessmentId: string }> }) {
     const params = await props.params;
     const { id, assessmentId } = params;

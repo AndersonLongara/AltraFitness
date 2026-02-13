@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import NewPlanFlow from "@/components/nutrition/NewPlanFlow";
 
+export const dynamic = 'force-dynamic';
+
 export default async function NewNutritionPlanPage() {
     const { userId } = await auth();
     if (!userId) return null;

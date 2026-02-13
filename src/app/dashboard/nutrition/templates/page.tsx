@@ -8,6 +8,8 @@ import { auth } from "@clerk/nextjs/server";
 import { eq, and } from "drizzle-orm";
 import { format } from "date-fns";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DietTemplatesPage() {
     const { userId } = await auth();
     if (!userId) return null;

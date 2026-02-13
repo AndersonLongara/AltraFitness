@@ -7,6 +7,8 @@ import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
 import ExerciseLibraryList from "@/components/workouts/ExerciseLibraryList";
 
+export const dynamic = 'force-dynamic';
+
 export default async function ExerciseLibraryPage() {
     const { userId } = await auth();
     if (!userId) return null;

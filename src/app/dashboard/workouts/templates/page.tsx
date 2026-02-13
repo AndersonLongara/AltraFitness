@@ -8,6 +8,8 @@ import { eq, desc, and } from "drizzle-orm";
 import TemplateList from "@/components/workouts/TemplateList";
 import BackButton from "@/components/ui/BackButton";
 
+export const dynamic = 'force-dynamic';
+
 export default async function WorkoutTemplatesPage() {
     const { userId } = await auth();
     if (!userId) return null;

@@ -9,6 +9,8 @@ import { notFound } from "next/navigation";
 import StudentProfileTabs from "@/components/students/StudentProfileTabs";
 import { getStudentAssessments } from "@/app/actions/assessments";
 
+export const dynamic = 'force-dynamic';
+
 interface PageProps {
     params: Promise<{ id: string }>;
 }

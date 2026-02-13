@@ -5,6 +5,8 @@ import { leads, plans } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import SalesPageContent from "@/components/sales/SalesPageContent";
 
+export const dynamic = 'force-dynamic';
+
 export default async function SalesPage() {
     const { userId } = await auth();
     if (!userId) return null;

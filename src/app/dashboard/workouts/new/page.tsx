@@ -6,6 +6,8 @@ import { students, exercises } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
 
+export const dynamic = 'force-dynamic';
+
 export default async function NewWorkoutPage() {
     const { userId } = await auth();
     if (!userId) return null;

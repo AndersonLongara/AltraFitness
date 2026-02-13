@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { TrendUp, TrendDown, Minus, Lightning } from "@phosphor-icons/react/dist/ssr";
 
+export const dynamic = 'force-dynamic';
+
 export default async function AssessmentSharePage(props: { params: Promise<{ id: string, assessmentId: string }> }) {
     const params = await props.params;
     const { id, assessmentId } = params;
