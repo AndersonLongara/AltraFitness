@@ -2,16 +2,15 @@
 
 import { db } from "@/db";
 import { students, payments, workouts, nutritionalPlans, studentBadges, plans } from "@/db/schema";
-import { auth, currentUser } from "@clerk/nextjs/server";
 import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { getCurrentTrainer } from "@/lib/auth-helpers";
 
 export async function getStudents() {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const trainer = await getCurrentTrainer();
 
     return await db.query.students.findMany({
-        where: eq(students.trainerId, userId),
+        where: eq(students.trainerId, trainer.id),
         with: {
             plan: true,
         },
@@ -20,18 +19,15 @@ export async function getStudents() {
 }
 
 export async function getStudentById(id: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const trainer = await getCurrentTrainer();
 
     return await db.query.students.findFirst({
-        where: and(eq(students.id, id), eq(students.trainerId, userId)),
+        where: and(eq(students.id, id), eq(students.trainerId, trainer.id)),
         with: {
             plan: true,
         },
     });
 }
-
-import { syncTrainer } from "./auth";
 
 export async function createStudent(data: {
     name: string;
@@ -45,22 +41,18 @@ export async function createStudent(data: {
     height?: number; // cm
     weight?: number; // grams
 }) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    // Ensure trainer exists in DB
-    await syncTrainer();
+    const trainer = await getCurrentTrainer();
 
     // Check for duplicate CPF
     if (data.cpf) {
         const existing = await db.query.students.findFirst({
-            where: and(eq(students.trainerId, userId), eq(students.cpf, data.cpf))
+            where: and(eq(students.trainerId, trainer.id), eq(students.cpf, data.cpf))
         });
         if (existing) throw new Error("Já existe um aluno cadastrado com este CPF.");
     }
 
     const [newStudent] = await db.insert(students).values({
-        trainerId: userId,
+        trainerId: trainer.id,
         name: data.name,
         email: data.email,
         cpf: data.cpf,
@@ -91,14 +83,13 @@ export async function updateStudent(id: string, data: Partial<{
     height: number;
     weight: number;
 }>) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const trainer = await getCurrentTrainer();
 
     // Check for duplicate CPF if being updated
     if (data.cpf) {
         const existing = await db.query.students.findFirst({
             where: and(
-                eq(students.trainerId, userId),
+                eq(students.trainerId, trainer.id),
                 eq(students.cpf, data.cpf),
                 sql`${students.id} != ${id}`
             )
@@ -111,15 +102,14 @@ export async function updateStudent(id: string, data: Partial<{
             ...data,
             updatedAt: new Date(),
         })
-        .where(and(eq(students.id, id), eq(students.trainerId, userId)));
+        .where(and(eq(students.id, id), eq(students.trainerId, trainer.id)));
 
     revalidatePath("/dashboard/students");
     revalidatePath(`/dashboard/students/${id}`);
 }
 
 export async function deleteStudent(id: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const trainer = await getCurrentTrainer();
 
     // Start by deleting related records
     await db.delete(studentBadges).where(eq(studentBadges.studentId, id));
@@ -128,7 +118,7 @@ export async function deleteStudent(id: string) {
     await db.delete(nutritionalPlans).where(eq(nutritionalPlans.studentId, id));
 
     await db.delete(students)
-        .where(and(eq(students.id, id), eq(students.trainerId, userId)));
+        .where(and(eq(students.id, id), eq(students.trainerId, trainer.id)));
 
     revalidatePath("/dashboard/students");
 }
@@ -161,8 +151,7 @@ export async function acceptInvite(token: string, phone: string) {
 }
 
 export async function updateStudentPlan(studentId: string, planId: string, startDate: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const trainer = await getCurrentTrainer();
 
     // Fetch Plan details
     const plan = await db.query.plans.findFirst({
@@ -182,11 +171,11 @@ export async function updateStudentPlan(studentId: string, planId: string, start
             planEnd: endDate,
             updatedAt: new Date(),
         })
-        .where(and(eq(students.id, studentId), eq(students.trainerId, userId)));
+        .where(and(eq(students.id, studentId), eq(students.trainerId, trainer.id)));
 
     // Create Initial Payment Record (Pending) for the new plan
     await db.insert(payments).values({
-        trainerId: userId,
+        trainerId: trainer.id,
         studentId: studentId,
         planId: planId,
         amount: plan.price,

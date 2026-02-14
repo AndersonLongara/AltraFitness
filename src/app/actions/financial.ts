@@ -2,16 +2,15 @@
 
 import { db } from "@/db";
 import { plans } from "@/db/schema";
-import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { getCurrentTrainer } from "@/lib/auth-helpers";
 
 export async function createPlan(data: { name: string; price: number; durationMonths: number }) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const trainer = await getCurrentTrainer();
 
     await db.insert(plans).values({
-        trainerId: userId,
+        trainerId: trainer.id,
         name: data.name,
         price: data.price,
         durationMonths: data.durationMonths,
@@ -21,8 +20,7 @@ export async function createPlan(data: { name: string; price: number; durationMo
 }
 
 export async function togglePlanStatus(planId: string, isActive: boolean) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    await getCurrentTrainer(); // Verify trainer role
 
     await db.update(plans)
         .set({ active: isActive })
@@ -32,8 +30,7 @@ export async function togglePlanStatus(planId: string, isActive: boolean) {
 }
 
 export async function deletePlan(planId: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    await getCurrentTrainer(); // Verify trainer role
 
     await db.delete(plans).where(eq(plans.id, planId));
     revalidatePath("/dashboard/financial");
@@ -51,11 +48,10 @@ export async function createPayment(data: {
     planId?: string;
     notes?: string;
 }) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    const trainer = await getCurrentTrainer();
 
     await db.insert(payments).values({
-        trainerId: userId,
+        trainerId: trainer.id,
         studentId: data.studentId,
         amount: data.amount,
         dueDate: data.dueDate,
@@ -68,8 +64,7 @@ export async function createPayment(data: {
 }
 
 export async function markAsPaid(paymentId: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    await getCurrentTrainer(); // Verify trainer role
 
     await db.update(payments)
         .set({
@@ -82,8 +77,7 @@ export async function markAsPaid(paymentId: string) {
 }
 
 export async function deletePayment(paymentId: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    await getCurrentTrainer(); // Verify trainer role
 
     await db.delete(payments).where(eq(payments.id, paymentId));
     revalidatePath("/dashboard/financial");
@@ -94,8 +88,7 @@ export async function deletePayment(paymentId: string) {
 import { students } from "@/db/schema";
 
 export async function assignPlanToStudent(data: { studentId: string; planId: string }) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    await getCurrentTrainer(); // Verify trainer role
 
     // Get plan details to calculate end date
     const [plan] = await db.select().from(plans).where(eq(plans.id, data.planId));
@@ -116,8 +109,7 @@ export async function assignPlanToStudent(data: { studentId: string; planId: str
 }
 
 export async function renewSubscription(studentId: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    await getCurrentTrainer(); // Verify trainer role
 
     // Get current student and plan
     const [student] = await db.select().from(students).where(eq(students.id, studentId));
@@ -142,8 +134,7 @@ export async function renewSubscription(studentId: string) {
 }
 
 export async function cancelSubscription(studentId: string) {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
+    await getCurrentTrainer(); // Verify trainer role
 
     await db.update(students)
         .set({

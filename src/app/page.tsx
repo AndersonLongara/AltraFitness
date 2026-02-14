@@ -6,14 +6,11 @@ import PerformanceChart from "@/components/dashboard/PerformanceChart";
 import RenewalsList from "@/components/dashboard/RenewalsList";
 import { db } from "@/db";
 import { students, payments } from "@/db/schema";
-import { auth } from "@clerk/nextjs/server";
 import { eq, and, sql, gte, lte } from "drizzle-orm";
 import { startOfMonth, endOfMonth, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs/server";
-
-import { syncTrainer } from "./actions/auth";
+import { getCurrentTrainer } from "@/lib/auth-helpers";
 
 export const dynamic = 'force-dynamic';
 
@@ -35,27 +32,9 @@ export default async function DashboardPage() {
 }
 
 async function DashboardPageContent() {
-  const { userId } = await auth();
-  if (!userId) return null;
-
-  // CHECK FOR STUDENT ROLE FIRST
-  const user = await currentUser();
-  if (user) {
-    const email = user.emailAddresses[0]?.emailAddress;
-
-    // Check if this email belongs to a student
-    const student = await db.query.students.findFirst({
-      where: eq(students.email, email)
-    });
-
-    if (student) {
-      // It's a student! Redirect to student dashboard
-      return redirect("/student");
-    }
-  }
-
-  // Sync trainer record from Clerk to DB (Only if not a student)
-  await syncTrainer();
+  // Get current trainer (will redirect if user is a student)
+  const trainer = await getCurrentTrainer();
+  const userId = trainer.id;
 
   const now = new Date();
   const monthStart = startOfMonth(now);

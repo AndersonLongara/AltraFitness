@@ -1,10 +1,14 @@
 import StudentBottomNav from "@/components/student/layout/StudentBottomNav";
+import { requireRole } from "@/lib/auth-helpers";
 
-export default function StudentLayout({
+export default async function StudentLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    // Ensure only students can access this layout
+    await requireRole("student");
+
     return (
         <div className="min-h-screen bg-deep-black text-white pb-24 md:pb-0 relative overflow-hidden font-sans selection:bg-acid-lime selection:text-black">
             {/* Top Green Gradient Glow */}
