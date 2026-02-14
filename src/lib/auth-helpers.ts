@@ -53,31 +53,41 @@ export async function getRole(): Promise<UserRole | null> {
 
         if (student) return "student";
 
-        // Otherwise assume trainer (they can access Clerk)
-        return "trainer";
+        // Check if user is a trainer in DB
+        const trainer = await db.query.trainers.findFirst({
+            where: eq(trainers.id, user.id),
+            columns: { id: true },
+        });
+
+        if (trainer) return "trainer";
+
+        // No role found — user needs onboarding
+        return null;
     } catch (error) {
         console.error("[getRole] Error:", error);
         return null;
     }
 }
 
-/**
- * Require specific role or throw/redirect
- * Use in server components and server actions
- */
-export async function requireRole(role: UserRole): Promise<void> {
-    const currentRole = await getRole();
+export async function requireRole(allowedRole: UserRole) {
+    const role = await getRole();
 
-    if (!currentRole) {
-        redirect("/sign-in");
+    // If no role found (new user), redirect to onboarding
+    if (!role) {
+        redirect("/onboarding");
     }
 
-    if (currentRole !== role) {
-        // Unauthorized - redirect to correct dashboard
-        const targetUrl = currentRole === "trainer" ? "/dashboard" : "/student";
-        redirect(targetUrl);
+    // Role mismatch
+    if (role !== allowedRole) {
+        // Redirect to their correct home
+        if (role === "trainer") redirect("/dashboard");
+        if (role === "student") redirect("/student");
     }
+
+    return role;
 }
+
+
 
 /**
  * Get current trainer data

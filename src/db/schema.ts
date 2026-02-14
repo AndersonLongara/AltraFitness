@@ -6,6 +6,22 @@ export const trainers = sqliteTable('trainers', {
     id: text('id').primaryKey(), // Clerk ID
     name: text('name').notNull(),
     email: text('email').notNull().unique(),
+    
+    // Personal Data
+    cpf: text('cpf'),
+    phone: text('phone'),
+    birthDate: integer('birth_date', { mode: 'timestamp' }),
+    presentialStudents: integer('presential_students').default(0),
+    onlineStudents: integer('online_students').default(0),
+    
+    // Team code for students to join
+    teamCode: text('team_code').unique(),
+    
+    // SaaS Subscription
+    subscriptionPlan: text('subscription_plan').default('free'), // 'free_5', 'free_trial', 'monthly', 'annual'
+    subscriptionStatus: text('subscription_status').default('active'), // 'active', 'inactive', 'trial', etc.
+    trialEndsAt: integer('trial_ends_at', { mode: 'timestamp' }),
+    
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });

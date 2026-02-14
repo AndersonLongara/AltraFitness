@@ -1,9 +1,16 @@
 import Sidebar from "@/components/layout/Sidebar";
-import { UserProfile } from "@clerk/nextjs";
 import { SignOutButton } from "@clerk/nextjs";
 import { SignOut } from "@phosphor-icons/react/dist/ssr";
+import SettingsContent from "@/components/settings/SettingsContent";
+import { getTrainerSettings, getSubscriptionInfo, getUsageStats } from "@/app/actions/settings";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+    const [profile, subscription, usage] = await Promise.all([
+        getTrainerSettings(),
+        getSubscriptionInfo(),
+        getUsageStats(),
+    ]);
+
     return (
         <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24 md:pb-8">
             <Sidebar />
@@ -12,10 +19,10 @@ export default function SettingsPage() {
                 <header className="flex justify-between items-center">
                     <div>
                         <h1 className="text-3xl font-extrabold text-graphite-dark tracking-tight">
-                            Meu Perfil
+                            Configurações
                         </h1>
                         <p className="text-slate-500 font-medium mt-1">
-                            Gerencie sua conta e preferências.
+                            Gerencie seu perfil, plano e preferências.
                         </p>
                     </div>
 
@@ -27,26 +34,11 @@ export default function SettingsPage() {
                     </SignOutButton>
                 </header>
 
-                <div className="bg-pure-white rounded-[2rem] soft-shadow overflow-hidden border border-slate-100">
-                    <div className="p-2 md:p-4 overflow-x-auto">
-                        <UserProfile
-                            path="/dashboard/settings"
-                            appearance={{
-                                elements: {
-                                    rootBox: "w-full mx-auto",
-                                    card: "shadow-none border-none p-0 w-full",
-                                    navbar: "hidden md:flex",
-                                    navbarMobileMenuButton: "text-graphite-dark",
-                                    headerTitle: "text-xl font-bold text-graphite-dark",
-                                    headerSubtitle: "text-slate-500",
-                                    profileSectionTitleText: "text-graphite-dark font-bold",
-                                    accordionTriggerButton: "text-graphite-dark font-bold",
-                                    formButtonPrimary: "bg-performance-green hover:bg-emerald-600 text-white font-bold",
-                                }
-                            }}
-                        />
-                    </div>
-                </div>
+                <SettingsContent
+                    profile={profile}
+                    subscription={subscription}
+                    usage={usage}
+                />
             </main>
         </div>
     );

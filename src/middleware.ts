@@ -5,7 +5,14 @@ import { NextResponse } from "next/server";
 const isPublicRoute = createRouteMatcher([
     "/sign-in(.*)",
     "/sign-up(.*)",
-    "/api/webhooks(.*)"
+    "/api/webhooks(.*)",
+    "/join(.*)",
+]);
+
+// Routes that require auth but no specific role
+const isAuthOnlyRoute = createRouteMatcher([
+    "/onboarding(.*)",
+    "/auth-redirect(.*)",
 ]);
 
 // Trainer-only routes
@@ -25,32 +32,14 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     // Protect all other routes
-    const { userId, sessionClaims } = await auth.protect();
+    const { userId } = await auth.protect();
 
-    // Extract role from Clerk publicMetadata
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const role = metadata?.role;
-
-    // If no role assigned, redirect to onboarding
-    if (!role) {
-        const onboardingUrl = new URL("/onboarding", req.url);
-        return NextResponse.redirect(onboardingUrl);
-    }
-
-    // Enforce role-based access
-    if (isTrainerRoute(req) && role !== "trainer") {
-        // Student trying to access trainer routes
-        console.warn(`[Middleware] Student ${userId} attempted to access trainer route: ${req.nextUrl.pathname}`);
-        const studentUrl = new URL("/student", req.url);
-        return NextResponse.redirect(studentUrl);
-    }
-
-    if (isStudentRoute(req) && role !== "student") {
-        // Trainer trying to access student routes
-        console.warn(`[Middleware] Trainer ${userId} attempted to access student route: ${req.nextUrl.pathname}`);
-        const dashboardUrl = new URL("/dashboard", req.url);
-        return NextResponse.redirect(dashboardUrl);
-    }
+    // We removed the strict role check here because relying on sessionClaims 
+    // for metadata requires specific Clerk Dashboard configuration and can be susceptible 
+    // to race conditions during onboarding.
+    // 
+    // Instead, we will handle role verification in the Layouts/Pages of 
+    // /dashboard and /student using the server-side clerkClient.
 
     return NextResponse.next();
 });

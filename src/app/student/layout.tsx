@@ -1,4 +1,5 @@
 import StudentBottomNav from "@/components/student/layout/StudentBottomNav";
+import StudentSidebar from "@/components/student/layout/StudentSidebar";
 import { requireRole } from "@/lib/auth-helpers";
 
 export default async function StudentLayout({
@@ -17,10 +18,15 @@ export default async function StudentLayout({
             {/* Ambient Radial Glows (Reference style) */}
             <div className="absolute top-[-20%] left-[-20%] w-[70%] h-[50%] bg-acid-lime/10 rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="relative z-10">
+            {/* Desktop Sidebar */}
+            <StudentSidebar />
+
+            {/* Main Content – offset on desktop for sidebar */}
+            <div className="relative z-10 md:ml-24">
                 {children}
             </div>
 
+            {/* Mobile Bottom Nav */}
             <StudentBottomNav />
         </div>
     );

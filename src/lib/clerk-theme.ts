@@ -1,86 +1,191 @@
 import type { Appearance } from "@clerk/types";
 
 /**
- * Shared Clerk dark theme for AltraFit auth pages.
- * Used by sign-in, sign-up, and any embedded Clerk components.
+ * AltraHub Void Theme (v2.0)
+ * Deep Graphite + Performance Green — fully dark, seamless with auth layout.
  */
 export const clerkDarkAppearance: Appearance = {
     variables: {
-        colorPrimary: "#CCFF00",
-        colorText: "#e4e4e7",
-        colorTextSecondary: "#71717a",
-        colorBackground: "#111113",
-        colorInputBackground: "#0a0a0a",
+        colorPrimary: "#2ECC71",
+        colorText: "#FFFFFF",
+        colorTextOnPrimaryBackground: "#050505",
+        colorTextSecondary: "#94A3B8",
+        colorBackground: "#131B23",
+        colorInputBackground: "#1E2A36",
         colorInputText: "#FFFFFF",
-        colorDanger: "#ef4444",
-        borderRadius: "0.875rem",
+        colorDanger: "#EF4444",
+        borderRadius: "1rem",
         fontFamily: "var(--font-jakarta), system-ui, sans-serif",
         fontSize: "0.875rem",
         spacingUnit: "1rem",
     },
     elements: {
         rootBox: "w-full",
-        cardBox: "w-full shadow-none",
-        card: "bg-[#111113] w-full shadow-[0_1px_0_0_rgba(204,255,0,0.05)] rounded-3xl border border-white/[0.06] p-2",
+        cardBox: "w-full shadow-none overflow-visible",
+        card: "!bg-transparent w-full !shadow-none !border-none !px-1 !py-0 overflow-visible",
         headerTitle: "hidden",
         headerSubtitle: "hidden",
 
-        // Social login buttons
+        // Social buttons
         socialButtonsBlockButton:
-            "bg-[#0c0c0e] border border-white/[0.08] text-zinc-300 font-semibold rounded-xl h-11 transition-all duration-200 hover:bg-[#161618] hover:border-white/[0.12]",
-        socialButtonsBlockButtonText: "text-zinc-300 font-semibold text-[13px]",
+            "!bg-[#1E2A36] !border !border-white/10 !rounded-2xl !h-16 hover:!bg-[#253241] hover:!border-white/20 transition-all",
+        socialButtonsBlockButtonText: "!text-white !font-bold !text-base",
         socialButtonsIconButton:
-            "bg-[#0c0c0e] border border-white/[0.08] rounded-xl h-11 w-full transition-all duration-200 hover:bg-[#161618] hover:border-white/[0.12]",
+            "!bg-[#1E2A36] !border !border-white/10 !rounded-2xl !h-16 hover:!bg-[#253241] hover:!border-white/20 transition-all",
 
         // Divider
-        dividerLine: "bg-white/[0.06]",
-        dividerText:
-            "text-zinc-600 font-semibold text-[11px] uppercase tracking-widest",
+        dividerLine: "!bg-white/10",
+        dividerText: "!text-[#94A3B8] !font-bold !text-[11px] !uppercase !tracking-widest",
 
         // Form fields
-        formFieldLabel:
-            "text-zinc-400 font-semibold text-[11px] uppercase tracking-wider",
+        formFieldLabel: "!text-[#94A3B8] !font-bold !text-[11px] !uppercase !tracking-wider",
         formFieldInput:
-            "bg-[#0a0a0a] border border-white/[0.08] text-white font-medium rounded-xl h-11 focus:border-acid-lime/40 focus:ring-2 focus:ring-acid-lime/10 transition-all placeholder:text-zinc-600",
-        formFieldAction:
-            "text-acid-lime/80 hover:text-acid-lime font-semibold text-xs",
+            "!bg-[#1E2A36] !border !border-white/10 !text-white !font-medium !rounded-2xl !h-14 focus:!ring-2 focus:!ring-[#2ECC71]/20 focus:!border-[#2ECC71]/30 focus:!bg-[#253241] transition-all placeholder:!text-[#94A3B8]/50",
+        formFieldAction: "!text-[#2ECC71] hover:!text-[#27AE60] !font-semibold !text-xs",
 
-        // Primary CTA button
+        // Primary CTA
         formButtonPrimary:
-            "bg-acid-lime hover:bg-[#d4ff33] text-[#050505] font-black uppercase tracking-wide rounded-xl h-11 shadow-[0_0_20px_rgba(204,255,0,0.25)] hover:shadow-[0_0_30px_rgba(204,255,0,0.4)] transition-all duration-200 text-[13px]",
-
-        // Footer links (Don't have account? / Already have account?)
-        footerAction: "justify-center",
-        footerActionLink:
-            "text-acid-lime/80 hover:text-acid-lime font-bold text-sm",
-        footerActionText: "text-zinc-500 text-sm",
-
-        // Identity preview (email step)
-        identityPreviewEditButton:
-            "text-acid-lime/80 hover:text-acid-lime font-semibold",
-        identityPreviewText: "text-zinc-300 font-medium",
-
-        // Validation states
-        formFieldSuccessText: "text-acid-lime text-xs",
-        formFieldErrorText: "text-red-400 text-xs",
-        alert: "bg-red-500/10 border border-red-500/20 text-red-300 rounded-xl text-sm",
-        alertText: "text-red-300 text-sm",
-
-        // Hide Clerk branding
-        logoBox: "hidden",
+            "!bg-[#2ECC71] hover:!bg-[#27AE60] !text-[#050505] !font-black !uppercase !tracking-wide !rounded-2xl !h-14 !shadow-[0_8px_30px_rgba(46,204,113,0.25)] hover:!shadow-[0_8px_30px_rgba(46,204,113,0.45)] transition-all !text-sm active:!scale-[0.98]",
 
         // Footer
-        footer: "bg-[#111113] rounded-b-3xl border-t border-white/[0.04] [&_.cl-internal-b3fm6y]:!text-zinc-700 [&_.cl-internal-b3fm6y]:!text-[10px]",
+        footerAction: "!justify-center !mt-6",
+        footerActionLink: "!text-[#2ECC71] hover:!text-[#27AE60] !font-bold !text-sm",
+        footerActionText: "!text-[#94A3B8] !text-sm",
+
+        // Identity preview
+        identityPreviewEditButton: "!text-[#2ECC71] hover:!text-[#27AE60] !font-semibold",
+        identityPreviewText: "!text-white !font-medium",
+
+        // Validation
+        formFieldSuccessText: "!text-[#2ECC71] !text-xs",
+        formFieldErrorText: "!text-[#EF4444] !text-xs",
+        alert: "!bg-[#EF4444]/10 !border !border-[#EF4444]/20 !text-[#EF4444] !rounded-2xl !text-sm",
+        alertText: "!text-[#EF4444] !text-sm",
+
+        // Branding
+        logoBox: "hidden",
+        footer: "hidden",
     },
 };
 
 /**
  * Global CSS overrides for Clerk internal elements.
- * Inject via <style> tag in the auth layout.
+ * Uses !important sparingly and only where Clerk's inline styles win.
  */
 export const clerkStyleOverrides = `
-    .cl-internal-b3fm6y { color: #3f3f46 !important; font-size: 10px !important; }
-    .cl-internal-17eqao5 { display: none !important; }
-    .cl-footer { border-top: 1px solid rgba(255,255,255,0.04) !important; }
-    .cl-socialButtonsIconButton { flex: 1 !important; }
+    /* =========================================
+       CLERK DARK THEME — AltraHub Void v2.0
+       ========================================= */
+
+    /* --- Card: transparent, merge with page --- */
+    .cl-card {
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+        overflow: visible !important;
+    }
+    .cl-cardBox,
+    .cl-rootBox {
+        overflow: visible !important;
+    }
+
+    /* --- Force all text white inside card --- */
+    .cl-card,
+    .cl-card p,
+    .cl-card span,
+    .cl-card label,
+    .cl-card a,
+    .cl-card div {
+        color: #FFFFFF !important;
+    }
+
+    /* --- Labels: Slate Mist --- */
+    .cl-formFieldLabel,
+    .cl-formFieldLabel * {
+        color: #94A3B8 !important;
+    }
+
+    /* --- Divider text --- */
+    .cl-dividerText,
+    .cl-dividerText * {
+        color: #94A3B8 !important;
+    }
+
+    /* --- Primary button: dark text on green --- */
+    .cl-formButtonPrimary,
+    .cl-formButtonPrimary * {
+        color: #050505 !important;
+    }
+
+    /* --- Inputs --- */
+    .cl-formFieldInput {
+        background-color: #1E2A36 !important;
+        color: #FFFFFF !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    .cl-formFieldInput::placeholder {
+        color: #94A3B8 !important;
+        opacity: 0.5;
+    }
+
+    /* --- Footer --- */
+    .cl-footerActionText { color: #94A3B8 !important; }
+    .cl-footerActionLink { color: #2ECC71 !important; }
+    .cl-identityPreviewText { color: #FFFFFF !important; }
+
+    /* --- Social Buttons: larger icons, natural colors --- */
+    .cl-socialButtonsBlockButton,
+    .cl-socialButtonsIconButton {
+        height: 64px !important;
+        border-radius: 1rem !important;
+        background: #1E2A36 !important;
+        border: 1px solid rgba(255,255,255,0.1) !important;
+    }
+    .cl-socialButtonsBlockButton:hover,
+    .cl-socialButtonsIconButton:hover {
+        background: #253241 !important;
+        border-color: rgba(255,255,255,0.2) !important;
+    }
+
+    /* Icon sizing */
+    .cl-socialButtonsBlockButton svg,
+    .cl-socialButtonsIconButton svg {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Apple icon: make it white (it's normally black) */
+    .cl-socialButtonsIconButton[data-provider="apple"] svg,
+    .cl-socialButtonsBlockButton[data-provider="apple"] svg {
+        filter: brightness(0) invert(1) !important;
+    }
+
+    /* Facebook icon: keep its native blue, no filter */
+    .cl-socialButtonsIconButton[data-provider="facebook"] svg,
+    .cl-socialButtonsBlockButton[data-provider="facebook"] svg {
+        filter: none !important;
+    }
+
+    /* Google icon: keep native colors */
+    .cl-socialButtonsIconButton[data-provider="google"] svg,
+    .cl-socialButtonsBlockButton[data-provider="google"] svg {
+        filter: none !important;
+    }
+
+    /* Social button text */
+    .cl-socialButtonsBlockButtonText,
+    .cl-socialButtonsBlockButtonText * {
+        color: #FFFFFF !important;
+        font-weight: 700 !important;
+    }
+
+    /* Hide Clerk branding */
+    .cl-internal-17eqao5,
+    .cl-internal-1dauvpw,
+    .cl-internal-b3fm6y {
+        display: none !important;
+    }
 `;

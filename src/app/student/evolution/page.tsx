@@ -33,7 +33,7 @@ export default async function EvolutionPage() {
     ]);
 
     return (
-        <main className="p-6 pb-24 font-primary">
+        <main className="p-6 pb-24 md:pb-10 md:px-10 lg:px-16 max-w-6xl mx-auto font-primary">
             {/* Header */}
             <header className="flex items-center gap-4 mb-8">
                 <Link href="/student" className="w-10 h-10 bg-surface-grey border border-white/5 rounded-xl flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/10 transition-all">
@@ -45,7 +45,7 @@ export default async function EvolutionPage() {
                 </div>
             </header>
 
-            <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* 1. Consistency */}
                 <ConsistencyCalendar workoutDates={workoutDates} />
 

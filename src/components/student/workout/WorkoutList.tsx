@@ -29,7 +29,7 @@ export default function WorkoutList({ workouts }: WorkoutListProps) {
     }
 
     return (
-        <div className="grid gap-4">
+        <div className="grid gap-4 md:grid-cols-2">
             {workouts.map((workout) => (
                 <Link key={workout.id} href={`/student/workouts/${workout.id}`}>
                     <div className="bg-surface-grey p-1 pb-1 rounded-4xl relative group overflow-hidden border border-white/10 transition-all hover:scale-[1.02]">

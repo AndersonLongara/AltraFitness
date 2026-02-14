@@ -32,7 +32,7 @@ export default async function StudentDashboardPage(props: {
         }
     });
 
-    if (!student) return redirect("/");
+    if (!student) return redirect("/onboarding");
 
     // PARALLEL DATA FETCHING
     const requestedDate = searchParams.date ? parseISO(searchParams.date) : new Date();
@@ -106,7 +106,7 @@ export default async function StudentDashboardPage(props: {
     const pendingForms = await getStudentPendingForms(student.id);
 
     return (
-        <div className="p-6 pb-28 font-primary">
+        <div className="p-6 pb-28 md:pb-10 md:px-10 lg:px-16 max-w-6xl mx-auto font-primary">
 
             <DashboardHeader
                 firstName={student.name.split(' ')[0]}
@@ -116,7 +116,7 @@ export default async function StudentDashboardPage(props: {
 
             {/* Hero Card - Real Weekly Progress */}
             <div className="mb-8 relative group">
-                <div className="bg-gradient-to-r from-acid-lime to-emerald-500 rounded-[32px] p-6 text-deep-black relative overflow-hidden shadow-[0_10px_30px_-5px_rgba(189,255,0,0.3)]">
+                <div className="bg-gradient-to-r from-acid-lime to-emerald-500 rounded-[32px] p-6 md:p-8 text-deep-black relative overflow-hidden shadow-[0_10px_30px_-5px_rgba(189,255,0,0.3)]">
                     <div className="relative z-10 flex justify-between items-center">
                         <div>
                             <div className="flex items-center gap-2 mb-2">
@@ -188,7 +188,7 @@ export default async function StudentDashboardPage(props: {
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             </h3>
 
-            <div className="grid gap-4">
+            <div className="grid gap-4 md:grid-cols-2">
                 {/* Workout Card */}
                 {(!searchParams.cat || searchParams.cat === 'all' || searchParams.cat === 'workout') && (
                     <Link href={`/student/workouts/${dailyWorkout?.id}`} className={`bg-surface-grey p-4 rounded-3xl border transition-colors group flex gap-4 items-center ${isWorkoutDone ? 'border-acid-lime/30 bg-acid-lime/5' : 'border-white/5 hover:bg-white/5'}`}>

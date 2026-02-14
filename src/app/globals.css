@@ -3,51 +3,49 @@
 @theme {
   --font-sans: var(--font-jakarta);
 
-  /* Altrafit Emerald Palette */
-  --color-deep-black: #050505;
-  --color-acid-lime: #CCFF00;
-  /* Punchier Neon */
-  --color-surface-grey: #1C1C1E;
-  --color-zinc-500: #71717a;
-  --color-white: #FFFFFF;
-
-  /* Auth surfaces */
-  --color-auth-surface: #111113;
-  --color-auth-input: #0a0a0a;
-
-  /* Legacy/Compat colors (keep if needed or remap) */
-  --color-performance-green: #2ECC71;
-  --color-ice-white: #F8F9FA;
-  --color-pure-white: #FFFFFF;
-  --color-dark-navy: #0D1117;
+  /* AltraHub Void Palette (v2.0) */
+  --color-canvas: #131B23; /* Deep Graphite */
+  --color-surface: #1E2A36; /* Sensor Gray */
+  --color-primary: #FFFFFF; /* Pure White */
+  --color-secondary: #94A3B8; /* Slate Mist */
+  
+  --color-brand-primary: #2ECC71; /* Performance Green */
+  --color-performance-green: #2ECC71; /* Direct mapping */
+  --color-brand-hover: #27AE60; /* Deep Green */
+  --color-status-danger: #EF4444; /* Red Alert */
   --color-graphite-dark: #2C3E50;
+  --color-dark-navy: #131B23; /* Deep Graphite Alias */
+  --color-ice-white: #F8F9FA; /* Canvas Background */
+  --color-pure-white: #FFFFFF; /* Card/Surface Background */
 
-  --radius-4xl: 2rem;
-  /* 32px as per spec */
-  --radius-3xl: 1.5rem;
-  --radius-2xl: 1rem;
-  --radius-xl: 0.75rem;
+  /* Legacy Mappings (for compatibility) */
+  --color-deep-black: #131B23; 
+  --color-acid-lime: #2ECC71; /* Replaced with Performance Green */
+  --color-surface-grey: #1E2A36;
+  --color-zinc-500: #94A3B8;
+
+  --radius-4xl: 2rem; /* 32px */
+  --radius-3xl: 1.5rem; /* 24px */
+  --radius-2xl: 1rem; /* 16px */
+  --radius-xl: 0.75rem; /* 12px */
 }
 
-/* Custom Utilities for Altrafit Emerald */
+/* Custom Utilities for AltraHub */
 @layer utilities {
   .soft-shadow {
     box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.2);
-    /* Sombra suavizada - reduzida em 60% */
   }
 
-  .ambient-glow {
-    filter: blur(100px);
-    opacity: 0.15;
-    pointer-events: none;
+  .shadow-brand {
+    box-shadow: 0 8px 30px rgba(46, 204, 113, 0.2);
   }
 
   .glass-panel {
-    background-color: rgba(28, 28, 30, 0.6);
-    /* surface-grey with opacity */
+    background-color: rgba(30, 42, 54, 0.6);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
   }
+
 
   .glass-border {
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -62,4 +60,63 @@ body {
   font-family: var(--font-jakarta), sans-serif;
   background-color: var(--color-ice-white);
   color: var(--color-graphite-dark);
+}
+
+/* 
+ * ---------------------------------------------------------
+ * CLERK.JS FORCE OVERRIDES (Deep Graphite Theme) 
+ * These complement the overrides in clerk-theme.ts
+ * ---------------------------------------------------------
+ */
+
+/* Social buttons: consistent sizing */
+.cl-socialButtonsBlockButton, 
+.cl-socialButtonsIconButton {
+  height: 64px !important;
+  border-radius: 1rem !important;
+}
+
+/* Social icon sizing */
+.cl-socialButtonsBlockButton svg,
+.cl-socialButtonsIconButton svg {
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Apple icon → white (natively black) */
+.cl-socialButtonsIconButton[data-provider="apple"] svg,
+.cl-socialButtonsBlockButton[data-provider="apple"] svg {
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Facebook & Google → keep native colors */
+.cl-socialButtonsIconButton[data-provider="facebook"] svg,
+.cl-socialButtonsBlockButton[data-provider="facebook"] svg,
+.cl-socialButtonsIconButton[data-provider="google"] svg,
+.cl-socialButtonsBlockButton[data-provider="google"] svg {
+  filter: none !important;
+}
+
+/* Force card text white */
+.cl-card, .cl-card p, .cl-card span, .cl-card div, .cl-card a {
+  color: #FFFFFF !important;
+}
+
+/* Prevent clipped borders on inputs/buttons */
+.cl-card, .cl-cardBox, .cl-rootBox {
+  overflow: visible !important;
+}
+
+/* Exceptions */
+.cl-formButtonPrimary, .cl-formButtonPrimary * {
+  color: #050505 !important;
+}
+.cl-formFieldLabel {
+  color: #94A3B8 !important;
+}
+.cl-dividerText {
+  color: #94A3B8 !important;
 }

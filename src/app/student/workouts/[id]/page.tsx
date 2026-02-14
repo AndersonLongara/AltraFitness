@@ -49,7 +49,7 @@ export default async function WorkoutOverviewPage({ params }: { params: Promise<
                 </div>
             </div>
 
-            <div className="px-6 -mt-32 relative z-10">
+            <div className="px-6 md:px-10 lg:px-16 -mt-32 relative z-10 max-w-6xl mx-auto">
                 <div className="mb-8">
                     <span className="text-[10px] font-black text-acid-lime uppercase tracking-widest bg-acid-lime/10 px-3 py-1 rounded-full border border-acid-lime/20 mb-3 inline-block">
                         Treino Ativo
