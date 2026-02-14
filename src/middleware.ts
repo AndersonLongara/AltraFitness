@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 // Public routes (no auth required)
 const isPublicRoute = createRouteMatcher([
+    "/",
     "/sign-in(.*)",
     "/sign-up(.*)",
     "/api/webhooks(.*)",
