@@ -5,6 +5,7 @@ import { students, payments, workouts, nutritionalPlans, studentBadges, plans } 
 import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getCurrentTrainer } from "@/lib/auth-helpers";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 export async function getStudents() {
     const trainer = await getCurrentTrainer();

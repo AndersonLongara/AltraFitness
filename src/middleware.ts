@@ -28,7 +28,8 @@ export default clerkMiddleware(async (auth, req) => {
     const { userId, sessionClaims } = await auth.protect();
 
     // Extract role from Clerk publicMetadata
-    const role = sessionClaims?.metadata?.role as string | undefined;
+    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
+    const role = metadata?.role;
 
     // If no role assigned, redirect to onboarding
     if (!role) {

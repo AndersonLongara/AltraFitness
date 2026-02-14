@@ -11,6 +11,10 @@
   --color-zinc-500: #71717a;
   --color-white: #FFFFFF;
 
+  /* Auth surfaces */
+  --color-auth-surface: #111113;
+  --color-auth-input: #0a0a0a;
+
   /* Legacy/Compat colors (keep if needed or remap) */
   --color-performance-green: #2ECC71;
   --color-ice-white: #F8F9FA;
