@@ -24,6 +24,9 @@ export default function RootLayout({
       signUpUrl="/sign-up"
       afterSignInUrl="/auth-redirect"
       afterSignUpUrl="/auth-redirect"
+      signInFallbackRedirectUrl="/auth-redirect"
+      signUpFallbackRedirectUrl="/auth-redirect"
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
     >
       <html lang="pt-BR">
         <body
