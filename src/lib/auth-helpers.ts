@@ -30,20 +30,25 @@ interface StudentData {
  * Get current user's role from Clerk publicMetadata
  * Fallback to database lookup for legacy users without metadata
  */
+/** E-mail do usuário: primário do Clerk ou primeiro da lista (para compatibilidade). */
+function getPrimaryEmail(user: { primaryEmailAddress?: { emailAddress?: string } | null; emailAddresses?: { emailAddress: string }[] }): string | undefined {
+    return user.primaryEmailAddress?.emailAddress ?? user.emailAddresses?.[0]?.emailAddress;
+}
+
 export async function getRole(): Promise<UserRole | null> {
     try {
         const user = await currentUser();
         if (!user) return null;
 
-        const email = user.emailAddresses[0]?.emailAddress;
+        const email = getPrimaryEmail(user);
 
-        // Superadmin tem prioridade: quem está em user_roles ou na lista de e-mails deve acessar o painel mesmo que tenha metadata "trainer"
+        // Superadmin tem prioridade: quem está em user_roles ou na lista SUPERADMIN_EMAIL deve acessar o painel
         const roleRow = await db.query.userRoles.findFirst({
             where: eq(userRoles.userId, user.id),
             columns: { role: true },
         });
         if (roleRow?.role === "superadmin") return "superadmin";
-        if (email && (await isSuperAdminEmail(email))) return "superadmin";
+        if (email && isSuperAdminEmail(email)) return "superadmin";
 
         // Clerk publicMetadata (onboarding / webhook)
         const metadata = user.publicMetadata as { role?: UserRole };
@@ -205,7 +210,7 @@ export async function getRoleRedirectUrl(): Promise<string> {
 }
 
 /** Verifica se o e-mail está na lista de superadmins (variável de ambiente SUPERADMIN_EMAIL, separada por vírgula). */
-export async function isSuperAdminEmail(email: string): Promise<boolean> {
+export function isSuperAdminEmail(email: string): boolean {
     const list = process.env.SUPERADMIN_EMAIL?.trim();
     if (!list) return false;
     const lower = email.trim().toLowerCase();
