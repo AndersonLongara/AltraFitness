@@ -39,60 +39,99 @@ import type { BillingType } from "@/lib/asaas";
 import { getPlatformAsaasConfig } from "@/lib/platform-asaas-config";
 import { clerkClient } from "@clerk/nextjs/server";
 
+const DEFAULT_SUPERADMIN_STATS = {
+  totalTrainers: 0,
+  totalStudents: 0,
+  totalPayments: 0,
+  revenueThisMonth: 0,
+  paidCountThisMonth: 0,
+};
+
 export async function getSuperAdminStats() {
   await requireSuperAdmin();
 
-  const now = new Date();
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+  try {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
 
-  const [trainersCount] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(trainers);
-  const [studentsCount] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(students);
-  const [paymentsCount] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(payments);
+    const [trainersCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(trainers);
+    const [studentsCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(students);
+    const [paymentsCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(payments);
 
-  const [revenueResult] = await db
-    .select({
-      total: sql<number>`COALESCE(SUM(${payments.amount}), 0)`,
-    })
-    .from(payments)
-    .where(
-      and(
-        eq(payments.status, "paid"),
-        gte(payments.paidAt, startOfMonth),
-        lte(payments.paidAt, endOfMonth)
-      )
-    );
+    const [revenueResult] = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(${payments.amount}), 0)`,
+      })
+      .from(payments)
+      .where(
+        and(
+          eq(payments.status, "paid"),
+          gte(payments.paidAt, startOfMonth),
+          lte(payments.paidAt, endOfMonth)
+        )
+      );
 
-  const [monthlyPaymentsCount] = await db
-    .select({ count: sql<number>`count(*)` })
-    .from(payments)
-    .where(
-      and(
-        eq(payments.status, "paid"),
-        gte(payments.paidAt, startOfMonth),
-        lte(payments.paidAt, endOfMonth)
-      )
-    );
+    const [monthlyPaymentsCount] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(payments)
+      .where(
+        and(
+          eq(payments.status, "paid"),
+          gte(payments.paidAt, startOfMonth),
+          lte(payments.paidAt, endOfMonth)
+        )
+      );
 
-  return {
-    totalTrainers: Number(trainersCount?.count ?? 0),
-    totalStudents: Number(studentsCount?.count ?? 0),
-    totalPayments: Number(paymentsCount?.count ?? 0),
-    revenueThisMonth: Number(revenueResult?.total ?? 0),
-    paidCountThisMonth: Number(monthlyPaymentsCount?.count ?? 0),
-  };
+    return {
+      totalTrainers: Number(trainersCount?.count ?? 0),
+      totalStudents: Number(studentsCount?.count ?? 0),
+      totalPayments: Number(paymentsCount?.count ?? 0),
+      revenueThisMonth: Number(revenueResult?.total ?? 0),
+      paidCountThisMonth: Number(monthlyPaymentsCount?.count ?? 0),
+    };
+  } catch (err) {
+    console.error("[getSuperAdminStats] DB error:", err instanceof Error ? err.message : String(err));
+    return { ...DEFAULT_SUPERADMIN_STATS };
+  }
 }
+
+type ChartsRecentPayment = {
+  id: string;
+  amount: number;
+  status: string | null;
+  paidAt: Date | null;
+  dueDate: Date;
+  createdAt: Date | null;
+  trainer: { id: string; name: string } | null;
+  student: { id: string; name: string } | null;
+};
+
+const DEFAULT_CHARTS_DATA = {
+  revenueByMonth: [] as { month: string; receita: number; receitaPlataforma: number }[],
+  paymentsByStatus: [] as { status: string; count: number }[],
+  topTrainersByRevenue: [] as { name: string; receita: number }[],
+  signupsByMonth: [] as { month: string; personais: number; alunos: number }[],
+  platformChargesSummary: {
+    pendingCount: 0,
+    pendingAmount: 0,
+    paidCount: 0,
+    paidAmount: 0,
+  },
+  recentPayments: [] as ChartsRecentPayment[],
+};
 
 /** Dados para gráficos e relatórios do dashboard Super Admin */
 export async function getSuperAdminDashboardCharts() {
   await requireSuperAdmin();
 
+  try {
   const now = new Date();
   const monthsBack = 12;
   const monthLabels: string[] = [];
@@ -231,6 +270,10 @@ export async function getSuperAdminDashboardCharts() {
     platformChargesSummary,
     recentPayments,
   };
+  } catch (err) {
+    console.error("[getSuperAdminDashboardCharts] DB error:", err instanceof Error ? err.message : String(err));
+    return { ...DEFAULT_CHARTS_DATA };
+  }
 }
 
 export async function getSuperAdminTrainers() {
