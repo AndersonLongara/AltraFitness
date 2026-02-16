@@ -224,7 +224,7 @@ export async function createStudentWithInvite(data: {
 
     revalidatePath("/dashboard/students");
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.altrafitness.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://altra-fitness-hub.vercel.app';
     const inviteLink = `${baseUrl}/join/${inviteToken}`;
 
     return { student: newStudent, inviteLink, inviteToken };
