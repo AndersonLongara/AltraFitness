@@ -24,7 +24,8 @@ export default async function DashboardPage() {
     let configTutorial = defaultConfigTutorial;
     let studentsCount = 0;
     let newStudentsCount = 0;
-    let expiringStudents: Awaited<ReturnType<typeof db.query.students.findMany>> = [];
+    type StudentWithPlan = Awaited<ReturnType<typeof db.query.students.findMany>>[number] & { plan?: { name: string | null } | null };
+    let expiringStudents: StudentWithPlan[] = [];
     let monthlyRevenue = 0;
     let chartData: { name: string; value: number }[] = [];
 
