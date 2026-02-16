@@ -332,7 +332,7 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                                 </div>
                                 <h2 className="text-2xl font-black text-white mb-3">Sou Personal Trainer</h2>
                                 <p className="text-zinc-400 text-sm font-medium leading-relaxed mb-6">
-                                    Gerencie seus alunos, crie treinos e dietas, acompanhe evolução e administre seu neg├│cio fitness
+                                    Gerencie seus alunos, crie treinos e dietas, acompanhe evolução e administre seu negócio fitness
                                 </p>
                                 <ul className="space-y-2">
                                     <li className="flex items-center text-xs text-zinc-500 font-semibold">
@@ -486,7 +486,7 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                                     </li>
                                     <li className="flex items-center text-sm text-zinc-300">
                                         <span className="w-1.5 h-1.5 bg-white rounded-full mr-3" />
-                                        Gest├úo de treinos e nutrição
+                                        Gestão de treinos e nutrição
                                     </li>
                                     <li className="flex items-center text-sm text-zinc-500 line-through">
                                         <span className="w-1.5 h-1.5 bg-zinc-700 rounded-full mr-3" />
@@ -934,7 +934,7 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                                         Nenhum plano adicionado ainda.
                                     </p>
                                     <p className="text-zinc-700 text-xs mt-1">
-                                        Voc├¬ pode pular e configurar depois na aba Financeiro.
+                                        Você pode pular e configurar depois na aba Financeiro.
                                     </p>
                                 </div>
                             )}
@@ -982,7 +982,7 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                                     Código do Time
                                 </p>
                                 <p className="text-zinc-500 text-sm font-medium mb-4">
-                                    Peça o c├│digo ao seu Personal Trainer para entrar no time dele.
+                                    Peça o código ao seu Personal Trainer para entrar no time dele.
                                 </p>
                                 <div className="relative">
                                     <input
