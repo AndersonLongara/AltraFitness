@@ -8,9 +8,10 @@ import { format } from "date-fns";
 
 interface StudentsPageContentProps {
     studentsList: any[];
+    plansList?: any[];
 }
 
-export default function StudentsPageContent({ studentsList }: StudentsPageContentProps) {
+export default function StudentsPageContent({ studentsList, plansList = [] }: StudentsPageContentProps) {
     const [searchTerm, setSearchTerm] = useState("");
 
     const filteredStudents = studentsList.filter(s =>
@@ -62,7 +63,7 @@ export default function StudentsPageContent({ studentsList }: StudentsPageConten
                     </p>
                 </div>
 
-                <StudentFormTrigger />
+                <StudentFormTrigger plans={plansList} />
             </header>
 
             {/* Filters & Search */}
@@ -151,7 +152,7 @@ export default function StudentsPageContent({ studentsList }: StudentsPageConten
                                     <CaretRight size={16} weight="bold" />
                                 </Link>
                                 <div className="w-12">
-                                    <StudentFormTrigger student={student} mode="edit" />
+                                    <StudentFormTrigger student={student} mode="edit" plans={plansList} />
                                 </div>
                             </div>
                         </div>

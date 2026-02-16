@@ -1,13 +1,22 @@
 "use client";
 
-import { X, FloppyDisk } from "@phosphor-icons/react";
+import { X, FloppyDisk, CheckCircle, Calendar } from "@phosphor-icons/react";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+
+interface Plan {
+    id: string;
+    name: string;
+    price: number;
+    durationMonths: number;
+    active?: boolean;
+}
 
 interface StudentFormProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: any) => void;
+    plans?: Plan[];
     initialData?: {
         id?: string;
         name: string;
@@ -15,6 +24,7 @@ interface StudentFormProps {
         cpf: string;
         phone: string;
         planEnd: string;
+        planId?: string;
         birthDate?: string | Date;
         gender?: 'male' | 'female';
         height?: number;
@@ -22,18 +32,22 @@ interface StudentFormProps {
     } | null;
 }
 
-export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: StudentFormProps) {
+export default function StudentForm({ isOpen, onClose, onSubmit, plans = [], initialData }: StudentFormProps) {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [cpf, setCpf] = useState("");
     const [phone, setPhone] = useState("");
     const [planEnd, setPlanEnd] = useState("");
+    const [selectedPlanId, setSelectedPlanId] = useState("");
+    const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
 
     // New Fields
     const [birthDate, setBirthDate] = useState("");
     const [gender, setGender] = useState<'male' | 'female' | "">("");
     const [height, setHeight] = useState(""); // cm
     const [weight, setWeight] = useState(""); // kg
+
+    const activePlans = plans.filter(p => p.active !== false);
 
     useEffect(() => {
         if (isOpen && initialData) {
@@ -42,15 +56,13 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
             setCpf(initialData.cpf || "");
             setPhone(initialData.phone || "");
             setPlanEnd(initialData.planEnd ? format(new Date(initialData.planEnd), 'yyyy-MM-dd') : "");
+            setSelectedPlanId(initialData.planId || "");
 
             // Populate new fields
             setBirthDate(initialData.birthDate ? format(new Date(initialData.birthDate), 'yyyy-MM-dd') : "");
             setGender(initialData.gender || "");
             setHeight(initialData.height ? initialData.height.toString() : "");
-            setWeight(initialData.weight ? (initialData.weight / 1000).toString() : ""); // Convert value if stored in grams? Actually schema says grams.
-            // Wait, if initialData comes from DB, weight is in grams. 
-            // But if it comes from the table view, it might be RAW from DB.
-            // Let's assume raw from DB (grams) -> convert to kg for display.
+            setWeight(initialData.weight ? (initialData.weight / 1000).toString() : "");
 
         } else if (isOpen && !initialData) {
             // Reset
@@ -59,6 +71,8 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
             setCpf("");
             setPhone("");
             setPlanEnd("");
+            setSelectedPlanId("");
+            setStartDate(new Date().toISOString().split('T')[0]);
             setBirthDate("");
             setGender("");
             setHeight("");
@@ -90,6 +104,8 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
             email,
             cpf: cpf.replace(/\D/g, ""), // Save only numbers
             phone,
+            planId: selectedPlanId || undefined,
+            startDate: startDate || undefined,
             planEnd: planEnd ? new Date(planEnd) : undefined,
             // New Fields
             birthDate: birthDate ? new Date(birthDate) : undefined,
@@ -101,6 +117,8 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
         onSubmit(submissionData);
         onClose();
     };
+
+    const selectedPlan = activePlans.find(p => p.id === selectedPlanId);
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 dark:bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
@@ -226,15 +244,97 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
                     {/* Plan Info Section */}
                     <div className="space-y-4 pt-2">
                         <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest border-b border-emerald-100 dark:border-emerald-500/30 pb-2">Plano</h4>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Vencimento do Plano</label>
-                            <input
-                                type="date"
-                                className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 text-slate-500 dark:text-slate-300 border border-transparent dark:border-white/10"
-                                value={planEnd}
-                                onChange={e => setPlanEnd(e.target.value)}
-                            />
-                        </div>
+                        
+                        {/* Plan Selection */}
+                        {!initialData && activePlans.length > 0 && (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Plano Contratado</label>
+                                <div className="grid gap-2 max-h-[200px] overflow-y-auto pr-1">
+                                    {activePlans.map(plan => (
+                                        <label
+                                            key={plan.id}
+                                            className={`p-4 rounded-xl border cursor-pointer transition-all flex justify-between items-center group
+                                                ${selectedPlanId === plan.id
+                                                    ? 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/50 ring-1 ring-emerald-400 dark:ring-emerald-500'
+                                                    : 'bg-slate-50 dark:bg-white/5 border-transparent hover:border-slate-200 dark:hover:border-white/20'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="radio"
+                                                    name="plan"
+                                                    value={plan.id}
+                                                    checked={selectedPlanId === plan.id}
+                                                    onChange={(e) => setSelectedPlanId(e.target.value)}
+                                                    className="hidden"
+                                                />
+                                                <div>
+                                                    <div className="font-bold text-graphite-dark dark:text-white">{plan.name}</div>
+                                                    <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                                        {plan.durationMonths} {plan.durationMonths === 1 ? 'mês' : 'meses'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="font-bold text-emerald-600 dark:text-emerald-400">
+                                                    {(plan.price / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                </div>
+                                                {selectedPlanId === plan.id && (
+                                                    <CheckCircle size={20} weight="fill" className="text-emerald-500" />
+                                                )}
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {!initialData && activePlans.length === 0 && (
+                            <div className="p-4 bg-amber-50 dark:bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400 text-sm font-medium border border-amber-100 dark:border-amber-500/30">
+                                Nenhum plano cadastrado. Crie planos na aba <strong>Financeiro</strong>.
+                            </div>
+                        )}
+
+                        {/* Start Date (when plan selected) */}
+                        {!initialData && selectedPlanId && (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Início da Vigência</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
+                                        <Calendar size={20} weight="duotone" />
+                                    </span>
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={(e) => setStartDate(e.target.value)}
+                                        className="w-full p-4 pl-12 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 border border-transparent dark:border-white/10"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Summary */}
+                        {!initialData && selectedPlan && (
+                            <div className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl flex justify-between items-center border border-slate-100 dark:border-white/10">
+                                <div className="text-xs font-bold text-slate-400 uppercase">Valor do Plano</div>
+                                <div className="text-xl font-extrabold text-graphite-dark dark:text-white">
+                                    {(selectedPlan.price / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Legacy date field for editing */}
+                        {initialData && (
+                            <div>
+                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Vencimento do Plano</label>
+                                <input
+                                    type="date"
+                                    className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 text-slate-500 dark:text-slate-300 border border-transparent dark:border-white/10"
+                                    value={planEnd}
+                                    onChange={e => setPlanEnd(e.target.value)}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div className="pt-4 flex justify-end gap-4 border-t border-slate-100 dark:border-white/10 mt-6">

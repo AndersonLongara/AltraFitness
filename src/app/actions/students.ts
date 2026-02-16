@@ -37,6 +37,7 @@ export async function createStudent(data: {
     phone?: string;
     planId?: string;
     planEnd?: Date;
+    startDate?: string;
     birthDate?: Date;
     gender?: 'male' | 'female';
     height?: number; // cm
@@ -52,6 +53,20 @@ export async function createStudent(data: {
         if (existing) throw new Error("Já existe um aluno cadastrado com este CPF.");
     }
 
+    // If a planId is provided, calculate planEnd from the plan's durationMonths
+    let calculatedPlanEnd = data.planEnd;
+    let plan: any = null;
+    if (data.planId) {
+        plan = await db.query.plans.findFirst({
+            where: eq(plans.id, data.planId),
+        });
+        if (plan && !calculatedPlanEnd) {
+            const startDate = data.startDate ? new Date(data.startDate) : new Date();
+            calculatedPlanEnd = new Date(startDate);
+            calculatedPlanEnd.setMonth(calculatedPlanEnd.getMonth() + plan.durationMonths);
+        }
+    }
+
     const [newStudent] = await db.insert(students).values({
         trainerId: trainer.id,
         name: data.name,
@@ -59,12 +74,26 @@ export async function createStudent(data: {
         cpf: data.cpf,
         phone: data.phone,
         planId: data.planId,
-        planEnd: data.planEnd,
+        planEnd: calculatedPlanEnd,
         birthDate: data.birthDate,
         gender: data.gender,
         height: data.height,
         weight: data.weight,
+        active: true,
     }).returning();
+
+    // Create initial payment if plan was selected
+    if (data.planId && plan) {
+        await db.insert(payments).values({
+            trainerId: trainer.id,
+            studentId: newStudent.id,
+            planId: data.planId,
+            amount: plan.price,
+            dueDate: data.startDate ? new Date(data.startDate) : new Date(),
+            status: 'pending',
+            notes: `Mensalidade inicial - ${plan.name}`,
+        });
+    }
 
     revalidatePath("/dashboard/students");
     return newStudent;
@@ -149,6 +178,56 @@ export async function acceptInvite(token: string, phone: string) {
         .where(eq(students.id, student.id));
 
     return { success: true };
+}
+
+export async function createStudentWithInvite(data: {
+    name: string;
+    planId: string;
+    startDate: string;
+    email?: string;
+    phone?: string;
+}) {
+    const trainer = await getCurrentTrainer();
+
+    const plan = await db.query.plans.findFirst({
+        where: eq(plans.id, data.planId),
+    });
+    if (!plan) throw new Error("Plano não encontrado.");
+
+    const endDate = new Date(data.startDate);
+    endDate.setMonth(endDate.getMonth() + plan.durationMonths);
+
+    const inviteToken = crypto.randomUUID();
+
+    const [newStudent] = await db.insert(students).values({
+        trainerId: trainer.id,
+        name: data.name,
+        email: data.email || undefined,
+        phone: data.phone || undefined,
+        planId: data.planId,
+        planEnd: endDate,
+        inviteToken,
+        active: false,
+        accessTypes: ['workout', 'nutrition'],
+    }).returning();
+
+    // Create initial pending payment
+    await db.insert(payments).values({
+        trainerId: trainer.id,
+        studentId: newStudent.id,
+        planId: data.planId,
+        amount: plan.price,
+        dueDate: new Date(data.startDate),
+        status: 'pending',
+        notes: `Mensalidade inicial - ${plan.name}`,
+    });
+
+    revalidatePath("/dashboard/students");
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.altrafitness.com';
+    const inviteLink = `${baseUrl}/join/${inviteToken}`;
+
+    return { student: newStudent, inviteLink, inviteToken };
 }
 
 export async function updateStudentPlan(studentId: string, planId: string, startDate: string) {
