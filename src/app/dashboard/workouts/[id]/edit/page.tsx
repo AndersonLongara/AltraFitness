@@ -6,7 +6,7 @@ import { students, exercises, workoutPlans } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { getExerciseCategories } from "@/lib/exercise-categories";
+import { getExerciseCategories } from "@/lib/exercise-categories.server";
 
 export const dynamic = 'force-dynamic';
 

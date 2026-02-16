@@ -5,7 +5,7 @@ import { db } from "@/db";
 import { students, exercises } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
-import { getExerciseCategories } from "@/lib/exercise-categories";
+import { getExerciseCategories } from "@/lib/exercise-categories.server";
 
 export const dynamic = 'force-dynamic';
 

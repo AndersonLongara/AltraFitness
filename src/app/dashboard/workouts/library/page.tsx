@@ -6,7 +6,7 @@ import { exercises } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
 import ExerciseLibraryList from "@/components/workouts/ExerciseLibraryList";
-import { getExerciseCategories, getFilterCategories } from "@/lib/exercise-categories";
+import { getExerciseCategories, getFilterCategories } from "@/lib/exercise-categories.server";
 
 export const dynamic = 'force-dynamic';
 

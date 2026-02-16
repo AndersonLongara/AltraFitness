@@ -1,17 +1,11 @@
 /**
- * Fonte única de verdade para categorias de grupos musculares de exercícios.
- * As categorias vivem no banco de dados (exercise_categories) e são lidas nas
- * páginas server-side, depois passadas como props aos componentes client.
+ * Constantes e utilitários client-safe para categorias de exercícios.
  * 
- * Os MUSCLE_GROUPS estáticos servem apenas como fallback caso a tabela
- * ainda não exista ou esteja vazia.
+ * Para funções que acessam o banco de dados, use:
+ *   import { getExerciseCategories, getFilterCategories } from '@/lib/exercise-categories.server'
  */
 
-import { db } from '@/db';
-import { exerciseCategories } from '@/db/schema';
-import { eq, asc } from 'drizzle-orm';
-
-/** Fallback estático — usado apenas quando o banco não tem dados */
+/** Fallback estático — usado quando o banco não tem dados ou em componentes client */
 export const MUSCLE_GROUPS_FALLBACK = [
     'Peito',
     'Costas',
@@ -26,46 +20,15 @@ export const MUSCLE_GROUPS_FALLBACK = [
     'Outros',
 ] as const;
 
-/** @deprecated Use getExerciseCategories() do banco. Mantido como re-export para não quebrar imports existentes */
+/** @deprecated Use getExerciseCategories() de exercise-categories.server.ts */
 export const MUSCLE_GROUPS = MUSCLE_GROUPS_FALLBACK;
 
 export type MuscleGroup = string;
 
-/** @deprecated Use getFilterCategories() do banco */
+/** @deprecated Use getFilterCategories() de exercise-categories.server.ts */
 export const FILTER_CATEGORIES = ['Todos', ...MUSCLE_GROUPS_FALLBACK] as const;
 
 export type FilterCategory = string;
-
-/**
- * Busca as categorias ativas do banco de dados, ordenadas por sort_order.
- * SERVER-ONLY — usar apenas em componentes server/pages/actions.
- */
-export async function getExerciseCategories(): Promise<string[]> {
-    try {
-        const rows = await db.select({
-            name: exerciseCategories.name,
-        })
-            .from(exerciseCategories)
-            .where(eq(exerciseCategories.active, true))
-            .orderBy(asc(exerciseCategories.sortOrder));
-
-        if (rows.length > 0) {
-            return rows.map(r => r.name);
-        }
-    } catch {
-        // Tabela pode não existir ainda — usa fallback
-    }
-    return [...MUSCLE_GROUPS_FALLBACK];
-}
-
-/**
- * Busca categorias para filtros (com "Todos" na frente).
- * SERVER-ONLY.
- */
-export async function getFilterCategories(): Promise<string[]> {
-    const cats = await getExerciseCategories();
-    return ['Todos', ...cats];
-}
 
 /**
  * Normaliza o nome do grupo muscular para encontrar a config visual.
