@@ -11,7 +11,13 @@ export default async function DashboardLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const { userId } = await auth();
+    let userId: string | null = null;
+    try {
+        const session = await auth();
+        userId = session?.userId ?? null;
+    } catch {
+        redirect("/sign-in");
+    }
     if (!userId) redirect("/sign-in");
 
     const role = await getRole();
@@ -21,7 +27,12 @@ export default async function DashboardLayout({
         redirect("/student");
     }
 
-    const salesAccess = await hasSalesAccess();
+    let salesAccess = false;
+    try {
+        salesAccess = await hasSalesAccess();
+    } catch {
+        // fallback para não derrubar o layout
+    }
 
     return (
         <SubscriptionNavProvider hasSalesAccess={salesAccess}>

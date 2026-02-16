@@ -72,28 +72,31 @@ export async function getRole(): Promise<UserRole | null> {
             return metadata.role;
         }
 
-        // Fallback: Database lookup para usuários sem metadata
+        // Fallback: Database lookup para usuários sem metadata (protegido para não derrubar o app se o DB falhar)
         if (!email) return null;
 
-        const student = await db.query.students.findFirst({
-            where: eq(students.email, email),
-            columns: { id: true },
-        });
-        if (student) return "student";
+        try {
+            const student = await db.query.students.findFirst({
+                where: eq(students.email, email),
+                columns: { id: true },
+            });
+            if (student) return "student";
 
-        const trainer = await db.query.trainers.findFirst({
-            where: eq(trainers.id, user.id),
-            columns: { id: true },
-        });
-        if (trainer) return "trainer";
+            const trainer = await db.query.trainers.findFirst({
+                where: eq(trainers.id, user.id),
+                columns: { id: true },
+            });
+            if (trainer) return "trainer";
+        } catch (dbErr) {
+            console.error("[getRole] DB lookup failed:", String(dbErr));
+        }
 
-        // Diagnóstico: se chegou aqui com e-mails, pode ser SUPERADMIN_EMAIL não definida no ambiente
         if (emails.length > 0) {
             console.warn("[getRole] No role. SUPERADMIN_EMAIL:", process.env.SUPERADMIN_EMAIL ? "definida" : "NAO DEFINIDA", "| emails count:", emails.length);
         }
         return null;
     } catch (error) {
-        console.error("[getRole] Error:", error);
+        console.error("[getRole] Error:", error instanceof Error ? error.message : String(error));
         return null;
     }
 }
@@ -212,20 +215,24 @@ export async function hasRole(role: UserRole): Promise<boolean> {
 }
 
 /**
- * Get role-specific redirect URL after sign-in
+ * Get role-specific redirect URL after sign-in. Nunca lança: em caso de erro retorna "/onboarding".
  */
 export async function getRoleRedirectUrl(): Promise<string> {
-    const role = await getRole();
-    
-    switch (role) {
-        case "trainer":
-            return "/dashboard";
-        case "student":
-            return "/student";
-        case "superadmin":
-            return "/superadmin";
-        default:
-            return "/onboarding"; // For users without role
+    try {
+        const role = await getRole();
+        switch (role) {
+            case "trainer":
+                return "/dashboard";
+            case "student":
+                return "/student";
+            case "superadmin":
+                return "/superadmin";
+            default:
+                return "/onboarding";
+        }
+    } catch (err) {
+        console.error("[getRoleRedirectUrl] Error:", err instanceof Error ? err.message : String(err));
+        return "/onboarding";
     }
 }
 

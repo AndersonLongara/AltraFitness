@@ -9,7 +9,13 @@ export default async function SuperAdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { userId } = await auth();
+  let userId: string | null = null;
+  try {
+    const session = await auth();
+    userId = session?.userId ?? null;
+  } catch {
+    redirect("/sign-in");
+  }
   if (!userId) redirect("/sign-in");
 
   const role = await getRole();
