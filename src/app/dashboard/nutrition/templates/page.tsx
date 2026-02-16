@@ -1,6 +1,6 @@
 
 import { Plus, MagnifyingGlass, Cookie, CaretRight, ArrowLeft } from "@phosphor-icons/react/dist/ssr";
-import LayoutSidebar from "@/components/layout/LayoutSidebar";
+import { LayoutSidebar } from "@/components/layout";
 import Link from "next/link";
 import { db } from "@/db";
 import { nutritionalPlans } from "@/db/schema";
