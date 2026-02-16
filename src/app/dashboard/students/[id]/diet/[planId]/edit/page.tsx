@@ -1,5 +1,5 @@
 import SmartMealBuilder from "@/components/trainer/diet/SmartMealBuilder";
-import Sidebar from "@/components/layout/Sidebar";
+import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import BackButton from "@/components/ui/BackButton";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
@@ -66,7 +66,7 @@ export default async function EditDietPage({ params }: PageProps) {
 
     return (
         <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
-            <Sidebar />
+            <LayoutSidebar />
             <div className="max-w-[1600px] mx-auto p-6 md:p-8">
                 <header className="flex items-center gap-4 mb-8">
                     <BackButton />

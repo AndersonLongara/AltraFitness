@@ -1,5 +1,5 @@
 import { Plus, Copy, CaretLeft } from "@phosphor-icons/react/dist/ssr";
-import Sidebar from "@/components/layout/Sidebar";
+import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import Link from "next/link";
 import { db } from "@/db";
 import { workoutPlans, students } from "@/db/schema";
@@ -35,18 +35,18 @@ export default async function WorkoutTemplatesPage() {
     }).from(students).where(eq(students.trainerId, userId)).orderBy(students.name);
 
     return (
-        <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
-            <Sidebar />
+        <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
+            <LayoutSidebar />
 
             <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
                         <BackButton href="/dashboard/workouts" />
                         <div>
-                            <h1 className="text-3xl font-extrabold text-graphite-dark tracking-tight">
+                            <h1 className="text-3xl font-extrabold text-graphite-dark dark:text-white tracking-tight">
                                 Modelos de Treino
                             </h1>
-                            <p className="text-slate-500 font-medium mt-1">
+                            <p className="text-slate-500 dark:text-slate-400 font-medium mt-1">
                                 Crie templates para agilizar suas prescrições.
                             </p>
                         </div>
@@ -54,7 +54,7 @@ export default async function WorkoutTemplatesPage() {
 
                     <Link
                         href="/dashboard/workouts/new"
-                        className="px-6 py-4 bg-amber-400 text-graphite-dark font-bold rounded-2xl hover:brightness-110 transition-colors flex items-center gap-2 shadow-lg shadow-amber-100"
+                        className="px-6 py-4 bg-amber-400 dark:bg-amber-500 dark:text-white text-graphite-dark font-bold rounded-2xl hover:brightness-110 dark:hover:bg-amber-600 transition-colors flex items-center gap-2 shadow-lg shadow-amber-100 dark:shadow-none"
                     >
                         <Plus size={20} weight="bold" />
                         Novo Modelo

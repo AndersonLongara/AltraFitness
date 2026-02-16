@@ -61,22 +61,22 @@ export default function MacroDashboard({ student, targets, current }: MacroDashb
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 
             {/* Card 1: Student Bio */}
-            <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 shadow-sm border border-slate-100 dark:border-white/10 flex flex-col justify-between relative overflow-hidden group hover:shadow-md transition-all">
                 <div className="flex items-start justify-between relative z-10">
                     <div>
                         <div className="text-xs font-bold text-slate-400 uppercase flex items-center gap-2 mb-2">
-                            <User size={16} weight="duotone" className="text-slate-400" />
+                            <User size={16} weight="duotone" className="text-slate-400 dark:text-slate-500" />
                             Sobre o aluno
                         </div>
                         {student ? (
                             <>
-                                <h3 className="text-lg font-bold text-slate-800 line-clamp-1" title={student.name}>{student.name}</h3>
-                                <div className="text-sm font-medium text-slate-500 mt-1">
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-white line-clamp-1" title={student.name}>{student.name}</h3>
+                                <div className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
                                     {student.age ? `${student.age} anos` : '-'} • {student.weight ? `${student.weight}kg` : '-'}
                                 </div>
                             </>
                         ) : (
-                            <div className="text-sm text-slate-400 italic mt-2">Dados do aluno não disponíveis</div>
+                            <div className="text-sm text-slate-400 dark:text-slate-500 italic mt-2">Dados do aluno não disponíveis</div>
                         )}
                     </div>
                     {student?.photoUrl ? (
@@ -105,22 +105,22 @@ export default function MacroDashboard({ student, targets, current }: MacroDashb
             </div>
 
             {/* Card 2: Goal Progress */}
-            <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 flex flex-col justify-center gap-6 relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 shadow-sm border border-slate-100 dark:border-white/10 flex flex-col justify-center gap-6 relative overflow-hidden group hover:shadow-md transition-all">
                 <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
                     <Target size={100} className="text-slate-900" />
                 </div>
 
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase mb-[-10px]">
-                    <Target size={16} weight="duotone" className="text-rose-500" />
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase mb-[-10px]">
+                    <Target size={16} weight="duotone" className="text-rose-500 dark:text-rose-400" />
                     Progresso das metas
                 </div>
 
                 {/* Calories Bar */}
                 <div>
-                    <div className="flex justify-between text-sm font-bold text-slate-600 mb-1">
+                    <div className="flex justify-between text-sm font-bold text-slate-600 dark:text-slate-200 mb-1">
                         <span>Calorias</span>
-                        <span className={current.kcal > targets.kcal ? "text-rose-500" : "text-emerald-500"}>
-                            {current.kcal} / {targets.kcal} <span className="text-[10px] text-slate-400">kcal</span>
+                        <span className={current.kcal > targets.kcal ? "text-rose-500 dark:text-rose-400" : "text-emerald-500 dark:text-emerald-400"}>
+                            {current.kcal} / {targets.kcal} <span className="text-[10px] text-slate-400 dark:text-slate-500">kcal</span>
                         </span>
                     </div>
                     <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -133,9 +133,9 @@ export default function MacroDashboard({ student, targets, current }: MacroDashb
 
                 {/* Protein Bar */}
                 <div>
-                    <div className="flex justify-between text-sm font-bold text-slate-600 mb-1">
+                    <div className="flex justify-between text-sm font-bold text-slate-600 dark:text-slate-200 mb-1">
                         <span>Proteínas</span>
-                        <span className={current.protein > targets.protein ? "text-emerald-600" : "text-slate-400"}>
+                        <span className={current.protein > targets.protein ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400 dark:text-slate-500"}>
                             {current.protein} / {targets.protein} <span className="text-[10px] text-slate-400">g</span>
                         </span>
                     </div>
@@ -149,10 +149,10 @@ export default function MacroDashboard({ student, targets, current }: MacroDashb
             </div>
 
             {/* Card 3: Nutrient List */}
-            <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 shadow-sm border border-slate-100 dark:border-white/10 flex flex-col relative overflow-hidden group hover:shadow-md transition-all">
                 <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase">
-                        <PieChartIcon size={16} weight="duotone" className="text-orange-500" />
+                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">
+                        <PieChartIcon size={16} weight="duotone" className="text-orange-500 dark:text-orange-400" />
                         Análise de nutrientes
                     </div>
                 </div>
@@ -161,38 +161,38 @@ export default function MacroDashboard({ student, targets, current }: MacroDashb
                     <div className="flex justify-between items-center text-sm">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                            <span className="font-bold text-slate-600">Proteínas</span>
+                            <span className="font-bold text-slate-600 dark:text-slate-200">Proteínas</span>
                         </div>
-                        <span className="font-bold text-slate-800">{current.protein} g</span>
+                        <span className="font-bold text-slate-800 dark:text-white">{current.protein} g</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-blue-500" />
-                            <span className="font-bold text-slate-600">Carboidratos</span>
+                            <span className="font-bold text-slate-600 dark:text-slate-200">Carboidratos</span>
                         </div>
-                        <span className="font-bold text-slate-800">{current.carbs} g</span>
+                        <span className="font-bold text-slate-800 dark:text-white">{current.carbs} g</span>
                     </div>
                     <div className="flex justify-between items-center text-sm">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-orange-500" />
-                            <span className="font-bold text-slate-600">Gorduras</span>
+                            <span className="font-bold text-slate-600 dark:text-slate-200">Gorduras</span>
                         </div>
-                        <span className="font-bold text-slate-800">{current.fat} g</span>
+                        <span className="font-bold text-slate-800 dark:text-white">{current.fat} g</span>
                     </div>
-                    <div className="flex justify-between items-center text-sm pt-2 border-t border-slate-50">
+                    <div className="flex justify-between items-center text-sm pt-2 border-t border-slate-50 dark:border-white/10">
                         <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-slate-300" />
-                            <span className="font-medium text-slate-500">Fibras</span>
+                            <div className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-500" />
+                            <span className="font-medium text-slate-500 dark:text-slate-400">Fibras</span>
                         </div>
-                        <span className="font-medium text-slate-500">{current.fiber || 0} g</span>
+                        <span className="font-medium text-slate-500 dark:text-slate-400">{current.fiber || 0} g</span>
                     </div>
                 </div>
             </div>
 
             {/* Card 4: Donut Chart */}
-            <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
-                <div className="absolute top-4 left-6 text-xs font-bold text-slate-400 uppercase flex items-center gap-2">
-                    <PieChartIcon size={16} weight="duotone" className="text-slate-400" />
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 shadow-sm border border-slate-100 dark:border-white/10 flex items-center justify-between relative overflow-hidden group hover:shadow-md transition-all">
+                <div className="absolute top-4 left-6 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase flex items-center gap-2">
+                    <PieChartIcon size={16} weight="duotone" className="text-slate-400 dark:text-slate-500" />
                     Distribuição
                 </div>
 
@@ -228,8 +228,8 @@ export default function MacroDashboard({ student, targets, current }: MacroDashb
 
                 {/* Center Label (Total Kcal) */}
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 mt-2 text-center pointer-events-none">
-                    <span className="block text-xs font-bold text-slate-400">Total</span>
-                    <span className="block text-lg font-black text-slate-800">{current.kcal}</span>
+                    <span className="block text-xs font-bold text-slate-400 dark:text-slate-500">Total</span>
+                    <span className="block text-lg font-black text-slate-800 dark:text-white">{current.kcal}</span>
                 </div>
             </div>
 

@@ -1,8 +1,8 @@
 "use server";
 
 import { db } from "@/db";
-import { trainers, students, payments, plans } from "@/db/schema";
-import { eq, and, desc, count, sql } from "drizzle-orm";
+import { trainers, students, payments, plans, platformPlans } from "@/db/schema";
+import { eq, and, desc, count, sql, asc } from "drizzle-orm";
 import { getCurrentTrainer } from "@/lib/auth-helpers";
 import { revalidatePath } from "next/cache";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
@@ -23,15 +23,17 @@ export interface TrainerProfile {
     trialEndsAt?: Date | null;
     teamCode?: string | null;
     createdAt: Date | null;
+    hasAsaasKey?: boolean;
 }
 
 export interface SubscriptionInfo {
-    plan: "free_5" | "free_trial" | "monthly" | "annual";
+    plan: string; // slug do plano (free, free_5, pro-monthly, pro-yearly, etc.) — reflete trainers.subscription_plan
     status: string;
     displayName: string;
     price: string;
     features: string[];
     trialEndsAt?: Date | null;
+    pricePerStudentCents?: number | null;
     limits: {
         maxStudents: number | null; // null = unlimited
         hasAI: boolean;
@@ -46,6 +48,22 @@ export interface UsageStats {
     totalPayments: number;
     revenueThisMonth: number;
     memberSince: Date | null;
+}
+
+/** Planos da plataforma para exibir na tela de configurações (troca de plano). */
+export interface PlatformPlanForSettings {
+    id: string;
+    slug: string;
+    name: string;
+    priceCents: number;
+    durationMonths: number;
+    maxStudents: number | null;
+    pricePerStudentCents: number | null;
+    trialDays: number | null;
+    features: string[];
+    hasAi: boolean;
+    hasPriority: boolean;
+    hasSalesPipeline: boolean;
 }
 
 // ─── Plan Definitions ───────────────────────────────────────────────
@@ -107,6 +125,27 @@ const PLAN_DETAILS: Record<string, Omit<SubscriptionInfo, "plan" | "status" | "t
         ],
         limits: { maxStudents: null, hasAI: true, hasPriority: true },
     },
+    "pro-monthly": {
+        displayName: "Pro Mensal",
+        price: "R$ 99,90/mês",
+        features: [
+            "Alunos Ilimitados",
+            "IA Manager Completo",
+            "Criação de treinos com IA",
+            "Relatórios avançados",
+        ],
+        limits: { maxStudents: null, hasAI: true, hasPriority: false },
+    },
+    "pro-yearly": {
+        displayName: "Pro Anual",
+        price: "R$ 851,15/ano",
+        features: [
+            "Todos recursos do Pro Mensal",
+            "Prioridade no Suporte",
+            "Economia no ano",
+        ],
+        limits: { maxStudents: null, hasAI: true, hasPriority: true },
+    },
 };
 
 // ─── Fetch Trainer Profile ──────────────────────────────────────────
@@ -139,6 +178,7 @@ export async function getTrainerSettings(): Promise<TrainerProfile> {
         trialEndsAt: trainerRecord?.trialEndsAt || null,
         teamCode,
         createdAt: trainerRecord?.createdAt || null,
+        hasAsaasKey: !!(trainerRecord && "asaasApiKey" in trainerRecord && (trainerRecord as { asaasApiKey?: string | null }).asaasApiKey),
     };
 }
 
@@ -168,21 +208,70 @@ async function generateTeamCodeForTrainer(trainerId: string): Promise<string> {
 }
 
 // ─── Fetch Subscription Details ─────────────────────────────────────
+/** Retorna as informações da assinatura do personal: reflete o plano salvo no banco (trainers.subscription_plan).
+ * Se o slug existir em platform_plans, usa nome, preço e features do banco; senão usa PLAN_DETAILS (fallback). */
 export async function getSubscriptionInfo(): Promise<SubscriptionInfo> {
     const trainer = await getCurrentTrainer();
 
     const trainerRecord = await db.query.trainers.findFirst({
         where: eq(trainers.id, trainer.id),
+        columns: { subscriptionPlan: true, subscriptionStatus: true, trialEndsAt: true },
     });
 
-    const plan = (trainerRecord?.subscriptionPlan || "free_5") as "free_5" | "free_trial" | "monthly" | "annual";
+    const planSlug = trainerRecord?.subscriptionPlan || "free";
     const status = trainerRecord?.subscriptionStatus || "active";
-    const details = PLAN_DETAILS[plan] || PLAN_DETAILS.free_5;
+    const trialEndsAt = trainerRecord?.trialEndsAt || null;
 
+    // Preferir dados do platform_plans (plano escolhido no banco)
+    const platformPlan = await db.query.platformPlans.findFirst({
+        where: eq(platformPlans.slug, planSlug),
+        columns: {
+            name: true,
+            priceCents: true,
+            durationMonths: true,
+            maxStudents: true,
+            pricePerStudentCents: true,
+            trialDays: true,
+            features: true,
+            hasAi: true,
+            hasPriority: true,
+        },
+    });
+
+    if (platformPlan) {
+        const priceCents = platformPlan.priceCents ?? 0;
+        const durationMonths = platformPlan.durationMonths ?? 1;
+        const trialDays = platformPlan.trialDays ?? 0;
+        let priceStr: string;
+        if (priceCents === 0 && trialDays > 0) priceStr = `R$ 0 (${trialDays} dias grátis)`;
+        else if (priceCents === 0) priceStr = "R$ 0/mês";
+        else if (durationMonths >= 12) priceStr = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(priceCents / 100) + "/ano";
+        else priceStr = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(priceCents / 100) + "/mês";
+
+        const featuresList = Array.isArray(platformPlan.features) ? platformPlan.features : [];
+
+        return {
+            plan: planSlug,
+            status,
+            trialEndsAt,
+            displayName: platformPlan.name,
+            price: priceStr,
+            features: featuresList.length > 0 ? featuresList : ["Recursos do plano"],
+            pricePerStudentCents: platformPlan.pricePerStudentCents ?? null,
+            limits: {
+                maxStudents: platformPlan.maxStudents ?? null,
+                hasAI: !!platformPlan.hasAi,
+                hasPriority: !!platformPlan.hasPriority,
+            },
+        };
+    }
+
+    // Fallback: slugs legados (free_5, free_trial, monthly, annual, free, pro-monthly, pro-yearly)
+    const details = PLAN_DETAILS[planSlug] ?? PLAN_DETAILS.free_5;
     return {
-        plan,
+        plan: planSlug,
         status,
-        trialEndsAt: trainerRecord?.trialEndsAt || null,
+        trialEndsAt,
         ...details,
     };
 }
@@ -247,6 +336,82 @@ export async function getUsageStats(): Promise<UsageStats> {
     };
 }
 
+/** Status para o tutorial de configuração (Asaas, planos, alunos). */
+export interface ConfigTutorialStatus {
+    hasAsaasKey: boolean;
+    plansCount: number;
+    studentsCount: number;
+}
+
+export async function getConfigTutorialStatus(): Promise<ConfigTutorialStatus> {
+    const trainer = await getCurrentTrainer();
+    const [trainerRecord, plansCount, studentsCount] = await Promise.all([
+        db.query.trainers.findFirst({
+            where: eq(trainers.id, trainer.id),
+            columns: { asaasApiKey: true },
+        }),
+        db.$count(plans, eq(plans.trainerId, trainer.id)),
+        db.$count(students, eq(students.trainerId, trainer.id)),
+    ]);
+    return {
+        hasAsaasKey: !!(trainerRecord?.asaasApiKey),
+        plansCount,
+        studentsCount,
+    };
+}
+
+/** Retorna se o personal tem acesso ao pipeline de vendas (conforme plano da plataforma). */
+export async function hasSalesAccess(): Promise<boolean> {
+    const trainer = await getCurrentTrainer();
+    const trainerRecord = await db.query.trainers.findFirst({
+        where: eq(trainers.id, trainer.id),
+        columns: { subscriptionPlan: true },
+    });
+    const planSlug = trainerRecord?.subscriptionPlan || "free_5";
+    const platformPlan = await db.query.platformPlans.findFirst({
+        where: eq(platformPlans.slug, planSlug),
+        columns: { hasSalesPipeline: true },
+    });
+    return !!platformPlan?.hasSalesPipeline;
+}
+
+/** Planos ativos da plataforma para a página de configurações (troca de plano). */
+export async function getPlatformPlansForSettings(): Promise<PlatformPlanForSettings[]> {
+    const rows = await db
+        .select({
+            id: platformPlans.id,
+            slug: platformPlans.slug,
+            name: platformPlans.name,
+            priceCents: platformPlans.priceCents,
+            durationMonths: platformPlans.durationMonths,
+            maxStudents: platformPlans.maxStudents,
+            pricePerStudentCents: platformPlans.pricePerStudentCents,
+            trialDays: platformPlans.trialDays,
+            features: platformPlans.features,
+            hasAi: platformPlans.hasAi,
+            hasPriority: platformPlans.hasPriority,
+            hasSalesPipeline: platformPlans.hasSalesPipeline,
+        })
+        .from(platformPlans)
+        .where(eq(platformPlans.active, true))
+        .orderBy(asc(platformPlans.sortOrder));
+
+    return rows.map((r) => ({
+        id: r.id,
+        slug: r.slug,
+        name: r.name,
+        priceCents: r.priceCents,
+        durationMonths: r.durationMonths,
+        maxStudents: r.maxStudents ?? null,
+        pricePerStudentCents: r.pricePerStudentCents ?? null,
+        trialDays: r.trialDays ?? null,
+        features: (r.features as string[]) ?? [],
+        hasAi: r.hasAi ?? false,
+        hasPriority: r.hasPriority ?? false,
+        hasSalesPipeline: r.hasSalesPipeline ?? false,
+    }));
+}
+
 // ─── Update Trainer Profile ─────────────────────────────────────────
 export async function updateTrainerProfile(data: { name: string }) {
     const trainer = await getCurrentTrainer();
@@ -272,13 +437,57 @@ export async function updateTrainerProfile(data: { name: string }) {
     return { success: true };
 }
 
+/** Atualiza o tema do personal (light | dark | system) e persiste no DB. */
+export async function updateTheme(theme: "light" | "dark" | "system") {
+    const trainer = await getCurrentTrainer();
+    await db
+        .update(trainers)
+        .set({ theme, updatedAt: new Date() })
+        .where(eq(trainers.id, trainer.id));
+    revalidatePath("/dashboard/settings");
+}
+
+/** Retorna o tema salvo no DB para sincronizar cookie/contexto (evita flash). */
+export async function syncThemeCookie(): Promise<"light" | "dark" | "system"> {
+    const trainer = await getCurrentTrainer();
+    const row = await db.query.trainers.findFirst({
+        where: eq(trainers.id, trainer.id),
+        columns: { theme: true },
+    });
+    const t = row?.theme;
+    return t === "light" || t === "dark" || t === "system" ? t : "system";
+}
+
+/** Atualiza a chave de API Asaas do personal (opcional para cobranças PIX/Boleto/Cartão). */
+export async function updateAsaasApiKey(apiKey: string | null) {
+    const trainer = await getCurrentTrainer();
+    await db
+        .update(trainers)
+        .set({
+            asaasApiKey: apiKey,
+            updatedAt: new Date(),
+        })
+        .where(eq(trainers.id, trainer.id));
+    revalidatePath("/dashboard/settings");
+}
+
 // ─── Change Plan ────────────────────────────────────────────────────
-export async function changeSubscriptionPlan(newPlan: "free_5" | "free_trial" | "monthly" | "annual") {
+export async function changeSubscriptionPlan(newPlan: string) {
     const trainer = await getCurrentTrainer();
 
-    const trialEndsAt = newPlan === "free_trial"
-        ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-        : null;
+    // Se for slug de plano com trial (ex.: free_trial ou slug com trial_days), definir trialEndsAt
+    let trialEndsAt: Date | null = null;
+    if (newPlan === "free_trial") {
+        trialEndsAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    } else {
+        const plan = await db.query.platformPlans.findFirst({
+            where: eq(platformPlans.slug, newPlan),
+            columns: { trialDays: true },
+        });
+        if (plan?.trialDays && plan.trialDays > 0) {
+            trialEndsAt = new Date(Date.now() + plan.trialDays * 24 * 60 * 60 * 1000);
+        }
+    }
 
     const subscriptionStatus = newPlan === "free_trial" ? "trial" : "active";
 

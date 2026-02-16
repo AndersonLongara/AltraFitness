@@ -9,11 +9,17 @@ interface Message {
     content: string;
 }
 
-export default function AiManager() {
+export default function AiManager({ hasStudents = true }: { hasStudents?: boolean }) {
     const [isOpen, setIsOpen] = useState(false);
     const [inputValue, setInputValue] = useState('');
-    const [messages, setMessages] = useState<Message[]>([
-        { id: '1', role: 'assistant', content: 'Olá! Sou seu Coach Digital. Analisei os dados de hoje: 3 alunos com risco de evasão. Quer ver os detalhes?' }
+    const [messages, setMessages] = useState<Message[]>(() => [
+        {
+            id: '1',
+            role: 'assistant',
+            content: hasStudents
+                ? 'Olá! Sou seu Coach Digital. Posso analisar a frequência dos seus alunos e sugerir ações. Como posso ajudar?'
+                : 'Olá! Quando você cadastrar alunos, poderei analisar a frequência e sugerir ações para reduzir evasão. Por enquanto, complete o passo a passo do dashboard para começar.'
+        }
     ]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -165,9 +171,11 @@ export default function AiManager() {
                 </div>
 
                 <div className="space-y-2">
-                    <h3 className="text-2xl font-bold">Risco de Evasão</h3>
+                    <h3 className="text-2xl font-bold">Coach Digital</h3>
                     <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
-                        <span className="text-white font-semibold">3 alunos</span> apresentaram queda na frequência (-40%) esta semana.
+                        {hasStudents
+                            ? "Analise a frequência dos seus alunos e receba sugestões para reduzir evasão e engajar mais."
+                            : "Quando você tiver alunos ativos, a IA analisará a frequência e sugerirá ações para você."}
                     </p>
                 </div>
             </div>

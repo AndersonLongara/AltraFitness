@@ -4,6 +4,9 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
+    if (process.env.NODE_ENV === 'production') {
+        return NextResponse.json({ error: 'Not Found' }, { status: 404 });
+    }
     const diagnostics: Record<string, unknown> = {};
     
     // 1. Check environment variables

@@ -7,6 +7,8 @@ import Link from "next/link";
 import { ArrowLeft, Play, Clock, Barbell, Info } from "@phosphor-icons/react/dist/ssr";
 import { startWorkout } from "@/app/actions/workout-execution";
 
+export const dynamic = "force-dynamic";
+
 export default async function WorkoutOverviewPage({ params }: { params: Promise<{ id: string }> }) {
     const { userId } = await auth();
     if (!userId) return redirect("/sign-in");

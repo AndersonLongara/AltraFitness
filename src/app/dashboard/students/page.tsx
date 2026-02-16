@@ -1,4 +1,4 @@
-import Sidebar from "@/components/layout/Sidebar";
+import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import { db } from "@/db";
 import { students } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
@@ -29,8 +29,8 @@ export default async function StudentsPage() {
     });
 
     return (
-        <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
-            <Sidebar />
+        <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
+            <LayoutSidebar />
 
             <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
                 <StudentsPageContent

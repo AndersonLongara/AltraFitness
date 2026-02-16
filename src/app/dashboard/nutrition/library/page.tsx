@@ -1,6 +1,6 @@
 
 import { ArrowLeft, Plus } from "@phosphor-icons/react/dist/ssr";
-import Sidebar from "@/components/layout/Sidebar";
+import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import Link from "next/link";
 import { db } from "@/db";
 import { foods } from "@/db/schema";
@@ -21,7 +21,7 @@ export default async function FoodLibraryPage() {
 
     return (
         <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
-            <Sidebar />
+            <LayoutSidebar />
 
             <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
                 <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">

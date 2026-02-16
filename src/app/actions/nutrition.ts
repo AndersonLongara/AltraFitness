@@ -116,9 +116,10 @@ export async function deleteAdHocLog(logId: string) {
     const { userId } = await auth();
     const user = await currentUser();
     if (!userId || !user) throw new Error("Unauthorized");
-
-    await db.delete(mealLogs).where(eq(mealLogs.id, logId));
-
+    const email = user.emailAddresses[0]?.emailAddress;
+    const student = await db.query.students.findFirst({ where: eq(students.email, email), columns: { id: true } });
+    if (!student) throw new Error("Aluno não encontrado.");
+    await db.delete(mealLogs).where(and(eq(mealLogs.id, logId), eq(mealLogs.studentId, student.id)));
     revalidatePath('/student/nutrition');
     revalidatePath('/student');
     return { success: true };
@@ -150,6 +151,9 @@ interface CreateNutritionalPlanParams {
 export async function createNutritionalPlan(data: CreateNutritionalPlanParams) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
+    if (data.trainerId !== userId) throw new Error("Aluno não pertence ao seu estúdio.");
+    const [student] = await db.select().from(students).where(and(eq(students.id, data.studentId), eq(students.trainerId, userId)));
+    if (!student) throw new Error("Aluno não encontrado.");
 
     // Start a transaction if possible, or just sequence it (SQLite doesn't support nested transactions easily with Drizzle yet, but we can sequence).
     // 1. Deactivate old plans
@@ -204,10 +208,9 @@ export async function createNutritionalPlan(data: CreateNutritionalPlanParams) {
 export async function deleteNutritionalPlan(planId: string, studentId?: string) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
+    const [plan] = await db.select().from(nutritionalPlans).where(eq(nutritionalPlans.id, planId));
+    if (!plan || plan.trainerId !== userId) throw new Error("Plano não encontrado ou não pertence ao seu estúdio.");
 
-    // Start a transaction-like sequence
-    // 1. Delete associated meal items
-    // First get all meals to find their IDs
     const planMeals = await db.query.meals.findMany({
         where: eq(meals.planId, planId)
     });

@@ -41,7 +41,7 @@ export default function StudentFormTrigger({ student, mode = 'create' }: Student
                         e.stopPropagation();
                         setIsOpen(true);
                     }}
-                    className="p-2 text-slate-400 hover:text-performance-green hover:bg-emerald-50 rounded-xl transition-all"
+                    className="p-2 text-slate-400 dark:hover:text-emerald-400 hover:text-performance-green hover:bg-emerald-50 dark:hover:bg-white/10 rounded-xl transition-all"
                     title="Editar Aluno"
                 >
                     <PencilSimple size={20} weight="bold" />
@@ -67,7 +67,7 @@ export default function StudentFormTrigger({ student, mode = 'create' }: Student
         <>
             <button
                 onClick={() => setIsOpen(true)}
-                className="px-6 py-4 bg-graphite-dark text-white font-bold rounded-2xl hover:bg-black transition-colors flex items-center gap-2 shadow-lg shadow-slate-200"
+                className="px-6 py-4 bg-graphite-dark dark:bg-[#1E2A36] dark:text-white text-white font-bold rounded-2xl hover:bg-black dark:hover:bg-white/10 dark:border dark:border-white/10 transition-colors flex items-center gap-2 shadow-lg shadow-slate-200 dark:shadow-none"
             >
                 <PlusIcon size={20} weight="bold" />
                 Novo Aluno

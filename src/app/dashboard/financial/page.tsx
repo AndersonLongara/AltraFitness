@@ -1,4 +1,4 @@
-import Sidebar from "@/components/layout/Sidebar";
+import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import PlansManager from "@/components/financial/PlansManager";
 import FinancialHeader from "@/components/financial/FinancialHeader";
 import PaymentsList from "@/components/financial/PaymentsList";
@@ -37,8 +37,8 @@ export default async function FinancialPage() {
     });
 
     return (
-        <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
-            <Sidebar />
+        <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
+            <LayoutSidebar />
 
             <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
                 <FinancialHeader />
@@ -46,7 +46,7 @@ export default async function FinancialPage() {
                 <div className="grid grid-cols-1 gap-6">
                     {/* Summary / Stats (Placeholder) */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-graphite-dark text-white p-6 rounded-3xl soft-shadow col-span-1 md:col-span-1">
+                        <div className="bg-graphite-dark dark:bg-[#1E2A36] text-white dark:text-white p-6 rounded-3xl soft-shadow col-span-1 md:col-span-1 border border-transparent dark:border-white/10">
                             <h3 className="text-lg font-bold mb-4 opacity-90">Resumo Estimado</h3>
                             <div className="space-y-4">
                                 <div>
@@ -72,7 +72,7 @@ export default async function FinancialPage() {
 
                     {/* Payments List */}
                     <div className="col-span-1">
-                        <PaymentsList payments={paymentsList as any} students={studentsList} />
+                        <PaymentsList payments={paymentsList as any} students={studentsList} plans={plansList} />
                     </div>
                 </div>
             </main>

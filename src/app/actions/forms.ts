@@ -3,7 +3,7 @@
 import { db } from '@/db';
 import { forms, formQuestions, studentForms, formAnswers, students, trainers } from '@/db/schema';
 import { eq, and, desc } from 'drizzle-orm';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
 // --- Form Management (Trainer) ---
@@ -206,8 +206,16 @@ export async function getStudentPendingForms(studentId: string) {
 }
 
 export async function submitFormResponse(assignmentId: string, answers: { questionId: string; answer: string }[]) {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+    const user = await currentUser();
+    const email = user?.emailAddresses?.[0]?.emailAddress;
+    if (!email) throw new Error("Não foi possível identificar o aluno.");
+    const [student] = await db.select().from(students).where(eq(students.email, email)).limit(1);
+    if (!student) throw new Error("Aluno não encontrado.");
+    const [assignment] = await db.select().from(studentForms).where(eq(studentForms.id, assignmentId)).limit(1);
+    if (!assignment || assignment.studentId !== student.id) throw new Error("Formulário não encontrado ou não atribuído a você.");
 
-    // 1. Save Answers
     if (answers.length > 0) {
         await db.insert(formAnswers).values(
             answers.map(a => ({

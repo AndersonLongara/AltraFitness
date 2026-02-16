@@ -18,10 +18,13 @@ export const trainers = sqliteTable('trainers', {
     teamCode: text('team_code').unique(),
     
     // SaaS Subscription
-    subscriptionPlan: text('subscription_plan').default('free'), // 'free_5', 'free_trial', 'monthly', 'annual'
+    subscriptionPlan: text('subscription_plan').default('free'), // 'free_5', 'free_trial', 'monthly', 'annual' ou slug de platform_plans
     subscriptionStatus: text('subscription_status').default('active'), // 'active', 'inactive', 'trial', etc.
     trialEndsAt: integer('trial_ends_at', { mode: 'timestamp' }),
-    
+    theme: text('theme').default('system'), // 'light' | 'dark' | 'system'
+    asaasApiKey: text('asaas_api_key'),
+    asaasCustomerId: text('asaas_customer_id'),
+
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
@@ -48,8 +51,11 @@ export const payments = sqliteTable('payments', {
     dueDate: integer('due_date', { mode: 'timestamp' }).notNull(),
     paidAt: integer('paid_at', { mode: 'timestamp' }),
     status: text('status').default('pending'), // pending, paid, overdue
-    method: text('method'), // pix, credit_card, cash, etc.
+    method: text('method'), // pix, credit_card, cash, asaas, etc.
     notes: text('notes'),
+    asaasPaymentId: text('asaas_payment_id'),
+    asaasInvoiceUrl: text('asaas_invoice_url'),
+    billingType: text('billing_type'),
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
@@ -254,6 +260,59 @@ export const mealItems = sqliteTable('meal_items', {
     fat: integer('fat'),
 });
 
+// Planos da plataforma (o que oferecemos aos personais)
+export const platformPlans = sqliteTable('platform_plans', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    slug: text('slug').notNull().unique(),
+    name: text('name').notNull(),
+    priceCents: integer('price_cents').default(0).notNull(),
+    durationMonths: integer('duration_months').default(1).notNull(),
+    maxStudents: integer('max_students'),
+    pricePerStudentCents: integer('price_per_student_cents'),
+    features: text('features', { mode: 'json' }).$type<string[]>(),
+    hasAi: integer('has_ai', { mode: 'boolean' }).default(false),
+    hasPriority: integer('has_priority', { mode: 'boolean' }).default(false),
+    hasSalesPipeline: integer('has_sales_pipeline', { mode: 'boolean' }).default(false),
+    trialDays: integer('trial_days'),
+    active: integer('active', { mode: 'boolean' }).default(true),
+    sortOrder: integer('sort_order').default(0),
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
+export const userRoles = sqliteTable('user_roles', {
+    userId: text('user_id').primaryKey(),
+    role: text('role').notNull(),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
+export const platformCharges = sqliteTable('platform_charges', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    trainerId: text('trainer_id').notNull().references(() => trainers.id),
+    amount: integer('amount').notNull(),
+    dueDate: integer('due_date', { mode: 'timestamp' }).notNull(),
+    description: text('description'),
+    status: text('status').default('pending'),
+    paidAt: integer('paid_at', { mode: 'timestamp' }),
+    asaasPaymentId: text('asaas_payment_id'),
+    asaasInvoiceUrl: text('asaas_invoice_url'),
+    billingType: text('billing_type').default('UNDEFINED'),
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
+export const platformSettings = sqliteTable('platform_settings', {
+    key: text('key').primaryKey(),
+    value: text('value'),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
+export const platformChargesRelations = relations(platformCharges, ({ one }) => ({
+    trainer: one(trainers, {
+        fields: [platformCharges.trainerId],
+        references: [trainers.id],
+    }),
+}));
+
 // --- Relations ---
 
 import { relations } from 'drizzle-orm';
@@ -267,6 +326,14 @@ export const trainersRelations = relations(trainers, ({ many }) => ({
     workouts: many(workouts),
     nutritionalPlans: many(nutritionalPlans),
     foods: many(foods),
+    leads: many(leads),
+}));
+
+export const leadsRelations = relations(leads, ({ one }) => ({
+    trainer: one(trainers, {
+        fields: [leads.trainerId],
+        references: [trainers.id],
+    }),
 }));
 
 export const plansRelations = relations(plans, ({ one, many }) => ({
@@ -277,8 +344,6 @@ export const plansRelations = relations(plans, ({ one, many }) => ({
     students: many(students),
     payments: many(payments),
 }));
-
-// Moved studentsRelations to end of file to fix TDZ with moodLogs/workoutLogs
 
 export const paymentsRelations = relations(payments, ({ one }) => ({
     trainer: one(trainers, {
@@ -595,29 +660,6 @@ export const workoutLogSetsRelations = relations(workoutLogSets, ({ one }) => ({
     }),
 }));
 
-// Moved here to avoid circular dependency / TDZ issues
-export const studentsRelations = relations(students, ({ one, many }) => ({
-    trainer: one(trainers, {
-        fields: [students.trainerId],
-        references: [trainers.id],
-    }),
-    plan: one(plans, {
-        fields: [students.planId],
-        references: [plans.id],
-    }),
-    payments: many(payments),
-    badges: many(studentBadges),
-    workoutPlans: many(workoutPlans),
-    workouts: many(workouts),
-    nutritionalPlans: many(nutritionalPlans),
-    // Added for Dashboard Cards
-    moodLogs: many(moodLogs),
-    workoutLogs: many(workoutLogs),
-    hydrationLogs: many(hydrationLogs),
-    gamificationLogs: many(gamificationLogs),
-    forms: many(studentForms),
-}));
-
 // --- Dynamic Forms Module ---
 
 export const forms = sqliteTable('forms', {
@@ -700,3 +742,88 @@ export const formAnswersRelations = relations(formAnswers, ({ one }) => ({
         references: [formQuestions.id],
     }),
 }));
+
+// Students relations: definido após studentForms para evitar referencedTable undefined (TDZ)
+export const studentsRelations = relations(students, ({ one, many }) => ({
+    trainer: one(trainers, {
+        fields: [students.trainerId],
+        references: [trainers.id],
+    }),
+    plan: one(plans, {
+        fields: [students.planId],
+        references: [plans.id],
+    }),
+    payments: many(payments),
+    badges: many(studentBadges),
+    workoutPlans: many(workoutPlans),
+    workouts: many(workouts),
+    nutritionalPlans: many(nutritionalPlans),
+    moodLogs: many(moodLogs),
+    workoutLogs: many(workoutLogs),
+    hydrationLogs: many(hydrationLogs),
+    gamificationLogs: many(gamificationLogs),
+    forms: many(studentForms),
+}));
+
+/** Schema completo para o Drizzle: evita referencedTable undefined quando o bundler omite exports. */
+export const schema = {
+    trainers,
+    plans,
+    payments,
+    students,
+    leads,
+    badges,
+    studentBadges,
+    exercises,
+    workoutPlans,
+    workouts,
+    workoutItems,
+    foods,
+    nutritionalPlans,
+    meals,
+    mealItems,
+    platformPlans,
+    userRoles,
+    platformCharges,
+    platformSettings,
+    platformChargesRelations,
+    assessments,
+    assessmentPhotos,
+    hydrationLogs,
+    mealLogs,
+    gamificationLogs,
+    moodLogs,
+    workoutLogs,
+    workoutLogSets,
+    forms,
+    formQuestions,
+    studentForms,
+    formAnswers,
+    trainersRelations,
+    leadsRelations,
+    plansRelations,
+    paymentsRelations,
+    badgesRelations,
+    studentBadgesRelations,
+    exercisesRelations,
+    workoutPlansRelations,
+    workoutsRelations,
+    workoutItemsRelations,
+    nutritionalPlansRelations,
+    mealsRelations,
+    mealItemsRelations,
+    assessmentsRelations,
+    assessmentPhotosRelations,
+    foodsRelations,
+    hydrationLogsRelations,
+    mealLogsRelations,
+    gamificationLogsRelations,
+    moodLogsRelations,
+    workoutLogsRelations,
+    workoutLogSetsRelations,
+    studentsRelations,
+    formsRelations,
+    formQuestionsRelations,
+    studentFormsRelations,
+    formAnswersRelations,
+};

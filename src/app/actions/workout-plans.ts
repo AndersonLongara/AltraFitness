@@ -5,7 +5,7 @@ import { workoutPlans, workouts, workoutItems, trainers } from "@/db/schema";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
-import { eq, sql, inArray } from "drizzle-orm";
+import { eq, and, sql, inArray } from "drizzle-orm";
 
 interface WorkoutItemInput {
     exerciseId: string;
@@ -133,7 +133,7 @@ export async function updateWorkoutPlan(planId: string, data: CreatePlanData) {
                     observations: data.observations,
                     updatedAt: new Date(),
                 })
-                .where(eq(workoutPlans.id, planId));
+                .where(and(eq(workoutPlans.id, planId), eq(workoutPlans.trainerId, trainerId)));
 
             // 2. Update Workouts
             const existingWorkouts = await tx.select().from(workouts).where(eq(workouts.planId, planId));
@@ -205,13 +205,15 @@ export async function applyWorkoutPlanTemplate(templateId: string, studentId: st
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
     const trainerId = user.id;
+    const [template] = await db.select().from(workoutPlans).where(and(eq(workoutPlans.id, templateId), eq(workoutPlans.trainerId, trainerId)));
+    if (!template) throw new Error("Template não encontrado.");
+    const { students } = await import("@/db/schema");
+    const [student] = await db.select().from(students).where(and(eq(students.id, studentId), eq(students.trainerId, trainerId)));
+    if (!student) throw new Error("Aluno não encontrado.");
 
     try {
         await db.transaction(async (tx: any) => {
-            // 1. Fetch Template
-            const templates = await tx.select().from(workoutPlans).where(eq(workoutPlans.id, templateId)).limit(1);
-            if (templates.length === 0) throw new Error("Template not found");
-            const template = templates[0];
+            // 1. Template already validated above
 
             // 2. Clone Plan
             const [newPlan] = await tx.insert(workoutPlans).values({
@@ -275,9 +277,9 @@ export async function applyWorkoutPlanTemplate(templateId: string, studentId: st
 export async function deleteWorkoutPlan(planId: string) {
     const user = await currentUser();
     if (!user) throw new Error("Unauthorized");
-
+    const trainerId = user.id;
     try {
-        await db.delete(workoutPlans).where(eq(workoutPlans.id, planId));
+        await db.delete(workoutPlans).where(and(eq(workoutPlans.id, planId), eq(workoutPlans.trainerId, trainerId)));
 
         revalidatePath("/dashboard/students");
         revalidatePath("/dashboard/workouts");

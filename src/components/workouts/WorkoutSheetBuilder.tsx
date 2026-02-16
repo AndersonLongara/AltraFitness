@@ -463,7 +463,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                     {isEditingTitle ? (
                         <input
                             autoFocus
-                            className="text-3xl font-extrabold text-graphite-dark bg-transparent border-b-2 border-performance-green outline-none"
+                            className="text-3xl font-extrabold text-graphite-dark dark:text-white bg-transparent border-b-2 border-performance-green outline-none"
                             value={sheetName}
                             onChange={(e) => setSheetName(e.target.value)}
                             onBlur={() => setIsEditingTitle(false)}
@@ -471,11 +471,11 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                         />
                     ) : (
                         <h1
-                            className="text-3xl font-extrabold text-graphite-dark tracking-tight cursor-pointer hover:text-slate-600 transition-colors flex items-center gap-2"
+                            className="text-3xl font-extrabold text-graphite-dark dark:text-white tracking-tight cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center gap-2"
                             onClick={() => setIsEditingTitle(true)}
                         >
                             {sheetName}
-                            <span className="text-slate-300 text-lg">✎</span>
+                            <span className="text-slate-300 dark:text-slate-500 text-lg">✎</span>
                         </h1>
                     )}
                 </div>
@@ -484,25 +484,25 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                         <button
                             onClick={handleDelete}
                             disabled={isDeleting || isSaving}
-                            className="p-3 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-2xl transition-colors disabled:opacity-50"
+                            className="p-3 text-rose-500 bg-rose-50 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 hover:bg-rose-100 rounded-2xl transition-colors disabled:opacity-50"
                             title="Excluir Ficha"
                         >
                             <Trash size={24} weight="bold" />
                         </button>
                     )}
-                    <label className="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-xl border border-slate-100 soft-shadow">
+                    <label className="flex items-center gap-2 cursor-pointer bg-white dark:bg-white/10 px-4 py-2 rounded-xl border border-slate-100 dark:border-white/10 soft-shadow">
                         <input
                             type="checkbox"
                             className="w-5 h-5 accent-performance-green rounded-lg"
                             checked={isTemplate}
                             onChange={(e) => setIsTemplate(e.target.checked)}
                         />
-                        <span className="font-bold text-slate-600 text-sm">Salvar como Modelo</span>
+                        <span className="font-bold text-slate-600 dark:text-slate-200 text-sm">Salvar como Modelo</span>
                     </label>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className={`flex items-center gap-2 px-6 py-3 text-graphite-dark font-bold rounded-2xl shadow-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 ${isTemplate ? 'bg-amber-400' : 'bg-performance-green'}`}
+                        className={`flex items-center gap-2 px-6 py-3 font-bold rounded-2xl shadow-lg hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 ${isTemplate ? 'bg-amber-400 dark:bg-amber-500 dark:text-white text-graphite-dark' : 'bg-performance-green dark:bg-emerald-500 text-graphite-dark dark:text-white'}`}
                     >
                         <FloppyDisk size={24} weight="bold" />
                         {isSaving ? "Salvando..." : isTemplate ? "Salvar Modelo" : "Salvar Ficha"}
@@ -514,17 +514,17 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                 {/* Left Column: Workouts (Takes 2/3 space) */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* Workouts (Splits) Section */}
-                    <div className="bg-slate-50/50 p-1 rounded-[32px] border border-slate-100 h-full">
-                        <div className="bg-pure-white rounded-[28px] soft-shadow p-6 min-h-[600px]">
+                    <div className="bg-slate-50/50 dark:bg-white/5 p-1 rounded-[32px] border border-slate-100 dark:border-white/10 h-full">
+                        <div className="bg-pure-white dark:bg-[#1E2A36]/80 rounded-[28px] soft-shadow p-6 min-h-[600px] border border-transparent dark:border-white/5">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="flex items-center gap-2 text-xl font-bold text-graphite-dark">
-                                    <Barbell size={24} className="text-performance-green" weight="duotone" />
+                                <h3 className="flex items-center gap-2 text-xl font-bold text-graphite-dark dark:text-white">
+                                    <Barbell size={24} className="text-performance-green dark:text-emerald-400" weight="duotone" />
                                     Treinos
                                 </h3>
                                 {splits.length === 0 && (
                                     <button
                                         onClick={handleAddSplit}
-                                        className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-colors"
+                                        className="px-4 py-2 bg-slate-900 dark:bg-amber-500 dark:text-white text-white rounded-xl font-bold text-sm hover:bg-black dark:hover:bg-amber-600 transition-colors"
                                     >
                                         Criar periodização semanal
                                     </button>
@@ -540,15 +540,15 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                         className={`
                                             relative flex items-center gap-3 px-5 py-3 rounded-2xl cursor-pointer transition-all border
                                             ${activeSplitId === split.id
-                                                ? 'bg-slate-900 text-white border-slate-900 shadow-md'
-                                                : 'bg-white text-slate-500 border-slate-100 hover:border-slate-300'
+                                                ? 'bg-slate-900 dark:bg-amber-500/20 dark:text-amber-400 text-white border-slate-900 dark:border-amber-500/40 shadow-md'
+                                                : 'bg-white dark:bg-white/10 text-slate-500 dark:text-slate-400 border-slate-100 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'
                                             }
                                         `}
                                     >
                                         <span className="font-bold whitespace-nowrap">{split.title}</span>
                                         <button
                                             onClick={(e) => handleRemoveSplit(split.id, e)}
-                                            className={`p-1 rounded-full transition-colors ${activeSplitId === split.id ? 'hover:bg-slate-700' : 'hover:bg-slate-100'}`}
+                                            className={`p-1 rounded-full transition-colors ${activeSplitId === split.id ? 'hover:bg-slate-700 dark:hover:bg-amber-500/30' : 'hover:bg-slate-100 dark:hover:bg-white/20'}`}
                                         >
                                             <X size={12} weight="bold" />
                                         </button>
@@ -556,7 +556,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                 ))}
                                 <button
                                     onClick={handleAddSplit}
-                                    className="px-4 py-3 rounded-2xl border-2 border-dashed border-slate-200 text-slate-400 font-bold hover:border-performance-green hover:text-performance-green transition-colors flex items-center gap-2"
+                                    className="px-4 py-3 rounded-2xl border-2 border-dashed border-slate-200 dark:border-white/20 text-slate-400 dark:text-slate-500 font-bold hover:border-performance-green dark:hover:border-emerald-400 hover:text-performance-green dark:hover:text-emerald-400 transition-colors flex items-center gap-2"
                                 >
                                     <Plus size={16} weight="bold" />
                                     Novo Treino
@@ -569,12 +569,12 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     <div className="flex justify-between items-center mb-2">
                                         <div className="flex items-center gap-2">
                                             <Heart size={20} weight="fill" className="text-performance-green" />
-                                            <h3 className="font-extrabold text-graphite-dark text-xl uppercase tracking-tighter italic">Exercícios</h3>
+                                            <h3 className="font-extrabold text-graphite-dark dark:text-white text-xl uppercase tracking-tighter italic">Exercícios</h3>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <button
                                                 onClick={toggleSelectionMode}
-                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${isSelectionMode ? 'bg-performance-green text-white shadow-lg shadow-performance-green/20' : 'bg-slate-100 text-slate-500 hover:bg-slate-200'}`}
+                                                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${isSelectionMode ? 'bg-performance-green dark:bg-emerald-500 text-white shadow-lg shadow-performance-green/20 dark:shadow-none' : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20'}`}
                                             >
                                                 <CheckCircle size={16} weight={isSelectionMode ? "fill" : "bold"} />
                                                 {isSelectionMode ? 'Modo Seleção Ativo' : 'Selecionar Vários'}
@@ -583,7 +583,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                             {isSelectionMode && (
                                                 <button
                                                     onClick={selectAllExercises}
-                                                    className="px-4 py-2 rounded-xl text-xs font-bold bg-white border border-slate-200 text-slate-500 hover:bg-slate-50 transition-all flex items-center gap-2"
+                                                    className="px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-white/10 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/20 transition-all flex items-center gap-2"
                                                 >
                                                     <CheckCircle size={16} weight="bold" className="text-performance-green" />
                                                     Selecionar Todos
@@ -592,22 +592,22 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                         </div>
                                     </div>
                                     {splits.find(s => s.id === activeSplitId)?.items.map((item, index) => (
-                                        <div key={item.id} className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm hover:border-performance-green/30 transition-all">
+                                        <div key={item.id} className="bg-white dark:bg-white/5 p-6 rounded-[24px] border border-slate-100 dark:border-white/10 shadow-sm hover:border-performance-green/30 dark:hover:border-emerald-500/30 transition-all">
                                             {/* Card Header */}
                                             <div className="flex justify-between items-center mb-6">
                                                 <div className="flex items-center gap-3">
                                                     {isSelectionMode && (
                                                         <button
                                                             onClick={() => toggleExerciseSelection(item.id)}
-                                                            className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedExerciseIds.includes(item.id) ? 'bg-performance-green border-performance-green text-white' : 'border-slate-200 bg-white'}`}
+                                                            className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all ${selectedExerciseIds.includes(item.id) ? 'bg-performance-green dark:bg-emerald-500 border-performance-green dark:border-emerald-500 text-white' : 'border-slate-200 dark:border-white/30 bg-white dark:bg-white/10'}`}
                                                         >
                                                             {selectedExerciseIds.includes(item.id) && <CheckCircle size={14} weight="fill" />}
                                                         </button>
                                                     )}
-                                                    <div className="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-xs font-bold text-slate-400 border border-slate-100">
+                                                    <div className="w-8 h-8 rounded-xl bg-slate-50 dark:bg-white/10 flex items-center justify-center text-xs font-bold text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-white/10">
                                                         {index + 1}
                                                     </div>
-                                                    <h4 className="font-extrabold text-graphite-dark text-lg">{item.name}</h4>
+                                                    <h4 className="font-extrabold text-graphite-dark dark:text-white text-lg">{item.name}</h4>
                                                 </div>
 
                                                 <div className="flex items-center gap-6">
@@ -622,7 +622,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                         </button>
                                                     </div>
 
-                                                    <button onClick={() => removeExercise(activeSplitId, item.id)} className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all">
+                                                    <button onClick={() => removeExercise(activeSplitId, item.id)} className="p-2 text-slate-300 dark:text-slate-500 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all">
                                                         <Trash size={20} weight="bold" />
                                                     </button>
                                                 </div>
@@ -637,7 +637,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                     </label>
                                                     <input
                                                         type="number"
-                                                        className="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-slate-700 outline-none focus:border-performance-green focus:bg-white transition-all"
+                                                        className="w-full bg-slate-50 dark:bg-white/10 p-3 rounded-xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all"
                                                         value={item.sets}
                                                         onChange={(e) => updateExercise(activeSplitId, item.id, 'sets', parseInt(e.target.value) || 0)}
                                                     />
@@ -649,7 +649,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                     </label>
                                                     <input
                                                         type="number"
-                                                        className="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-slate-700 outline-none focus:border-performance-green focus:bg-white transition-all"
+                                                        className="w-full bg-slate-50 dark:bg-white/10 p-3 rounded-xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all"
                                                         value={item.warmupSets}
                                                         onChange={(e) => updateExercise(activeSplitId, item.id, 'warmupSets', parseInt(e.target.value) || 0)}
                                                     />
@@ -661,7 +661,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                     </label>
                                                     <input
                                                         type="number"
-                                                        className="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-slate-700 outline-none focus:border-performance-green focus:bg-white transition-all"
+                                                        className="w-full bg-slate-50 dark:bg-white/10 p-3 rounded-xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all"
                                                         value={item.preparatorySets}
                                                         onChange={(e) => updateExercise(activeSplitId, item.id, 'preparatorySets', parseInt(e.target.value) || 0)}
                                                     />
@@ -670,7 +670,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Repetições</label>
                                                     <input
                                                         type="text"
-                                                        className="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-slate-700 outline-none focus:border-performance-green focus:bg-white transition-all"
+                                                        className="w-full bg-slate-50 dark:bg-white/10 p-3 rounded-xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all"
                                                         value={item.reps}
                                                         placeholder="Ex: 8-12"
                                                         onChange={(e) => updateExercise(activeSplitId, item.id, 'reps', e.target.value)}
@@ -680,7 +680,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                     <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Descanso (s)</label>
                                                     <input
                                                         type="number"
-                                                        className="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 font-bold text-slate-700 outline-none focus:border-performance-green focus:bg-white transition-all"
+                                                        className="w-full bg-slate-50 dark:bg-white/10 p-3 rounded-xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all"
                                                         value={item.restSeconds}
                                                         onChange={(e) => updateExercise(activeSplitId, item.id, 'restSeconds', parseInt(e.target.value) || 0)}
                                                     />
@@ -688,7 +688,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                             </div>
 
                                             {/* Advanced Techniques Section */}
-                                            <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100 mb-4">
+                                            <div className="bg-slate-50/50 dark:bg-white/5 p-4 rounded-2xl border border-slate-100 dark:border-white/10 mb-4">
                                                 <div className="flex justify-between items-center mb-4">
                                                     <h5 className="text-[10px] font-extrabold text-slate-400 uppercase tracking-[0.2em]">Técnicas Avançadas</h5>
                                                     <button
@@ -705,7 +705,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                         <div key={tIdx} className="flex gap-3 items-start animate-in slide-in-from-top-2 duration-300">
                                                             <div className="w-1/3">
                                                                 <select
-                                                                    className="w-full bg-white p-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 outline-none focus:border-performance-green shadow-sm"
+                                                                    className="w-full bg-white dark:bg-white/10 p-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-bold text-slate-600 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 shadow-sm"
                                                                     value={tech.type}
                                                                     onChange={(e) => updateTechnique(activeSplitId, item.id, tIdx, 'type', e.target.value)}
                                                                 >
@@ -718,7 +718,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                                 <input
                                                                     type="text"
                                                                     placeholder="Observações da técnica..."
-                                                                    className="w-full bg-white p-2.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 outline-none focus:border-performance-green shadow-sm"
+                                                                    className="w-full bg-white dark:bg-white/10 p-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 shadow-sm placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                                                     value={tech.notes}
                                                                     onChange={(e) => updateTechnique(activeSplitId, item.id, tIdx, 'notes', e.target.value)}
                                                                 />
@@ -741,7 +741,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                             <div className="space-y-2">
                                                 <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Observações do Exercício</label>
                                                 <textarea
-                                                    className="w-full bg-slate-50 p-3 rounded-xl border border-slate-100 text-sm font-medium text-slate-600 outline-none focus:border-performance-green focus:bg-white transition-all resize-none h-20"
+                                                    className="w-full bg-slate-50 dark:bg-white/10 p-3 rounded-xl border border-slate-100 dark:border-white/10 text-sm font-medium text-slate-600 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all resize-none h-20 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                                     placeholder="Dicas de execução, cadência, etc..."
                                                     value={item.notes}
                                                     onChange={(e) => updateExercise(activeSplitId, item.id, 'notes', e.target.value)}
@@ -752,14 +752,14 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
 
                                     <button
                                         onClick={() => setIsExerciseSelectorOpen(true)}
-                                        className="w-full py-4 rounded-2xl bg-performance-green/10 text-performance-green-dark font-bold hover:bg-performance-green/20 transition-colors flex items-center justify-center gap-2"
+                                        className="w-full py-4 rounded-2xl bg-performance-green/10 dark:bg-emerald-500/20 text-performance-green-dark dark:text-emerald-300 font-bold hover:bg-performance-green/20 dark:hover:bg-emerald-500/30 transition-colors flex items-center justify-center gap-2"
                                     >
                                         <Plus size={20} weight="bold" />
                                         Adicionar Exercício
                                     </button>
                                 </div>
                             ) : (
-                                <div className="text-center py-12 text-slate-400">
+                                <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                                     Selecione ou crie um treino p/ começar.
                                 </div>
                             )}
@@ -770,16 +770,16 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                 {/* Right Column: Meta Info & Cardio (Takes 1/3 space) */}
                 <div className="space-y-6">
                     {/* Info Box */}
-                    <div className="bg-pure-white p-6 rounded-[24px] soft-shadow border border-slate-50">
-                        <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark mb-4">
-                            <User size={20} className="text-performance-green" weight="duotone" />
+                    <div className="bg-pure-white dark:bg-white/5 p-6 rounded-[24px] soft-shadow border border-slate-50 dark:border-white/10">
+                        <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark dark:text-white mb-4">
+                            <User size={20} className="text-performance-green dark:text-emerald-400" weight="duotone" />
                             Informações
                         </h3>
 
                         <div>
                             <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Aluno</label>
                             <select
-                                className="w-full p-3 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 transition-all cursor-pointer hover:bg-slate-100"
+                                className="w-full p-3 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-white/15 border border-transparent dark:border-white/10"
                                 value={studentId}
                                 onChange={e => setStudentId(e.target.value)}
                             >
@@ -792,13 +792,13 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                     </div>
 
                     {/* Cardio Section */}
-                    <div className="bg-pure-white p-6 rounded-[24px] soft-shadow border border-slate-50">
+                    <div className="bg-pure-white dark:bg-white/5 p-6 rounded-[24px] soft-shadow border border-slate-50 dark:border-white/10">
                         <div className="flex justify-between items-center mb-6">
-                            <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark">
-                                <Heart size={20} className="text-rose-500" weight="duotone" />
+                            <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark dark:text-white">
+                                <Heart size={20} className="text-rose-500 dark:text-rose-400" weight="duotone" />
                                 Cardio
                             </h3>
-                            <button className="text-slate-300 hover:text-performance-green transition-colors">
+                            <button className="text-slate-300 dark:text-slate-500 hover:text-performance-green dark:hover:text-emerald-400 transition-colors">
                                 <Note size={18} />
                             </button>
                         </div>
@@ -822,7 +822,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                     days: WEEK_DAYS.map(d => d.id)
                                                 })}
                                             />
-                                            <span className="text-sm font-medium text-slate-600 group-hover:text-slate-800">Semanal</span>
+                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-white">Semanal</span>
                                         </label>
                                         <label className="flex items-center gap-2 cursor-pointer group">
                                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${cardio.frequency === 'daily' ? 'border-performance-green' : 'border-slate-300'}`}>
@@ -834,7 +834,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                 checked={cardio.frequency === 'daily'}
                                                 onChange={() => setCardio({ ...cardio, frequency: 'daily' })}
                                             />
-                                            <span className="text-sm font-medium text-slate-600 group-hover:text-slate-800">Diário</span>
+                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-white">Diário</span>
                                         </label>
                                     </div>
                                 </div>
@@ -847,14 +847,14 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                                 {cardio.unit === 'minutes' && <div className="w-2.5 h-2.5 rounded-full bg-performance-green anim-in fade-in" />}
                                             </div>
                                             <input type="radio" className="hidden" checked={cardio.unit === 'minutes'} onChange={() => setCardio({ ...cardio, unit: 'minutes' })} />
-                                            <span className="text-sm font-medium text-slate-600 group-hover:text-slate-800">Minutos</span>
+                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-white">Minutos</span>
                                         </label>
                                         <label className="flex items-center gap-2 cursor-pointer group">
                                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${cardio.unit === 'hours' ? 'border-performance-green' : 'border-slate-300'}`}>
                                                 {cardio.unit === 'hours' && <div className="w-2.5 h-2.5 rounded-full bg-performance-green anim-in fade-in" />}
                                             </div>
                                             <input type="radio" className="hidden" checked={cardio.unit === 'hours'} onChange={() => setCardio({ ...cardio, unit: 'hours' })} />
-                                            <span className="text-sm font-medium text-slate-600 group-hover:text-slate-800">Horas</span>
+                                            <span className="text-sm font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-800 dark:group-hover:text-white">Horas</span>
                                         </label>
                                     </div>
                                 </div>
@@ -869,7 +869,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                             <button
                                                 key={day.id}
                                                 onClick={() => toggleDay(day.id)}
-                                                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${isSelected ? 'bg-performance-green text-graphite-dark border-performance-green shadow-sm shadow-emerald-100' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}
+                                                className={`px-4 py-2 rounded-xl text-xs font-bold border transition-all ${isSelected ? 'bg-performance-green dark:bg-emerald-500/30 text-graphite-dark dark:text-white border-performance-green dark:border-emerald-500/50 shadow-sm shadow-emerald-100 dark:shadow-none' : 'bg-white dark:bg-white/10 text-slate-400 dark:text-slate-500 border-slate-100 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'}`}
                                             >
                                                 {day.label}
                                             </button>
@@ -885,14 +885,14 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                             {cardio.mode === 'equal' && <div className="w-2.5 h-2.5 rounded-full bg-performance-green anim-in fade-in" />}
                                         </div>
                                         <input type="radio" className="hidden" checked={cardio.mode === 'equal'} onChange={() => setCardio({ ...cardio, mode: 'equal' })} />
-                                        <span className="text-sm font-medium text-slate-500 group-hover:text-slate-700 transition-colors">Mesmo tempo para todos os dias</span>
+                                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">Mesmo tempo para todos os dias</span>
                                     </label>
                                     <label className="flex items-center gap-3 cursor-pointer group">
                                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${cardio.mode === 'individual' ? 'border-performance-green' : 'border-slate-300'}`}>
                                             {cardio.mode === 'individual' && <div className="w-2.5 h-2.5 rounded-full bg-performance-green anim-in fade-in" />}
                                         </div>
                                         <input type="radio" className="hidden" checked={cardio.mode === 'individual'} onChange={() => setCardio({ ...cardio, mode: 'individual' })} />
-                                        <span className="text-sm font-medium text-slate-500 group-hover:text-slate-700 transition-colors">Tempo individual por dia</span>
+                                        <span className="text-sm font-medium text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">Tempo individual por dia</span>
                                     </label>
                                 </div>
                             </div>
@@ -905,7 +905,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     <input
                                         type="number"
                                         placeholder="00:00"
-                                        className="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 outline-none focus:border-performance-green focus:bg-white transition-all font-bold text-slate-700 placeholder:text-slate-200"
+                                        className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-2xl border border-slate-100 dark:border-white/10 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all font-bold text-slate-700 dark:text-slate-200 placeholder:text-slate-200 dark:placeholder:text-slate-500"
                                         value={cardio.duration}
                                         onChange={(e) => setCardio({ ...cardio, duration: e.target.value })}
                                     />
@@ -914,12 +914,12 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                 <div className="space-y-3 animate-in slide-in-from-top-4 duration-300">
                                     <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tempo por dia ({cardio.unit === 'minutes' ? 'minutos' : 'horas'}):</label>
                                     {WEEK_DAYS.filter(d => cardio.days.includes(d.id)).map(day => (
-                                        <div key={day.id} className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-slate-50 border border-slate-100 hover:border-slate-200 transition-all">
-                                            <span className="text-xs font-bold text-slate-500">{day.label}:</span>
+                                        <div key={day.id} className="flex items-center justify-between gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-white/10 border border-slate-100 dark:border-white/10 hover:border-slate-200 dark:hover:border-white/20 transition-all">
+                                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{day.label}:</span>
                                             <input
                                                 type="number"
                                                 placeholder="00:00"
-                                                className="w-24 bg-white p-2 rounded-xl border border-slate-100 font-bold text-right outline-none focus:border-performance-green transition-all"
+                                                className="w-24 bg-white dark:bg-white/10 p-2 rounded-xl border border-slate-100 dark:border-white/10 font-bold text-right text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 transition-all"
                                                 value={cardio.individualTimes[day.id] || ''}
                                                 onChange={(e) => setCardio({
                                                     ...cardio,
@@ -929,7 +929,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                         </div>
                                     ))}
                                     {cardio.days.length === 0 && (
-                                        <p className="text-[10px] text-slate-300 font-bold italic text-center py-4 bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">Selecione os dias acima p/ definir os tempos</p>
+                                        <p className="text-[10px] text-slate-300 dark:text-slate-500 font-bold italic text-center py-4 bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">Selecione os dias acima p/ definir os tempos</p>
                                     )}
                                 </div>
                             )}
@@ -937,7 +937,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                             <div>
                                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Observações</label>
                                 <textarea
-                                    className="w-full min-h-[80px] p-4 bg-slate-50 rounded-2xl border border-slate-100 outline-none focus:border-performance-green focus:bg-white transition-all resize-none text-sm font-medium text-slate-600 placeholder:text-slate-300"
+                                    className="w-full min-h-[80px] p-4 bg-slate-50 dark:bg-white/10 rounded-2xl border border-slate-100 dark:border-white/10 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all resize-none text-sm font-medium text-slate-600 dark:text-slate-200 placeholder:text-slate-300 dark:placeholder:text-slate-500"
                                     placeholder="Digite observações sobre o cardio (opcional)"
                                     value={cardio.observations}
                                     onChange={(e) => setCardio({ ...cardio, observations: e.target.value })}
@@ -947,13 +947,13 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                     </div>
 
                     {/* Observations */}
-                    <div className="bg-pure-white p-6 rounded-[24px] soft-shadow border border-slate-50">
-                        <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark mb-4">
-                            <Note size={20} className="text-amber-500" weight="duotone" />
+                    <div className="bg-pure-white dark:bg-white/5 p-6 rounded-[24px] soft-shadow border border-slate-50 dark:border-white/10">
+                        <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark dark:text-white mb-4">
+                            <Note size={20} className="text-amber-500 dark:text-amber-400" weight="duotone" />
                             Observações Gerais
                         </h3>
                         <textarea
-                            className="w-full min-h-[120px] p-4 bg-slate-50 rounded-2xl border border-slate-100 outline-none focus:border-performance-green focus:bg-white transition-all resize-y text-slate-600"
+                            className="w-full min-h-[120px] p-4 bg-slate-50 dark:bg-white/10 rounded-2xl border border-slate-100 dark:border-white/10 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all resize-y text-slate-600 dark:text-slate-200 placeholder:text-slate-400 dark:placeholder:text-slate-500"
                             placeholder="Orientações gerais sobre o treino, aguecimento, etc..."
                             value={observations}
                             onChange={(e) => setObservations(e.target.value)}
@@ -1031,18 +1031,18 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
             )}
             {/* Bulk Edit Modal */}
             {isBulkEditModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-xl rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300">
-                        <div className="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-[#1E2A36] w-full max-w-xl rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-slate-100 dark:border-white/10">
+                        <div className="p-8 border-b border-slate-50 dark:border-white/10 flex justify-between items-center bg-slate-50/50 dark:bg-white/5">
                             <div>
-                                <h3 className="text-2xl font-black text-slate-900 tracking-tight">Editar em massa</h3>
+                                <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Editar em massa</h3>
                                 <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mt-1">
                                     Alterando {selectedExerciseIds.length} itens selecionados
                                 </p>
                             </div>
                             <button
                                 onClick={() => setIsBulkEditModalOpen(false)}
-                                className="w-10 h-10 rounded-full bg-white border border-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-colors shadow-sm"
+                                className="w-10 h-10 rounded-full bg-white dark:bg-white/10 border border-slate-100 dark:border-white/10 flex items-center justify-center text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors shadow-sm"
                             >
                                 <X size={20} weight="bold" />
                             </button>
@@ -1056,7 +1056,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     <input
                                         type="number"
                                         placeholder="Manter"
-                                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold outline-none focus:border-performance-green focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 dark:bg-white/10 p-4 rounded-2xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         value={bulkEditValues.sets}
                                         onChange={e => setBulkEditValues({ ...bulkEditValues, sets: e.target.value })}
                                     />
@@ -1066,7 +1066,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     <input
                                         type="number"
                                         placeholder="Manter"
-                                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold outline-none focus:border-performance-green focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 dark:bg-white/10 p-4 rounded-2xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         value={bulkEditValues.warmupSets}
                                         onChange={e => setBulkEditValues({ ...bulkEditValues, warmupSets: e.target.value })}
                                     />
@@ -1076,7 +1076,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     <input
                                         type="number"
                                         placeholder="Manter"
-                                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold outline-none focus:border-performance-green focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 dark:bg-white/10 p-4 rounded-2xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         value={bulkEditValues.preparatorySets}
                                         onChange={e => setBulkEditValues({ ...bulkEditValues, preparatorySets: e.target.value })}
                                     />
@@ -1089,7 +1089,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Repetições</label>
                                     <input
                                         placeholder="Manter"
-                                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold outline-none focus:border-performance-green focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 dark:bg-white/10 p-4 rounded-2xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         value={bulkEditValues.reps}
                                         onChange={e => setBulkEditValues({ ...bulkEditValues, reps: e.target.value })}
                                     />
@@ -1099,7 +1099,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     <input
                                         type="number"
                                         placeholder="Manter"
-                                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold outline-none focus:border-performance-green focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 dark:bg-white/10 p-4 rounded-2xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         value={bulkEditValues.restSeconds}
                                         onChange={e => setBulkEditValues({ ...bulkEditValues, restSeconds: e.target.value })}
                                     />
@@ -1109,7 +1109,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     <input
                                         type="number"
                                         placeholder="Manter"
-                                        className="w-full bg-slate-50 p-4 rounded-2xl border border-slate-100 font-bold outline-none focus:border-performance-green focus:bg-white transition-all"
+                                        className="w-full bg-slate-50 dark:bg-white/10 p-4 rounded-2xl border border-slate-100 dark:border-white/10 font-bold text-slate-700 dark:text-slate-200 outline-none focus:border-performance-green dark:focus:border-emerald-400 focus:bg-white dark:focus:bg-white/15 transition-all placeholder:text-slate-400 dark:placeholder:text-slate-500"
                                         value={bulkEditValues.rpe}
                                         onChange={e => setBulkEditValues({ ...bulkEditValues, rpe: e.target.value })}
                                     />
@@ -1129,7 +1129,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                     setIsBulkEditModalOpen(false);
                                     setBulkEditValues({ sets: '', warmupSets: '', preparatorySets: '', reps: '', restSeconds: '', rpe: '' });
                                 }}
-                                className="w-full py-5 bg-slate-900 text-white rounded-[24px] font-black shadow-xl hover:bg-black transition-all active:scale-95"
+                                className="w-full py-5 bg-slate-900 dark:bg-amber-500 dark:hover:bg-amber-600 text-white rounded-[24px] font-black shadow-xl hover:bg-black transition-all active:scale-95"
                             >
                                 Aplicar Alterações
                             </button>
@@ -1140,19 +1140,19 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
 
             {/* Bulk Delete Modal */}
             {isBulkDeleteModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
-                    <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 p-8 text-center">
-                        <div className="w-20 h-20 rounded-3xl bg-rose-50 flex items-center justify-center mx-auto mb-6 text-rose-500">
+                <div className="fixed inset-0 bg-slate-900/40 dark:bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center p-4 animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-[#1E2A36] w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 p-8 text-center border border-slate-100 dark:border-white/10">
+                        <div className="w-20 h-20 rounded-3xl bg-rose-50 dark:bg-rose-500/20 flex items-center justify-center mx-auto mb-6 text-rose-500 dark:text-rose-400">
                             <Trash size={40} weight="duotone" />
                         </div>
-                        <h3 className="text-2xl font-black text-slate-900 tracking-tight mb-2">Confirmar Exclusão</h3>
-                        <p className="text-slate-500 font-medium mb-8">
-                            Deseja realmente excluir os <span className="text-rose-500 font-black">{selectedExerciseIds.length}</span> exercícios selecionados? Esta ação não pode ser desfeita.
+                        <h3 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight mb-2">Confirmar Exclusão</h3>
+                        <p className="text-slate-500 dark:text-slate-300 font-medium mb-8">
+                            Deseja realmente excluir os <span className="text-rose-500 dark:text-rose-400 font-black">{selectedExerciseIds.length}</span> exercícios selecionados? Esta ação não pode ser desfeita.
                         </p>
                         <div className="grid grid-cols-2 gap-4">
                             <button
                                 onClick={() => setIsBulkDeleteModalOpen(false)}
-                                className="py-4 rounded-2xl bg-slate-50 text-slate-500 font-bold hover:bg-slate-100 transition-all"
+                                className="py-4 rounded-2xl bg-slate-50 dark:bg-white/10 text-slate-500 dark:text-slate-300 font-bold hover:bg-slate-100 dark:hover:bg-white/20 transition-all"
                             >
                                 Cancelar
                             </button>

@@ -1,11 +1,28 @@
 "use server";
 
-import { auth, clerkClient, currentUser } from "@clerk/nextjs/server";
+import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/db";
-import { trainers, plans, students } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { trainers, plans, students, platformPlans } from "@/db/schema";
+import { eq, asc } from "drizzle-orm";
+import { isCpfUsedByAnotherTrainer } from "@/lib/trainer-cpf";
 
 export type PlanOption = "free_5" | "free_trial" | "monthly" | "annual";
+
+/** Planos da plataforma (para exibir no onboarding quando vindos do servidor). */
+export type PlatformPlanOption = {
+    id: string;
+    slug: string;
+    name: string;
+    priceCents: number;
+    durationMonths: number;
+    maxStudents: number | null;
+    pricePerStudentCents: number | null;
+    features: string[] | null;
+    hasAi: boolean | null;
+    hasPriority: boolean | null;
+    trialDays: number | null;
+    hasSalesPipeline?: boolean;
+};
 
 export interface ServicePlan {
     name: string;
@@ -14,7 +31,7 @@ export interface ServicePlan {
 }
 
 export interface TrainerOnboardingData {
-    plan: PlanOption;
+    plan: PlanOption | string;
     cpf: string;
     birthDate: string; // ISO date string
     phone: string;
@@ -40,6 +57,59 @@ function generateTeamCode(): string {
         code += chars[Math.floor(Math.random() * chars.length)];
     }
     return code;
+}
+
+/**
+ * Normalize plan selection to platform slug for storage.
+ * free_5 -> free; free_trial/monthly -> pro-monthly; annual -> pro-yearly; else as-is.
+ */
+function normalizePlanToSlug(plan: PlanOption | string): string {
+    switch (plan) {
+        case "free_5": return "free";
+        case "free_trial":
+        case "monthly": return "pro-monthly";
+        case "annual": return "pro-yearly";
+        default: return String(plan);
+    }
+}
+
+/**
+ * List active platform plans for onboarding (name, price, features, trial, etc.).
+ */
+export async function getPlatformPlansForOnboarding(): Promise<PlatformPlanOption[]> {
+    const rows = await db
+        .select({
+            id: platformPlans.id,
+            slug: platformPlans.slug,
+            name: platformPlans.name,
+            priceCents: platformPlans.priceCents,
+            durationMonths: platformPlans.durationMonths,
+            maxStudents: platformPlans.maxStudents,
+            pricePerStudentCents: platformPlans.pricePerStudentCents,
+            features: platformPlans.features,
+            hasAi: platformPlans.hasAi,
+            hasPriority: platformPlans.hasPriority,
+            trialDays: platformPlans.trialDays,
+            hasSalesPipeline: platformPlans.hasSalesPipeline,
+        })
+        .from(platformPlans)
+        .where(eq(platformPlans.active, true))
+        .orderBy(asc(platformPlans.sortOrder));
+
+    return rows.map((r) => ({
+        id: r.id,
+        slug: r.slug,
+        name: r.name,
+        priceCents: r.priceCents ?? 0,
+        durationMonths: r.durationMonths ?? 1,
+        maxStudents: r.maxStudents ?? null,
+        pricePerStudentCents: r.pricePerStudentCents ?? null,
+        features: (r.features as string[]) ?? null,
+        hasAi: r.hasAi ?? false,
+        hasPriority: r.hasPriority ?? false,
+        trialDays: r.trialDays ?? null,
+        hasSalesPipeline: r.hasSalesPipeline ?? false,
+    }));
 }
 
 /**
@@ -74,9 +144,20 @@ export async function setUserRole(
     if (role === "trainer") {
         if (!trainerData) throw new Error("Trainer data is required");
 
+        const subscriptionPlan = normalizePlanToSlug(trainerData.plan);
+        const isTrialPlan = trainerData.plan === "free_trial" || subscriptionPlan === "pro-monthly" || subscriptionPlan === "pro-yearly";
+        const trialEndsAt = isTrialPlan
+            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+            : null;
+        const subscriptionStatus = isTrialPlan ? "trial" : "active";
+
+        // Uma conta por CPF na plataforma
+        if (trainerData.cpf && (await isCpfUsedByAnotherTrainer(trainerData.cpf, user.id))) {
+            throw new Error("Já existe uma conta cadastrada com este CPF. Não é permitido mais de uma conta por CPF.");
+        }
+
         // Generate unique team code
         let teamCode = generateTeamCode();
-        // Ensure uniqueness (retry if collision)
         for (let i = 0; i < 5; i++) {
             const existing = await db.query.trainers.findFirst({
                 where: eq(trainers.teamCode, teamCode),
@@ -86,14 +167,6 @@ export async function setUserRole(
             teamCode = generateTeamCode();
         }
 
-        // Calculate trial end date (30 days from now) for free_trial
-        const trialEndsAt = trainerData.plan === "free_trial"
-            ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            : null;
-
-        const subscriptionStatus = trainerData.plan === "free_trial" ? "trial" : "active";
-
-        // Sync to Database
         await db.insert(trainers).values({
             id: user.id,
             name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.username || "Trainer",
@@ -103,7 +176,7 @@ export async function setUserRole(
             birthDate: trainerData.birthDate ? new Date(trainerData.birthDate) : null,
             presentialStudents: trainerData.presentialStudents || 0,
             onlineStudents: trainerData.onlineStudents || 0,
-            subscriptionPlan: trainerData.plan,
+            subscriptionPlan,
             subscriptionStatus,
             trialEndsAt,
             teamCode,
@@ -115,7 +188,7 @@ export async function setUserRole(
                 birthDate: trainerData.birthDate ? new Date(trainerData.birthDate) : null,
                 presentialStudents: trainerData.presentialStudents || 0,
                 onlineStudents: trainerData.onlineStudents || 0,
-                subscriptionPlan: trainerData.plan,
+                subscriptionPlan,
                 subscriptionStatus,
                 trialEndsAt,
                 teamCode,

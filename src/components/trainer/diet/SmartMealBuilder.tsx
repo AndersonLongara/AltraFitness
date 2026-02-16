@@ -317,7 +317,7 @@ export default function SmartMealBuilder({ studentId: propStudentId, initialPlan
                     {isEditingTitle ? (
                         <input
                             autoFocus
-                            className="text-3xl font-extrabold text-graphite-dark bg-transparent border-b-2 border-performance-green outline-none"
+                            className="text-3xl font-extrabold text-graphite-dark dark:text-white bg-transparent border-b-2 border-performance-green outline-none"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             onBlur={() => setIsEditingTitle(false)}
@@ -325,11 +325,11 @@ export default function SmartMealBuilder({ studentId: propStudentId, initialPlan
                         />
                     ) : (
                         <h1
-                            className="text-3xl font-extrabold text-graphite-dark tracking-tight cursor-pointer hover:text-slate-600 transition-colors flex items-center gap-2"
+                            className="text-3xl font-extrabold text-graphite-dark dark:text-white tracking-tight cursor-pointer hover:text-slate-600 dark:hover:text-slate-300 transition-colors flex items-center gap-2"
                             onClick={() => setIsEditingTitle(true)}
                         >
                             {title}
-                            <span className="text-slate-300 text-lg">✎</span>
+                            <span className="text-slate-300 dark:text-slate-500 text-lg">✎</span>
                         </h1>
                     )}
                 </div>
@@ -338,24 +338,24 @@ export default function SmartMealBuilder({ studentId: propStudentId, initialPlan
                         <button
                             onClick={handleDelete}
                             disabled={isDeleting}
-                            className="p-3 text-rose-500 bg-rose-50 hover:bg-rose-100 rounded-2xl transition-colors disabled:opacity-50"
+                            className="p-3 text-rose-500 bg-rose-50 dark:bg-rose-500/10 dark:hover:bg-rose-500/20 hover:bg-rose-100 rounded-2xl transition-colors disabled:opacity-50"
                             title="Excluir Dieta"
                         >
                             <Trash size={24} weight="bold" />
                         </button>
                     )}
-                    <label className="flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-xl border border-slate-100 soft-shadow">
+                    <label className="flex items-center gap-2 cursor-pointer bg-white dark:bg-white/10 px-4 py-2 rounded-xl border border-slate-100 dark:border-white/10 soft-shadow">
                         <input
                             type="checkbox"
                             className="w-5 h-5 accent-performance-green rounded-lg"
                             checked={isTemplate}
                             onChange={(e) => setIsTemplate(e.target.checked)}
                         />
-                        <span className="font-bold text-slate-600 text-sm">Salvar como Modelo</span>
+                        <span className="font-bold text-slate-600 dark:text-slate-200 text-sm">Salvar como Modelo</span>
                     </label>
                     <button
                         onClick={handleSave}
-                        className={`flex items-center gap-2 px-6 py-3 text-graphite-dark font-bold rounded-2xl shadow-lg hover:brightness-110 active:scale-95 transition-all ${isTemplate ? 'bg-amber-400' : 'bg-performance-green'}`}
+                        className={`flex items-center gap-2 px-6 py-3 font-bold rounded-2xl shadow-lg hover:brightness-110 active:scale-95 transition-all ${isTemplate ? 'bg-amber-400 dark:bg-amber-500 dark:text-white text-graphite-dark' : 'bg-performance-green dark:bg-emerald-500 text-graphite-dark dark:text-white'}`}
                     >
                         <FloppyDisk size={24} weight="bold" />
                         {isTemplate ? "Salvar Modelo" : "Salvar Dieta"}
@@ -374,17 +374,17 @@ export default function SmartMealBuilder({ studentId: propStudentId, initialPlan
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* --- Left Column: Meals (2/3) --- */}
                 <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-slate-50/50 p-1 rounded-[32px] border border-slate-100 h-full">
-                        <div className="bg-pure-white rounded-[28px] soft-shadow p-6 min-h-[600px]">
+                    <div className="bg-slate-50/50 dark:bg-white/5 p-1 rounded-[32px] border border-slate-100 dark:border-white/10 h-full">
+                        <div className="bg-pure-white dark:bg-[#1E2A36]/80 rounded-[28px] soft-shadow p-6 min-h-[600px] border border-transparent dark:border-white/5">
                             {/* Header inside Card */}
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="flex items-center gap-2 text-xl font-bold text-graphite-dark">
-                                    <Cookie size={24} className="text-performance-green" weight="duotone" />
+                                <h3 className="flex items-center gap-2 text-xl font-bold text-graphite-dark dark:text-white">
+                                    <Cookie size={24} className="text-performance-green dark:text-emerald-400" weight="duotone" />
                                     Refeições
                                 </h3>
                                 <button
                                     onClick={addMeal}
-                                    className="px-4 py-2 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-black transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-slate-900 dark:bg-amber-500 dark:text-white text-white rounded-xl font-bold text-sm hover:bg-black dark:hover:bg-amber-600 transition-colors flex items-center gap-2"
                                 >
                                     <Plus size={16} weight="bold" /> Nova Refeição
                                 </button>
@@ -554,9 +554,9 @@ export default function SmartMealBuilder({ studentId: propStudentId, initialPlan
                 <div className="space-y-6">
                     {/* Info Box with Student Selector */}
                     {!isTemplate && (
-                        <div className="bg-pure-white p-6 rounded-[24px] soft-shadow border border-slate-50">
-                            <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark mb-4">
-                                <User size={20} weight="duotone" className="text-emerald-500" />
+                        <div className="bg-pure-white dark:bg-white/5 p-6 rounded-[24px] soft-shadow border border-slate-50 dark:border-white/10">
+                            <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark dark:text-white mb-4">
+                                <User size={20} weight="duotone" className="text-emerald-500 dark:text-emerald-400" />
                                 Info
                             </h3>
                             <div>
@@ -565,7 +565,7 @@ export default function SmartMealBuilder({ studentId: propStudentId, initialPlan
                                     <select
                                         value={selectedStudentId}
                                         onChange={(e) => setSelectedStudentId(e.target.value)}
-                                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 font-bold text-slate-600 outline-none focus:border-emerald-500 transition-colors"
+                                        className="w-full bg-slate-50 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-3 font-bold text-slate-600 dark:text-slate-200 outline-none focus:border-emerald-500 dark:focus:border-emerald-400 transition-colors"
                                     >
                                         <option value="" disabled>Selecione um aluno...</option>
                                         {students.map(s => (
@@ -581,15 +581,15 @@ export default function SmartMealBuilder({ studentId: propStudentId, initialPlan
                         </div>
                     )}
                     {/* Macros Box */}
-                    <div className="bg-pure-white p-6 rounded-[24px] soft-shadow border border-slate-50">
-                        <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark mb-6">
-                            <Target size={20} className="text-blue-500" weight="duotone" />
+                    <div className="bg-pure-white dark:bg-white/5 p-6 rounded-[24px] soft-shadow border border-slate-50 dark:border-white/10">
+                        <h3 className="flex items-center gap-2 text-md font-bold text-graphite-dark dark:text-white mb-6">
+                            <Target size={20} className="text-blue-500 dark:text-blue-400" weight="duotone" />
                             Metas Diárias
                         </h3>
 
                         <button
                             onClick={() => setIsCalculatorOpen(true)}
-                            className="w-full mb-6 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-bold rounded-xl shadow-lg shadow-violet-200 hover:shadow-xl hover:scale-[1.02] transition-all"
+                            className="w-full mb-6 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-500 dark:from-violet-600 dark:to-fuchsia-600 text-white font-bold rounded-xl shadow-lg shadow-violet-200 dark:shadow-none hover:shadow-xl hover:scale-[1.02] transition-all"
                         >
                             <Calculator size={20} weight="bold" />
                             Calculadora Metabólica

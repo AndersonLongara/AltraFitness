@@ -3,7 +3,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/db";
 import { workoutLogs, workoutLogSets, students } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { addXp } from "@/services/gamification";
 
@@ -34,10 +34,15 @@ export async function startWorkout(workoutId: string) {
 }
 
 export async function logSet(logId: string, exerciseId: string, setNumber: number, data: { weight?: number, reps: number, rpe?: number }) {
-    // Upsert logic would be better, but insert is fine for now as we assume sequential logging
-    // actually, if user edits a set, we should update.
+    const { userId } = await auth();
+    const user = await currentUser();
+    if (!userId || !user) throw new Error("Unauthorized");
+    const email = user.emailAddresses[0]?.emailAddress;
+    const student = await db.query.students.findFirst({ where: eq(students.email, email), columns: { id: true } });
+    if (!student) throw new Error("Student not found");
+    const log = await db.query.workoutLogs.findFirst({ where: eq(workoutLogs.id, logId), columns: { studentId: true } });
+    if (!log || log.studentId !== student.id) throw new Error("Log não encontrado ou não pertence a você.");
 
-    // Check if set exists
     const existingSet = await db.query.workoutLogSets.findFirst({
         where: (sets, { eq, and }) => and(
             eq(sets.logId, logId),
@@ -72,13 +77,14 @@ export async function logSet(logId: string, exerciseId: string, setNumber: numbe
 
 export async function finishWorkout(logId: string) {
     const { userId } = await auth();
-
-    // Validate ownership
-    const log = await db.query.workoutLogs.findFirst({
-        where: eq(workoutLogs.id, logId)
-    });
-
+    const user = await currentUser();
+    if (!userId || !user) throw new Error("Unauthorized");
+    const email = user.emailAddresses[0]?.emailAddress;
+    const student = await db.query.students.findFirst({ where: eq(students.email, email), columns: { id: true } });
+    if (!student) throw new Error("Student not found");
+    const log = await db.query.workoutLogs.findFirst({ where: eq(workoutLogs.id, logId) });
     if (!log) throw new Error("Log not found");
+    if (log.studentId !== student.id) throw new Error("Este treino não pertence a você.");
 
     await db.update(workoutLogs)
         .set({

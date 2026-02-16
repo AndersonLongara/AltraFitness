@@ -64,25 +64,25 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
     });
 
     return (
-        <div className="bg-pure-white p-6 rounded-3xl soft-shadow space-y-6">
+        <div className="bg-white dark:bg-[#1E2A36] p-6 rounded-3xl soft-shadow border border-slate-100 dark:border-white/10 space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h3 className="text-xl font-bold text-graphite-dark">Assinaturas Ativas</h3>
-                    <p className="text-sm text-slate-400">Gerenciamento de planos e renovações.</p>
+                    <h3 className="text-xl font-bold text-graphite-dark dark:text-white">Assinaturas Ativas</h3>
+                    <p className="text-sm text-slate-400 dark:text-slate-500">Gerenciamento de planos e renovações.</p>
                 </div>
 
                 <div className="flex gap-2 w-full md:w-auto">
                     <div className="relative flex-1 md:w-48">
-                        <MagnifyingGlass size={16} className="absolute left-3 top-3 text-slate-400" />
+                        <MagnifyingGlass size={16} className="absolute left-3 top-3 text-slate-400 dark:text-slate-500" />
                         <input
                             placeholder="Buscar aluno..."
-                            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm outline-none focus:border-performance-green bg-slate-50"
+                            className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-white/10 text-sm outline-none focus:border-performance-green bg-slate-50 dark:bg-white/5 dark:text-white font-medium"
                             value={search}
                             onChange={e => setSearch(e.target.value)}
                         />
                     </div>
                     <select
-                        className="py-2.5 px-4 rounded-xl border border-slate-200 text-sm outline-none focus:border-performance-green bg-slate-50 font-medium text-slate-600"
+                        className="py-2.5 px-4 rounded-xl border border-slate-200 dark:border-white/10 text-sm outline-none focus:border-performance-green bg-slate-50 dark:bg-white/5 font-medium text-slate-600 dark:text-slate-200"
                         value={filter}
                         onChange={(e) => setFilter(e.target.value as any)}
                     >
@@ -95,9 +95,9 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
             </div>
 
             {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-slate-50">
+            <div className="md:hidden divide-y divide-slate-100 dark:divide-white/10">
                 {filteredSubscriptions.length === 0 ? (
-                    <p className="text-center py-8 text-slate-400 text-sm">Nenhuma assinatura encontrada.</p>
+                    <p className="text-center py-8 text-slate-400 dark:text-slate-500 text-sm">Nenhuma assinatura encontrada.</p>
                 ) : (
                     filteredSubscriptions.map(sub => {
                         const status = getSubscriptionStatus(sub);
@@ -106,47 +106,47 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                             <div key={sub.id} className="p-4">
                                 <div className="flex items-center justify-between">
                                     <div className="min-w-0 flex-1">
-                                        <h4 className="font-bold text-slate-700 text-sm truncate">{sub.name}</h4>
+                                        <h4 className="font-bold text-slate-700 dark:text-slate-200 text-sm truncate">{sub.name}</h4>
                                         <div className="flex items-center gap-2 mt-1 flex-wrap">
                                             {status === 'active' && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
                                                     <CalendarCheck weight="fill" size={10} /> Ativo
                                                 </span>
                                             )}
                                             {status === 'expiring' && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold">
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-[10px] font-bold">
                                                     <Clock weight="fill" size={10} /> Expira em {daysUntilEnd}d
                                                 </span>
                                             )}
                                             {status === 'expired' && (
-                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-bold">
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-[10px] font-bold">
                                                     <Clock weight="fill" size={10} /> Expirado
                                                 </span>
                                             )}
-                                            <span className="text-xs text-slate-400">{sub.plan?.name || 'Sem plano'}</span>
+                                            <span className="text-xs text-slate-400 dark:text-slate-500">{sub.plan?.name || 'Sem plano'}</span>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0 ml-2">
                                         {sub.planId && (
                                             <button
                                                 onClick={() => handleRenew(sub.id)}
-                                                className="p-2 text-performance-green hover:bg-emerald-50 rounded-xl transition-colors"
+                                                className="p-2 text-performance-green hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-colors"
                                             >
                                                 <ArrowClockwise size={16} />
                                             </button>
                                         )}
                                         <button
                                             onClick={() => setAssigningTo(sub.id)}
-                                            className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors"
+                                            className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors"
                                         >
                                             <Swap size={16} />
                                         </button>
                                     </div>
                                 </div>
                                 {assigningTo === sub.id && (
-                                    <div className="flex gap-2 items-center mt-2 pt-2 border-t border-slate-100">
+                                    <div className="flex gap-2 items-center mt-2 pt-2 border-t border-slate-100 dark:border-white/10">
                                         <select
-                                            className="flex-1 p-2 rounded-xl border border-slate-200 text-xs font-medium outline-none focus:border-performance-green"
+                                            className="flex-1 p-2 rounded-xl border border-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-white text-xs font-medium outline-none focus:border-performance-green"
                                             value={selectedPlan}
                                             onChange={e => setSelectedPlan(e.target.value)}
                                         >
@@ -161,7 +161,7 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                                         </button>
                                         <button
                                             onClick={() => setAssigningTo(null)}
-                                            className="text-xs text-slate-500 px-2 py-1 hover:bg-slate-200 rounded-xl"
+                                            className="text-xs text-slate-500 dark:text-slate-400 px-2 py-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl"
                                         >
                                             ✕
                                         </button>
@@ -177,7 +177,7 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
             <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                     <thead>
-                        <tr className="text-xs text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                        <tr className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider border-b border-slate-100 dark:border-white/10">
                             <th className="pb-3 pl-2">Aluno</th>
                             <th className="pb-3">Plano</th>
                             <th className="pb-3">Vencimento</th>
@@ -188,7 +188,7 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                     <tbody className="text-sm">
                         {filteredSubscriptions.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="text-center py-8 text-slate-400">Nenhuma assinatura encontrada.</td>
+                                <td colSpan={5} className="text-center py-8 text-slate-400 dark:text-slate-500">Nenhuma assinatura encontrada.</td>
                             </tr>
                         ) : (
                             filteredSubscriptions.map(sub => {
@@ -196,13 +196,13 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                                 const daysUntilEnd = sub.planEnd ? differenceInDays(new Date(sub.planEnd), new Date()) : 0;
 
                                 return (
-                                    <tr key={sub.id} className="group hover:bg-slate-50 transition-colors border-b border-slate-50 last:border-0">
-                                        <td className="py-4 pl-2 font-bold text-slate-700">{sub.name}</td>
-                                        <td className="py-4 text-slate-500">
+                                    <tr key={sub.id} className="group hover:bg-slate-50 dark:hover:bg-white/5 transition-colors border-b border-slate-100 dark:border-white/10 last:border-0">
+                                        <td className="py-4 pl-2 font-bold text-slate-700 dark:text-slate-200">{sub.name}</td>
+                                        <td className="py-4 text-slate-500 dark:text-slate-400">
                                             {assigningTo === sub.id ? (
                                                 <div className="flex gap-2 items-center">
                                                     <select
-                                                        className="p-2 rounded-xl border border-slate-200 text-xs font-medium outline-none focus:border-performance-green"
+                                                        className="p-2 rounded-xl border border-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-white text-xs font-medium outline-none focus:border-performance-green"
                                                         value={selectedPlan}
                                                         onChange={e => setSelectedPlan(e.target.value)}
                                                     >
@@ -217,7 +217,7 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                                                     </button>
                                                     <button
                                                         onClick={() => setAssigningTo(null)}
-                                                        className="text-xs text-slate-500 px-2 py-1 hover:bg-slate-200 rounded-xl"
+                                                        className="text-xs text-slate-500 dark:text-slate-400 px-2 py-1 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl"
                                                     >
                                                         ✕
                                                     </button>
@@ -226,22 +226,22 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                                                 sub.plan?.name || '-'
                                             )}
                                         </td>
-                                        <td className="py-4 text-slate-500">
+                                        <td className="py-4 text-slate-500 dark:text-slate-400">
                                             {sub.planEnd ? format(new Date(sub.planEnd), "dd/MM/yyyy") : '-'}
                                         </td>
                                         <td className="py-4">
                                             {status === 'active' && (
-                                                <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold uppercase">
+                                                <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase">
                                                     <CalendarCheck weight="fill" /> Ativo
                                                 </span>
                                             )}
                                             {status === 'expiring' && (
-                                                <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold uppercase">
+                                                <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase">
                                                     <Clock weight="fill" /> Expira em {daysUntilEnd}d
                                                 </span>
                                             )}
                                             {status === 'expired' && (
-                                                <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 text-xs font-bold uppercase">
+                                                <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-400 text-xs font-bold uppercase">
                                                     <Clock weight="fill" /> Expirado
                                                 </span>
                                             )}
@@ -252,7 +252,7 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                                                     <button
                                                         onClick={() => handleRenew(sub.id)}
                                                         title="Renovar Assinatura"
-                                                        className="p-2 text-performance-green hover:bg-emerald-50 rounded-xl transition-colors"
+                                                        className="p-2 text-performance-green hover:bg-emerald-50 dark:hover:bg-emerald-500/10 rounded-xl transition-colors"
                                                     >
                                                         <ArrowClockwise size={18} />
                                                     </button>
@@ -260,7 +260,7 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                                                 <button
                                                     onClick={() => setAssigningTo(sub.id)}
                                                     title="Trocar Plano"
-                                                    className="p-2 text-slate-400 hover:bg-slate-100 rounded-xl transition-colors"
+                                                    className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl transition-colors"
                                                 >
                                                     <Swap size={18} />
                                                 </button>
@@ -268,7 +268,7 @@ export default function SubscriptionsList({ subscriptions, plans }: { subscripti
                                                     <button
                                                         onClick={() => handleCancel(sub.id)}
                                                         title="Cancelar Assinatura"
-                                                        className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                                                        className="p-2 text-slate-300 dark:text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-colors"
                                                     >
                                                         <Trash size={18} />
                                                     </button>

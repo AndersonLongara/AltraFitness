@@ -7,6 +7,8 @@ import WorkoutList from "@/components/student/workout/WorkoutList";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 export default async function StudentWorkoutsPage() {
     const { userId } = await auth();
     const user = await currentUser();

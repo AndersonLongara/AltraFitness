@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ptBR } from "@clerk/localizations";
+import { ThemeProvider } from "@/app/providers/ThemeProvider";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -27,14 +28,20 @@ export default function RootLayout({
       afterSignUpUrl="/auth-redirect"
       signInFallbackRedirectUrl="/auth-redirect"
       signUpFallbackRedirectUrl="/auth-redirect"
+      afterSignOutUrl="/sign-in"
       publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
       localization={ptBR}
     >
-      <html lang="pt-BR">
-        <body
-          className={`${jakarta.variable} antialiased bg-ice-white text-graphite-dark`}
-        >
-          {children}
+      <html lang="pt-BR" suppressHydrationWarning>
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `(function(){var c=document.cookie.match(/altrafitness-theme=([^;]+)/);var t=c?c[1]:'system';var r=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.toggle('dark',r);})();`,
+            }}
+          />
+        </head>
+        <body className={`${jakarta.variable} antialiased`}>
+          <ThemeProvider>{children}</ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

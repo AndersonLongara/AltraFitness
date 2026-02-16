@@ -103,13 +103,13 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 backdrop-blur-sm p-4 overflow-y-auto">
-            <div className="bg-pure-white w-full max-w-2xl rounded-3xl soft-shadow overflow-hidden my-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 dark:bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+            <div className="bg-pure-white dark:bg-[#1E2A36] w-full max-w-2xl rounded-3xl soft-shadow overflow-hidden my-auto border border-slate-100 dark:border-white/10">
 
                 {/* Header */}
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-white sticky top-0 z-10">
-                    <h3 className="text-xl font-bold text-graphite-dark">{initialData ? 'Editar Aluno' : 'Novo Aluno'}</h3>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-xl transition-colors">
+                <div className="p-6 border-b border-slate-100 dark:border-white/10 flex justify-between items-center bg-white dark:bg-[#1E2A36] sticky top-0 z-10">
+                    <h3 className="text-xl font-bold text-graphite-dark dark:text-white">{initialData ? 'Editar Aluno' : 'Novo Aluno'}</h3>
+                    <button onClick={onClose} className="p-2 text-slate-400 dark:hover:text-white hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-white/10 rounded-xl transition-colors">
                         <X size={24} weight="bold" />
                     </button>
                 </div>
@@ -119,7 +119,7 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
 
                     {/* Basic Info Section */}
                     <div className="space-y-4">
-                        <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-100 pb-2">Informações Pessoais</h4>
+                        <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest border-b border-emerald-100 dark:border-emerald-500/30 pb-2">Informações Pessoais</h4>
 
                         <div>
                             <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Nome Completo</label>
@@ -127,7 +127,7 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
                                 autoFocus
                                 type="text"
                                 required
-                                className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 placeholder:text-slate-300"
+                                className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 placeholder:text-slate-300 dark:placeholder:text-slate-500 border border-transparent dark:border-white/10"
                                 placeholder="Ex: João da Silva"
                                 value={name}
                                 onChange={e => setName(e.target.value)}
@@ -142,7 +142,7 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
                                     required
                                     maxLength={14}
                                     placeholder="000.000.000-00"
-                                    className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 placeholder:text-slate-300"
+                                    className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 placeholder:text-slate-300 dark:placeholder:text-slate-500 border border-transparent dark:border-white/10"
                                     value={cpf}
                                     onChange={handleCPFChange}
                                 />
@@ -151,7 +151,7 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Data de Nascimento</label>
                                 <input
                                     type="date"
-                                    className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 text-slate-500"
+                                    className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 text-slate-500 dark:text-slate-300 border border-transparent dark:border-white/10"
                                     value={birthDate}
                                     onChange={e => setBirthDate(e.target.value)}
                                 />
@@ -162,7 +162,7 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Gênero</label>
                                 <select
-                                    className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 appearance-none cursor-pointer"
+                                    className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 appearance-none cursor-pointer border border-transparent dark:border-white/10"
                                     value={gender}
                                     onChange={e => setGender(e.target.value as any)}
                                 >
@@ -176,7 +176,7 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
                                 <input
                                     type="tel"
                                     placeholder="(00) 00000-0000"
-                                    className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 placeholder:text-slate-300"
+                                    className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 placeholder:text-slate-300 dark:placeholder:text-slate-500 border border-transparent dark:border-white/10"
                                     value={phone}
                                     onChange={e => setPhone(e.target.value)}
                                 />
@@ -188,7 +188,7 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
                             <input
                                 type="email"
                                 placeholder="exemplo@email.com"
-                                className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 placeholder:text-slate-300"
+                                className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 placeholder:text-slate-300 dark:placeholder:text-slate-500 border border-transparent dark:border-white/10"
                                 value={email}
                                 onChange={e => setEmail(e.target.value)}
                             />
@@ -197,14 +197,14 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
 
                     {/* Physical Info Section */}
                     <div className="space-y-4 pt-2">
-                        <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-100 pb-2">Dados Físicos Iniciais</h4>
+                        <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest border-b border-emerald-100 dark:border-emerald-500/30 pb-2">Dados Físicos Iniciais</h4>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Altura (cm)</label>
                                 <input
                                     type="number"
                                     placeholder="175"
-                                    className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 placeholder:text-slate-300"
+                                    className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 placeholder:text-slate-300 dark:placeholder:text-slate-500 border border-transparent dark:border-white/10"
                                     value={height}
                                     onChange={e => setHeight(e.target.value)}
                                 />
@@ -215,7 +215,7 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
                                     type="number"
                                     step="0.1"
                                     placeholder="70.5"
-                                    className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 placeholder:text-slate-300"
+                                    className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 placeholder:text-slate-300 dark:placeholder:text-slate-500 border border-transparent dark:border-white/10"
                                     value={weight}
                                     onChange={e => setWeight(e.target.value)}
                                 />
@@ -225,29 +225,29 @@ export default function StudentForm({ isOpen, onClose, onSubmit, initialData }: 
 
                     {/* Plan Info Section */}
                     <div className="space-y-4 pt-2">
-                        <h4 className="text-sm font-bold text-emerald-600 uppercase tracking-widest border-b border-emerald-100 pb-2">Plano</h4>
+                        <h4 className="text-sm font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest border-b border-emerald-100 dark:border-emerald-500/30 pb-2">Plano</h4>
                         <div>
                             <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Vencimento do Plano</label>
                             <input
                                 type="date"
-                                className="w-full p-4 bg-slate-50 rounded-xl font-medium text-slate-700 outline-none focus:ring-2 focus:ring-emerald-100 text-slate-500"
+                                className="w-full p-4 bg-slate-50 dark:bg-white/10 rounded-xl font-medium text-slate-700 dark:text-slate-200 outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 text-slate-500 dark:text-slate-300 border border-transparent dark:border-white/10"
                                 value={planEnd}
                                 onChange={e => setPlanEnd(e.target.value)}
                             />
                         </div>
                     </div>
 
-                    <div className="pt-4 flex justify-end gap-4 border-t border-slate-100 mt-6">
+                    <div className="pt-4 flex justify-end gap-4 border-t border-slate-100 dark:border-white/10 mt-6">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-6 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors"
+                            className="px-6 py-4 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-50 dark:hover:bg-white/10 rounded-xl transition-colors"
                         >
                             Cancelar
                         </button>
                         <button
                             type="submit"
-                            className="px-6 py-4 bg-performance-green text-graphite-dark font-bold rounded-xl shadow-lg shadow-emerald-200 hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
+                            className="px-6 py-4 bg-performance-green dark:bg-emerald-500 text-graphite-dark dark:text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:brightness-110 active:scale-95 transition-all flex items-center gap-2"
                         >
                             <FloppyDisk size={20} weight="bold" />
                             {initialData ? 'Atualizar Aluno' : 'Salvar Aluno'}

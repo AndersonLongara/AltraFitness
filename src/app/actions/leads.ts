@@ -56,27 +56,18 @@ export async function getLeads() {
 export async function updateLeadStage(id: string, stage: string) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
-
     await db.update(leads)
-        .set({
-            pipelineStage: stage,
-            status: stage, // Sync legacy status
-            updatedAt: new Date()
-        })
-        .where(eq(leads.id, id));
-
+        .set({ pipelineStage: stage, status: stage, updatedAt: new Date() })
+        .where(and(eq(leads.id, id), eq(leads.trainerId, userId)));
     revalidatePath("/dashboard/sales");
 }
 
 export async function updateLeadMetadata(id: string, data: { temperature?: string; estimatedValue?: number }) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
-
     await db.update(leads)
-        // @ts-ignore - temperature/estimatedValue are new fields, might need restart for types
-        .set({ ...data, updatedAt: new Date() })
-        .where(eq(leads.id, id));
-
+        .set({ ...data, updatedAt: new Date() } as Record<string, unknown>)
+        .where(and(eq(leads.id, id), eq(leads.trainerId, userId)));
     revalidatePath("/dashboard/sales");
 }
 
@@ -97,12 +88,8 @@ export async function updateLeadStageData(id: string, stageData: Record<string, 
     // Accessing `leads.stageData` might need casting.
 
     await db.update(leads)
-        .set({
-            stageData: stageData as any,
-            updatedAt: new Date()
-        })
-        .where(eq(leads.id, id));
-
+        .set({ stageData: stageData as Record<string, unknown>, updatedAt: new Date() })
+        .where(and(eq(leads.id, id), eq(leads.trainerId, userId)));
     revalidatePath("/dashboard/sales");
 }
 

@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Tema escuro controlado pela classe .dark no <html> (escolha nas configurações) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: var(--font-jakarta);
 
@@ -56,10 +59,19 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+:root {
+  --background: var(--color-ice-white);
+  --foreground: var(--color-graphite-dark);
+}
+.dark {
+  --background: #131B23;
+  --foreground: #F8F9FA;
+}
+
 body {
   font-family: var(--font-jakarta), sans-serif;
-  background-color: var(--color-ice-white);
-  color: var(--color-graphite-dark);
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 /* 

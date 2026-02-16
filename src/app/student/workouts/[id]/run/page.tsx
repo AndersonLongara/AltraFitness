@@ -5,6 +5,8 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import WorkoutRunner from "@/components/student/workout/WorkoutRunner";
 
+export const dynamic = "force-dynamic";
+
 export default async function WorkoutRunnerPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ logId: string }> }) {
     const { userId } = await auth();
     if (!userId) return redirect("/sign-in");

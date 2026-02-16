@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/libsql';
 import { createClient } from '@libsql/client';
-import * as schema from './schema';
+import { schema } from './schema';
 
 const rawUrl = process.env.TURSO_DATABASE_URL || 'file:local.db';
 // Strip any trailing whitespace/newlines that may come from env var config

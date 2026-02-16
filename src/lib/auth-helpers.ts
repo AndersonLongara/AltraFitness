@@ -6,10 +6,10 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { db } from "@/db";
-import { students, trainers } from "@/db/schema";
+import { students, trainers, userRoles } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
-export type UserRole = "trainer" | "student";
+export type UserRole = "trainer" | "student" | "superadmin";
 
 interface TrainerData {
     id: string;
@@ -35,33 +35,37 @@ export async function getRole(): Promise<UserRole | null> {
         const user = await currentUser();
         if (!user) return null;
 
-        // Primary: Check Clerk publicMetadata
+        const email = user.emailAddresses[0]?.emailAddress;
+
+        // Superadmin tem prioridade: quem está em user_roles ou na lista de e-mails deve acessar o painel mesmo que tenha metadata "trainer"
+        const roleRow = await db.query.userRoles.findFirst({
+            where: eq(userRoles.userId, user.id),
+            columns: { role: true },
+        });
+        if (roleRow?.role === "superadmin") return "superadmin";
+        if (email && (await isSuperAdminEmail(email))) return "superadmin";
+
+        // Clerk publicMetadata (onboarding / webhook)
         const metadata = user.publicMetadata as { role?: UserRole };
         if (metadata?.role) {
             return metadata.role;
         }
 
-        // Fallback: Database lookup for legacy users
-        const email = user.emailAddresses[0]?.emailAddress;
+        // Fallback: Database lookup para usuários sem metadata
         if (!email) return null;
 
-        // Check if user is a student
         const student = await db.query.students.findFirst({
             where: eq(students.email, email),
             columns: { id: true },
         });
-
         if (student) return "student";
 
-        // Check if user is a trainer in DB
         const trainer = await db.query.trainers.findFirst({
             where: eq(trainers.id, user.id),
             columns: { id: true },
         });
-
         if (trainer) return "trainer";
 
-        // No role found — user needs onboarding
         return null;
     } catch (error) {
         console.error("[getRole] Error:", error);
@@ -193,7 +197,28 @@ export async function getRoleRedirectUrl(): Promise<string> {
             return "/dashboard";
         case "student":
             return "/student";
+        case "superadmin":
+            return "/superadmin";
         default:
             return "/onboarding"; // For users without role
     }
+}
+
+/** E-mail do superadmin padrão (sempre considerado superadmin, mesmo sem variável de ambiente). */
+const DEFAULT_SUPERADMIN_EMAIL = "anderson.longara@gmail.com";
+
+/** Verifica se o e-mail está na lista de superadmins (SUPERADMIN_EMAIL ou e-mail padrão anderson.longara@gmail.com). */
+export async function isSuperAdminEmail(email: string): Promise<boolean> {
+    const lower = email.trim().toLowerCase();
+    if (lower === DEFAULT_SUPERADMIN_EMAIL) return true;
+    const list = process.env.SUPERADMIN_EMAIL?.trim();
+    if (!list) return false;
+    const emails = list.split(",").map((e) => e.trim().toLowerCase());
+    return emails.includes(lower);
+}
+
+/** Exige que o usuário atual seja superadmin; redireciona para / caso contrário. */
+export async function requireSuperAdmin(): Promise<void> {
+    const role = await getRole();
+    if (role !== "superadmin") redirect("/");
 }

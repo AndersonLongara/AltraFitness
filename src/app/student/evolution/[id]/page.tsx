@@ -7,6 +7,8 @@ import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import Image from "next/image";
 
+export const dynamic = "force-dynamic";
+
 export default async function AssessmentDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { userId } = await auth();
     const user = await currentUser();

@@ -41,14 +41,14 @@ export default function ExerciseLibraryList({ initialExercises }: ExerciseLibrar
         <div className="space-y-8">
             {/* Filters & Search */}
             <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 bg-pure-white px-4 py-4 rounded-2xl soft-shadow border border-slate-100 flex items-center">
-                    <MagnifyingGlass size={20} className="text-slate-400 mr-2" />
+                <div className="flex-1 bg-pure-white dark:bg-[#1E2A36] px-4 py-4 rounded-2xl soft-shadow border border-slate-100 dark:border-white/10 flex items-center">
+                    <MagnifyingGlass size={20} className="text-slate-400 dark:text-slate-500 mr-2" />
                     <input
                         type="text"
                         placeholder="Buscar por nome..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="bg-transparent outline-none text-sm font-medium text-slate-600 w-full placeholder:text-slate-300"
+                        className="bg-transparent outline-none text-sm font-medium text-slate-600 dark:text-slate-200 w-full placeholder:text-slate-300 dark:placeholder:text-slate-500"
                     />
                 </div>
 
@@ -61,8 +61,8 @@ export default function ExerciseLibraryList({ initialExercises }: ExerciseLibrar
                                 key={tag}
                                 onClick={() => setCategory(tag)}
                                 className={`px-4 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 border ${isActive
-                                    ? `${config.bg} ${config.accent} ${config.border}`
-                                    : 'bg-white text-slate-500 hover:bg-slate-50 border-slate-100'
+                                    ? `${config.bg} ${config.accent} ${config.border} dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30`
+                                    : 'bg-white dark:bg-[#1E2A36] text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10 border-slate-100 dark:border-white/10'
                                     }`}
                             >
                                 {config.icon}
@@ -91,7 +91,7 @@ export default function ExerciseLibraryList({ initialExercises }: ExerciseLibrar
                 })}
 
                 {filtered.length === 0 && (
-                    <div className="col-span-full py-20 text-center text-slate-400">
+                    <div className="col-span-full py-20 text-center text-slate-400 dark:text-slate-500">
                         <p>Nenhum exercício encontrado com estes filtros.</p>
                     </div>
                 )}

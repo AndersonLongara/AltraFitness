@@ -13,7 +13,7 @@ export default function SalesMetrics({ totalValue, activeLeads, conversionRate, 
     return (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 animate-in slide-in-from-top-4 duration-500">
             {/* Total Value Card */}
-            <div className="bg-graphite-dark rounded-[24px] p-6 text-white relative overflow-hidden group">
+            <div className="bg-graphite-dark dark:bg-[#1E2A36] rounded-[24px] p-6 text-white border border-transparent dark:border-white/10 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <CurrencyDollar size={80} weight="fill" />
                 </div>
@@ -34,47 +34,47 @@ export default function SalesMetrics({ totalValue, activeLeads, conversionRate, 
             </div>
 
             {/* Active Leads Card */}
-            <div className="bg-white rounded-[24px] p-6 border border-slate-100 soft-shadow group hover:border-performance-green/30 transition-all">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 border border-slate-100 dark:border-white/10 soft-shadow group hover:border-performance-green/30 transition-all">
                 <div className="flex justify-between items-start">
                     <div>
-                        <div className="flex items-center gap-2 mb-2 text-slate-500">
-                            <div className="p-1.5 bg-blue-50 text-blue-500 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
+                            <div className="p-1.5 bg-blue-50 dark:bg-blue-500/10 text-blue-500 dark:text-blue-400 rounded-lg">
                                 <Users size={16} weight="bold" />
                             </div>
                             <span className="text-xs font-bold uppercase tracking-widest">Leads Ativos</span>
                         </div>
-                        <h3 className="text-3xl font-black text-graphite-dark tracking-tight mt-2">
+                        <h3 className="text-3xl font-black text-graphite-dark dark:text-white tracking-tight mt-2">
                             {activeLeads}
                         </h3>
                     </div>
-                    <div className="h-10 w-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                    <div className="h-10 w-10 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform">
                         <TrendUp size={20} weight="bold" />
                     </div>
                 </div>
-                <p className="text-xs text-slate-400 mt-1 font-medium">
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">
                     Em negociação ou contato
                 </p>
             </div>
 
             {/* Conversion Rate Card */}
-            <div className="bg-white rounded-[24px] p-6 border border-slate-100 soft-shadow group hover:border-performance-green/30 transition-all">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 border border-slate-100 dark:border-white/10 soft-shadow group hover:border-performance-green/30 transition-all">
                 <div className="flex justify-between items-start">
                     <div>
-                        <div className="flex items-center gap-2 mb-2 text-slate-500">
-                            <div className="p-1.5 bg-emerald-50 text-emerald-500 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2 text-slate-500 dark:text-slate-400">
+                            <div className="p-1.5 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 rounded-lg">
                                 <Lightning size={16} weight="fill" />
                             </div>
                             <span className="text-xs font-bold uppercase tracking-widest">Conversão</span>
                         </div>
-                        <h3 className="text-3xl font-black text-graphite-dark tracking-tight mt-2">
+                        <h3 className="text-3xl font-black text-graphite-dark dark:text-white tracking-tight mt-2">
                             {conversionRate.toFixed(1)}%
                         </h3>
                     </div>
-                    <div className="h-10 w-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 group-hover:rotate-12 transition-transform">
+                    <div className="h-10 w-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400 group-hover:rotate-12 transition-transform">
                         <Lightning size={20} weight="duotone" />
                     </div>
                 </div>
-                <p className="text-xs text-slate-400 mt-1 font-medium">
+                <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 font-medium">
                     Taxa de fechamento global
                 </p>
             </div>

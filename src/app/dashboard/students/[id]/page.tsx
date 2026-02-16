@@ -1,4 +1,4 @@
-import Sidebar from "@/components/layout/Sidebar";
+import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { db } from "@/db";
@@ -77,7 +77,7 @@ export default async function StudentProfilePage({ params }: PageProps) {
 
     return (
         <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
-            <Sidebar />
+            <LayoutSidebar />
 
             <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-6">
                 {/* Header / Nav */}

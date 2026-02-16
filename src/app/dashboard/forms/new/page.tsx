@@ -4,7 +4,7 @@ import { useState } from "react";
 import { createForm } from "@/app/actions/forms";
 import { Plus, Trash, TextT, ListNumbers, CheckSquare, CaretDown, CaretUp } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
-import Sidebar from "@/components/layout/Sidebar";
+import LayoutSidebar from "@/components/layout/LayoutSidebar";
 
 export default function NewFormPage() {
     const router = useRouter();
@@ -66,16 +66,16 @@ export default function NewFormPage() {
     };
 
     return (
-        <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
-            <Sidebar />
+        <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
+            <LayoutSidebar />
 
             <main className="max-w-4xl mx-auto p-6 md:p-8">
                 <header className="flex items-center justify-between mb-8">
-                    <h1 className="text-2xl font-extrabold text-graphite-dark">Novo Formulário</h1>
+                    <h1 className="text-3xl font-extrabold text-graphite-dark dark:text-white tracking-tight">Novo Formulário</h1>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="bg-emerald-500 text-white px-6 py-2 rounded-xl font-bold hover:bg-emerald-600 disabled:opacity-50 transition-all shadow-lg shadow-emerald-100"
+                        className="px-6 py-3 bg-performance-green text-graphite-dark font-bold rounded-2xl hover:brightness-110 disabled:opacity-50 transition-all"
                     >
                         {isSaving ? 'Salvando...' : 'Publicar Formulário'}
                     </button>
@@ -83,36 +83,37 @@ export default function NewFormPage() {
 
                 <div className="space-y-6">
                     {/* General Settings */}
-                    <div className="bg-white p-6 rounded-3xl soft-shadow border border-slate-50 space-y-4">
+                    <div className="bg-white dark:bg-[#1E2A36] p-6 rounded-3xl soft-shadow border border-slate-100 dark:border-white/10 space-y-4">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Título</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Título</label>
                             <input
                                 type="text"
                                 value={title}
                                 onChange={e => setTitle(e.target.value)}
                                 placeholder="Ex: Check-in Semanal"
-                                className="w-full text-lg font-bold border-b-2 border-slate-100 focus:border-emerald-500 outline-none py-2 transition-colors"
+                                className="w-full text-lg font-bold border-b-2 border-slate-100 dark:border-white/10 bg-transparent focus:border-emerald-500 dark:focus:border-performance-green outline-none py-2 transition-colors text-graphite-dark dark:text-white placeholder:text-slate-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-1">Descrição (Opcional)</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">Descrição (Opcional)</label>
                             <textarea
                                 value={description}
                                 onChange={e => setDescription(e.target.value)}
                                 placeholder="Instruções para o aluno..."
-                                className="w-full border rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-100 outline-none resize-none h-24"
+                                className="w-full border border-slate-200 dark:border-white/20 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-100 dark:focus:ring-performance-green/20 outline-none resize-none h-24 bg-white dark:bg-white/5 text-graphite-dark dark:text-white placeholder:text-slate-400"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">Gatilho de Envio</label>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-2">Gatilho de Envio</label>
                             <div className="flex gap-2">
                                 {['manual', 'on_signup', 'weekly'].map(type => (
                                     <button
                                         key={type}
                                         onClick={() => setTriggerType(type)}
+                                        type="button"
                                         className={`px-4 py-2 rounded-lg text-sm font-bold border transition-all ${triggerType === type
-                                            ? 'bg-slate-800 text-white border-slate-800'
-                                            : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                                            ? 'bg-graphite-dark dark:bg-white text-white dark:text-graphite-dark border-graphite-dark dark:border-white'
+                                            : 'bg-white dark:bg-white/5 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/20 hover:border-slate-300 dark:hover:border-white/30'
                                             }`}
                                     >
                                         {type === 'manual' && 'Manual'}
@@ -127,15 +128,15 @@ export default function NewFormPage() {
                     {/* Questions Builder */}
                     <div className="space-y-4">
                         {questions.map((q, index) => (
-                            <div key={q.id} className="bg-white p-6 rounded-3xl soft-shadow border border-slate-50 relative group">
+                            <div key={q.id} className="bg-white dark:bg-[#1E2A36] p-6 rounded-3xl soft-shadow border border-slate-100 dark:border-white/10 relative group">
                                 <div className="absolute top-4 right-4 flex gap-2">
-                                    <button onClick={() => removeQuestion(q.id)} className="text-slate-300 hover:text-rose-500 p-2 transition-colors">
+                                    <button type="button" onClick={() => removeQuestion(q.id)} className="text-slate-300 dark:text-slate-500 hover:text-rose-500 p-2 transition-colors">
                                         <Trash size={20} />
                                     </button>
                                 </div>
 
                                 <div className="flex items-start gap-4">
-                                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 text-slate-500 font-bold flex items-center justify-center text-sm">
+                                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 font-bold flex items-center justify-center text-sm">
                                         {index + 1}
                                     </span>
                                     <div className="flex-1 space-y-4">
@@ -145,13 +146,13 @@ export default function NewFormPage() {
                                                 value={q.question}
                                                 onChange={e => updateQuestion(q.id, 'question', e.target.value)}
                                                 placeholder="Escreva a pergunta aqui..."
-                                                className="flex-1 font-bold text-slate-700 placeholder:text-slate-300 outline-none"
+                                                className="flex-1 font-bold text-slate-700 dark:text-white placeholder:text-slate-400 bg-transparent outline-none"
                                                 autoFocus
                                             />
                                             <select
                                                 value={q.type}
                                                 onChange={e => updateQuestion(q.id, 'type', e.target.value)}
-                                                className="bg-slate-50 border-none rounded-lg text-xs font-bold text-slate-600 py-1 pl-2 pr-8"
+                                                className="bg-slate-50 dark:bg-white/10 border-0 rounded-lg text-xs font-bold text-slate-600 dark:text-slate-300 py-1 pl-2 pr-8"
                                             >
                                                 <option value="text">Texto Curto</option>
                                                 <option value="long_text">Texto Longo</option>
@@ -162,10 +163,10 @@ export default function NewFormPage() {
 
                                         {/* Options for Select Types */}
                                         {q.type.includes('select') && (
-                                            <div className="space-y-2 pl-4 border-l-2 border-slate-100">
+                                            <div className="space-y-2 pl-4 border-l-2 border-slate-100 dark:border-white/10">
                                                 {q.options?.map((opt: string, optIndex: number) => (
                                                     <div key={optIndex} className="flex items-center gap-2">
-                                                        <div className="w-3 h-3 rounded-full border border-slate-300"></div>
+                                                        <div className="w-3 h-3 rounded-full border border-slate-300 dark:border-slate-500"></div>
                                                         <input
                                                             type="text"
                                                             value={opt}
@@ -174,22 +175,24 @@ export default function NewFormPage() {
                                                                 newOptions[optIndex] = e.target.value;
                                                                 updateQuestion(q.id, 'options', newOptions);
                                                             }}
-                                                            className="text-sm text-slate-600 outline-none border-b border-transparent focus:border-emerald-300"
+                                                            className="text-sm text-slate-600 dark:text-slate-300 bg-transparent outline-none border-b border-transparent focus:border-emerald-300 dark:focus:border-performance-green"
                                                         />
                                                         <button
+                                                            type="button"
                                                             onClick={() => {
                                                                 const newOptions = q.options.filter((_: any, i: number) => i !== optIndex);
                                                                 updateQuestion(q.id, 'options', newOptions);
                                                             }}
-                                                            className="text-slate-300 hover:text-rose-400"
+                                                            className="text-slate-300 dark:text-slate-500 hover:text-rose-400"
                                                         >
                                                             &times;
                                                         </button>
                                                     </div>
                                                 ))}
                                                 <button
+                                                    type="button"
                                                     onClick={() => updateQuestion(q.id, 'options', [...(q.options || []), `Opção ${(q.options?.length || 0) + 1}`])}
-                                                    className="text-xs font-bold text-emerald-600 hover:text-emerald-700 mt-2"
+                                                    className="text-xs font-bold text-emerald-600 dark:text-performance-green hover:text-emerald-700 mt-2"
                                                 >
                                                     + Adicionar Opção
                                                 </button>
@@ -197,7 +200,7 @@ export default function NewFormPage() {
                                         )}
 
                                         <div className="flex items-center gap-4 pt-2">
-                                            <label className="flex items-center gap-2 text-xs font-bold text-slate-500 cursor-pointer">
+                                            <label className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer">
                                                 <input
                                                     type="checkbox"
                                                     checked={q.required}
@@ -215,17 +218,17 @@ export default function NewFormPage() {
 
                     {/* Toolbox */}
                     <div className="flex justify-center gap-4 py-8">
-                        <button onClick={() => addQuestion('text')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-100 transition-all w-24 group">
-                            <TextT size={24} className="text-slate-400 group-hover:text-emerald-500" />
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Texto</span>
+                        <button type="button" onClick={() => addQuestion('text')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
+                            <TextT size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Texto</span>
                         </button>
-                        <button onClick={() => addQuestion('scale')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-100 transition-all w-24 group">
-                            <ListNumbers size={24} className="text-slate-400 group-hover:text-emerald-500" />
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Escala</span>
+                        <button type="button" onClick={() => addQuestion('scale')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
+                            <ListNumbers size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Escala</span>
                         </button>
-                        <button onClick={() => addQuestion('single_select')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white hover:bg-slate-50 border border-slate-100 transition-all w-24 group">
-                            <CheckSquare size={24} className="text-slate-400 group-hover:text-emerald-500" />
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Seleção</span>
+                        <button type="button" onClick={() => addQuestion('single_select')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
+                            <CheckSquare size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Seleção</span>
                         </button>
                     </div>
                 </div>

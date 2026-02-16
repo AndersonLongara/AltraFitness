@@ -12,6 +12,8 @@ import { getStudentStats, getWorkoutHistory, getStudentPhotos } from "@/app/acti
 import { getStudentAssessments } from "@/app/actions/assessments";
 import AssessmentHistory from "@/components/student/evolution/AssessmentHistory";
 
+export const dynamic = "force-dynamic";
+
 export default async function EvolutionPage() {
     const { userId } = await auth();
     const user = await currentUser();
