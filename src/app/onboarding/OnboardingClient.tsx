@@ -389,7 +389,7 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-400">
                         {initialPlatformPlans.length > 0 ? (
                             <>
-                                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                                <div className="flex flex-wrap justify-center items-stretch gap-6 w-fit max-w-full mx-auto">
                                     {initialPlatformPlans.map((plan) => {
                                         const isFree = (plan.priceCents ?? 0) === 0;
                                         const hasTrial = (plan.trialDays ?? 0) > 0;
@@ -406,7 +406,7 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                                                 key={plan.id}
                                                 onClick={() => handlePlanSelect(plan.slug)}
                                                 className={cn(
-                                                    "bg-[#111113] rounded-3xl border p-8 text-left transition-all duration-200 hover:scale-[1.01] group relative flex flex-col h-full",
+                                                    "w-[280px] min-w-[260px] max-w-[320px] min-h-[420px] bg-[#111113] rounded-3xl border p-8 text-left transition-all duration-200 hover:scale-[1.01] group relative flex flex-col",
                                                     hasTrial ? "border-[#2ECC71]/50 shadow-[0_0_30px_rgba(46,204,113,0.08)]" : isFree ? "border-zinc-800 hover:border-zinc-600" : "border-[#2ECC71] shadow-[0_0_30px_rgba(46,204,113,0.1)]"
                                                 )}
                                             >
@@ -432,19 +432,19 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                                                         <p className="text-zinc-400 text-[10px] font-medium">Você não será cobrado hoje. Acesso total à IA e Planos Alimentares. Lembrete antes da primeira cobrança.</p>
                                                     </div>
                                                 )}
-                                                <ul className="space-y-3 mb-6 flex-1 min-h-0">
+                                                <ul className="space-y-3 mb-6 flex-1 min-h-0 overflow-hidden">
                                                     {featuresList.slice(0, 5).map((f, i) => (
                                                         <li key={i} className="flex items-center text-sm text-zinc-300">
-                                                            <span className="w-1.5 h-1.5 bg-[#2ECC71] rounded-full mr-3" />
+                                                            <span className="w-1.5 h-1.5 bg-[#2ECC71] rounded-full mr-3 shrink-0" />
                                                             {f}
                                                         </li>
                                                     ))}
                                                 </ul>
                                                 <div className={cn(
-                                                    "w-full py-3.5 rounded-xl text-center font-bold transition-all mt-auto",
+                                                    "w-full py-3.5 rounded-xl text-center font-bold transition-all mt-auto shrink-0",
                                                     hasTrial ? "bg-[#2ECC71] text-[#131B23] group-hover:bg-[#27ae60]" : isFree ? "bg-zinc-800 text-white group-hover:bg-zinc-700" : "bg-[#2ECC71] text-[#131B23] group-hover:bg-[#27ae60]"
                                                 )}>
-                                                    {isFree && !hasTrial ? "Começar Grátis" : hasTrial ? "Começar 30 dias grátis" : "Assinar"}
+                                                    {isFree && !hasTrial ? "Começar Grátis" : hasTrial ? `Começar ${plan.trialDays ?? 30} dias grátis` : "Assinar"}
                                                 </div>
                                             </button>
                                         );
@@ -458,172 +458,18 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                             </>
                         ) : (
                             <>
-                        {/* Fallback: hardcoded plans */}
-                        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-6">
-                            <button
-                                onClick={() => handlePlanSelect("free_5")}
-                                className="bg-[#111113] rounded-3xl border border-zinc-800 p-8 text-left transition-all duration-200 hover:border-zinc-600 hover:scale-[1.01] group relative flex flex-col h-full"
-                            >
-                                <div className="absolute top-4 right-4 bg-zinc-800 text-zinc-400 text-[10px] font-extrabold px-3 py-1 rounded-full">
-                                    PARA SEMPRE
+                                <div className="bg-[#111113] rounded-2xl border border-zinc-800 p-8 max-w-xl mx-auto text-center">
+                                    <p className="text-zinc-400 font-medium mb-4">
+                                        Nenhum plano disponível no momento. Verifique sua conexão ou tente novamente mais tarde.
+                                    </p>
+                                    <button
+                                        type="button"
+                                        onClick={() => setStep("role")}
+                                        className="text-zinc-500 hover:text-zinc-300 text-sm font-semibold transition-colors"
+                                    >
+                                        ← Voltar
+                                    </button>
                                 </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Free Starter</h3>
-                                <div className="mb-4">
-                                    <span className="text-4xl font-black text-white">R$ 0</span>
-                                    <span className="text-zinc-500 font-medium">/mês</span>
-                                </div>
-                                <p className="text-xs text-zinc-400 font-medium mb-6">
-                                    Ideal para quem está começando com poucos alunos
-                                </p>
-                                <ul className="space-y-3 mb-6 flex-1 min-h-0">
-                                    <li className="flex items-center text-sm text-zinc-300">
-                                        <span className="w-1.5 h-1.5 bg-white rounded-full mr-3" />
-                                        Até 5 alunos
-                                    </li>
-                                    <li className="flex items-center text-sm text-zinc-300">
-                                        <span className="w-1.5 h-1.5 bg-white rounded-full mr-3" />
-                                        Dashboard Básico
-                                    </li>
-                                    <li className="flex items-center text-sm text-zinc-300">
-                                        <span className="w-1.5 h-1.5 bg-white rounded-full mr-3" />
-                                        Gestão de treinos e nutrição
-                                    </li>
-                                    <li className="flex items-center text-sm text-zinc-500 line-through">
-                                        <span className="w-1.5 h-1.5 bg-zinc-700 rounded-full mr-3" />
-                                        Sem acesso à IA
-                                    </li>
-                                </ul>
-                                <div className="w-full py-3.5 rounded-xl bg-zinc-800 text-white text-center font-bold group-hover:bg-zinc-700 transition-colors mt-auto">
-                                    Começar Grátis
-                                </div>
-                            </button>
-
-                            {/* Free Trial 30 dias */}
-                            <button
-                                onClick={() => handlePlanSelect("free_trial")}
-                                className="bg-[#111113] rounded-3xl border border-[#8B5CF6]/30 p-8 text-left transition-all duration-200 hover:border-[#8B5CF6]/60 hover:scale-[1.01] group relative shadow-[0_0_30px_rgba(139,92,246,0.08)] flex flex-col h-full"
-                            >
-                                <div className="absolute top-4 right-4 bg-[#8B5CF6]/15 text-[#8B5CF6] text-[10px] font-extrabold px-3 py-1 rounded-full border border-[#8B5CF6]/20">
-                                    30 DIAS GRÁTIS
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Free Trial Pro</h3>
-                                <div className="mb-4">
-                                    <span className="text-4xl font-black text-white">R$ 0</span>
-                                    <span className="text-zinc-500 font-medium">/30 dias</span>
-                                </div>
-                                <p className="text-xs text-[#8B5CF6] font-semibold mb-6">
-                                    Experimente todos os recursos Pro por 30 dias
-                                </p>
-                                <ul className="space-y-3 mb-6 flex-1 min-h-0">
-                                    <li className="flex items-center text-sm text-white">
-                                        <div className="w-5 h-5 rounded-full bg-[#8B5CF6]/20 flex items-center justify-center mr-3">
-                                            <svg className="w-3 h-3 text-[#8B5CF6]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        </div>
-                                        Alunos Ilimitados
-                                    </li>
-                                    <li className="flex items-center text-sm text-white">
-                                        <div className="w-5 h-5 rounded-full bg-[#8B5CF6]/20 flex items-center justify-center mr-3">
-                                            <svg className="w-3 h-3 text-[#8B5CF6]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        </div>
-                                        <span className="font-bold text-[#8B5CF6] mr-1">IA Manager</span> Completo
-                                    </li>
-                                    <li className="flex items-center text-sm text-white">
-                                        <div className="w-5 h-5 rounded-full bg-[#8B5CF6]/20 flex items-center justify-center mr-3">
-                                            <svg className="w-3 h-3 text-[#8B5CF6]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        </div>
-                                        Todos os recursos desbloqueados
-                                    </li>
-                                </ul>
-                                <div className="w-full py-3.5 rounded-xl bg-[#8B5CF6]/20 text-[#8B5CF6] text-center font-bold group-hover:bg-[#8B5CF6] group-hover:text-white transition-all mt-auto">
-                                    Experimentar 30 Dias
-                                </div>
-                            </button>
-                        </div>
-
-                        {/* Paid Plans Row */}
-                        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-                            {/* Monthly Plan */}
-                            <button
-                                onClick={() => handlePlanSelect("monthly")}
-                                className="bg-[#111113] rounded-3xl border border-[#2ECC71] p-8 text-left transition-all duration-200 hover:scale-[1.01] group relative shadow-[0_0_30px_rgba(46,204,113,0.1)] flex flex-col h-full"
-                            >
-                                <div className="absolute top-4 right-4 bg-[#2ECC71] text-[#131B23] text-[10px] font-extrabold px-3 py-1 rounded-full">
-                                    RECOMENDADO
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Mensal</h3>
-                                <div className="mb-2">
-                                    <span className="text-4xl font-black text-white">R$ 109,90</span>
-                                    <span className="text-zinc-500 font-medium">/mês</span>
-                                </div>
-                                <p className="text-xs text-[#2ECC71] font-semibold mb-6">+ R$ 1,99 por aluno/mês</p>
-                                <ul className="space-y-3 mb-6 flex-1 min-h-0">
-                                    <li className="flex items-center text-sm text-white">
-                                        <div className="w-5 h-5 rounded-full bg-[#2ECC71]/20 flex items-center justify-center mr-3">
-                                            <svg className="w-3 h-3 text-[#2ECC71]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        </div>
-                                        Alunos Ilimitados
-                                    </li>
-                                    <li className="flex items-center text-sm text-white">
-                                        <div className="w-5 h-5 rounded-full bg-[#2ECC71]/20 flex items-center justify-center mr-3">
-                                            <svg className="w-3 h-3 text-[#2ECC71]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        </div>
-                                        <span className="font-bold text-[#2ECC71] mr-1">IA Manager</span> Completo
-                                    </li>
-                                    <li className="flex items-center text-sm text-white">
-                                        <div className="w-5 h-5 rounded-full bg-[#2ECC71]/20 flex items-center justify-center mr-3">
-                                            <svg className="w-3 h-3 text-[#2ECC71]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                        </div>
-                                        Criação de Treinos com IA
-                                    </li>
-                                </ul>
-                                <div className="w-full py-3.5 rounded-xl bg-[#2ECC71] text-[#131B23] text-center font-black group-hover:bg-[#27ae60] transition-colors shadow-lg mt-auto">
-                                    Assinar Mensal
-                                </div>
-                            </button>
-
-                            {/* Annual Plan */}
-                            <button
-                                onClick={() => handlePlanSelect("annual")}
-                                className="bg-[#111113] rounded-3xl border border-zinc-800 p-8 text-left transition-all duration-200 hover:border-[#F1C40F] hover:scale-[1.01] group relative flex flex-col h-full"
-                            >
-                                <div className="absolute top-4 right-4 bg-[#F1C40F]/10 text-[#F1C40F] text-[10px] font-extrabold px-3 py-1 rounded-full border border-[#F1C40F]/20">
-                                    ECONOMIZE 27%
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Anual</h3>
-                                <div className="mb-2">
-                                    <span className="text-4xl font-black text-white">R$ 959,90</span>
-                                    <span className="text-zinc-500 font-medium">/ano</span>
-                                </div>
-                                <p className="text-xs text-[#F1C40F] font-semibold mb-6">+ R$ 1,99 por aluno/mês</p>
-                                <ul className="space-y-3 mb-6 flex-1 min-h-0">
-                                    <li className="flex items-center text-sm text-zinc-300">
-                                        <span className="w-1.5 h-1.5 bg-[#F1C40F] rounded-full mr-3" />
-                                        Todos recursos do Mensal
-                                    </li>
-                                    <li className="flex items-center text-sm text-zinc-300">
-                                        <span className="w-1.5 h-1.5 bg-[#F1C40F] rounded-full mr-3" />
-                                        Prioridade no Suporte
-                                    </li>
-                                    <li className="flex items-center text-sm text-zinc-300">
-                                        <span className="w-1.5 h-1.5 bg-[#F1C40F] rounded-full mr-3" />
-                                        Badge "Pro Trainer"
-                                    </li>
-                                </ul>
-                                <div className="w-full py-3.5 rounded-xl bg-zinc-800 text-white text-center font-bold group-hover:bg-[#F1C40F] group-hover:text-black transition-all mt-auto">
-                                    Assinar Anual
-                                </div>
-                            </button>
-                        </div>
-
-                        {/* Back button */}
-                        <div className="text-center mt-8">
-                            <button
-                                onClick={() => setStep("role")}
-                                className="text-zinc-500 hover:text-zinc-300 text-sm font-semibold transition-colors"
-                            >
-                                ← Voltar
-                            </button>
-                        </div>
                             </>
                         )}
                     </div>
@@ -954,7 +800,7 @@ export default function OnboardingClient({ initialPlatformPlans = [] }: { initia
                                     {isLoading
                                         ? (useTrialCheckout() ? "Redirecionando ao checkout..." : "Criando sua conta...")
                                         : useTrialCheckout()
-                                            ? "Começar 30 dias grátis"
+                                            ? `Começar ${initialPlatformPlans.find((p) => p.slug === getPlanSlugForCheckout())?.trialDays ?? 30} dias grátis`
                                             : servicePlans.length > 0
                                                 ? `Finalizar com ${servicePlans.length} plano${servicePlans.length > 1 ? "s" : ""}`
                                                 : "Pular e Acessar Dashboard"
