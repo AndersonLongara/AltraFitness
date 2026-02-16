@@ -31,11 +31,17 @@ interface StudentData {
  * Fallback to database lookup for legacy users without metadata
  */
 /** Retorna todos os e-mails do usuário (primário primeiro, depois os demais) para checagem de superadmin. */
-function getUserEmails(user: { primaryEmailAddress?: { emailAddress?: string } | null; emailAddresses?: { emailAddress: string }[] }): string[] {
-    const primary = user.primaryEmailAddress?.emailAddress;
-    const fromList = (user.emailAddresses ?? []).map((e) => e.emailAddress).filter(Boolean);
-    const emails = primary ? [primary, ...fromList.filter((e) => e !== primary)] : fromList;
-    return [...new Set(emails)];
+function getUserEmails(user: unknown): string[] {
+    try {
+        const u = user as { primaryEmailAddress?: { emailAddress?: string } | null; emailAddresses?: { emailAddress?: string }[] };
+        const primary = u.primaryEmailAddress?.emailAddress;
+        const list = u.emailAddresses ?? [];
+        const fromList = list.map((e) => e?.emailAddress).filter((s): s is string => Boolean(s));
+        const emails = primary ? [primary, ...fromList.filter((e) => e !== primary)] : fromList;
+        return [...new Set(emails)];
+    } catch {
+        return [];
+    }
 }
 
 export async function getRole(): Promise<UserRole | null> {
