@@ -100,55 +100,59 @@ export default function ExerciseLibraryList({ initialExercises }: ExerciseLibrar
     }, [router]);
 
     return (
-        <div className="space-y-8">
-            {/* Filters & Search */}
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 bg-pure-white dark:bg-[#1E2A36] px-4 py-4 rounded-2xl soft-shadow border border-slate-100 dark:border-white/10 flex items-center">
-                    <MagnifyingGlass size={20} className="text-slate-400 dark:text-slate-500 mr-2" />
+        <div className="space-y-6">
+            {/* Search + New button */}
+            <div className="flex items-center gap-3">
+                <div className="flex-1 bg-pure-white dark:bg-[#1E2A36] px-4 py-3.5 rounded-2xl soft-shadow border border-slate-100 dark:border-white/10 flex items-center">
+                    <MagnifyingGlass size={20} className="text-slate-400 dark:text-slate-500 mr-3 flex-shrink-0" />
                     <input
                         type="text"
-                        placeholder="Buscar por nome..."
+                        placeholder="Buscar exercício por nome..."
                         value={search}
                         onChange={(e) => handleSearch(e.target.value)}
                         className="bg-transparent outline-none text-sm font-medium text-slate-600 dark:text-slate-200 w-full placeholder:text-slate-300 dark:placeholder:text-slate-500"
                     />
+                    {search && (
+                        <button onClick={() => handleSearch('')} className="ml-2 text-slate-300 dark:text-slate-500 hover:text-slate-500 dark:hover:text-slate-300 flex-shrink-0">
+                            <span className="text-xs font-bold">✕</span>
+                        </button>
+                    )}
                 </div>
+                <button
+                    onClick={handleOpenCreate}
+                    className="px-5 py-3.5 bg-emerald-500 dark:bg-emerald-600 text-white font-bold text-sm rounded-2xl hover:bg-emerald-600 dark:hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg shadow-emerald-200 dark:shadow-none whitespace-nowrap flex-shrink-0"
+                >
+                    <Plus size={18} weight="bold" />
+                    <span className="hidden sm:inline">Novo Exercício</span>
+                </button>
+            </div>
 
-                <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
-                    {CATEGORIES.map((tag) => {
-                        const config = CATEGORY_CONFIG[tag] || CATEGORY_CONFIG['Todos'];
-                        const isActive = category === tag;
-                        return (
-                            <button
-                                key={tag}
-                                onClick={() => handleCategory(tag)}
-                                className={`px-4 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all flex items-center gap-2 border ${isActive
-                                    ? `${config.bg} ${config.accent} ${config.border} dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30`
-                                    : 'bg-white dark:bg-[#1E2A36] text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10 border-slate-100 dark:border-white/10'
-                                    }`}
-                            >
-                                {config.icon}
-                                {tag}
-                            </button>
-                        );
-                    })}
-                </div>
+            {/* Category chips - wrapping grid */}
+            <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((tag) => {
+                    const config = CATEGORY_CONFIG[tag] || CATEGORY_CONFIG['Todos'];
+                    const isActive = category === tag;
+                    return (
+                        <button
+                            key={tag}
+                            onClick={() => handleCategory(tag)}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${isActive
+                                ? `${config.bg} ${config.accent} ${config.border} dark:bg-amber-500/20 dark:text-amber-400 dark:border-amber-500/30`
+                                : 'bg-white dark:bg-[#1E2A36] text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10 border-slate-100 dark:border-white/10'
+                                }`}
+                        >
+                            {config.icon}
+                            {tag}
+                        </button>
+                    );
+                })}
             </div>
 
             {/* Results count */}
-            <div className="flex items-center justify-between">
-                <p className="text-sm font-medium text-slate-400 dark:text-slate-500">
-                    {filtered.length} exercício{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
-                    {totalPages > 1 && ` · Página ${currentPage} de ${totalPages}`}
-                </p>
-                <button
-                    onClick={handleOpenCreate}
-                    className="px-5 py-2.5 bg-emerald-500 dark:bg-emerald-600 text-white font-bold text-sm rounded-xl hover:bg-emerald-600 dark:hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-lg shadow-emerald-200 dark:shadow-none"
-                >
-                    <Plus size={18} weight="bold" />
-                    Novo Exercício
-                </button>
-            </div>
+            <p className="text-sm font-medium text-slate-400 dark:text-slate-500">
+                {filtered.length} exercício{filtered.length !== 1 ? 's' : ''} encontrado{filtered.length !== 1 ? 's' : ''}
+                {totalPages > 1 && ` · Página ${currentPage} de ${totalPages}`}
+            </p>
 
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
