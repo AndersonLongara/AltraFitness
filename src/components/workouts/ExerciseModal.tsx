@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { X, FloppyDisk, Trash, Image as ImageIcon, VideoCamera, Barbell } from "@phosphor-icons/react";
 import { createExercise, updateExercise, deleteExercise } from "@/app/actions/exercises";
-import { MUSCLE_GROUPS } from "@/lib/exercise-categories";
+import { MUSCLE_GROUPS as MUSCLE_GROUPS_FALLBACK } from "@/lib/exercise-categories";
 
 interface Exercise {
     id: string;
@@ -20,9 +20,10 @@ interface ExerciseModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSaved?: () => void;
+    muscleGroups?: string[];  // From DB
 }
 
-export default function ExerciseModal({ exercise, isOpen, onClose, onSaved }: ExerciseModalProps) {
+export default function ExerciseModal({ exercise, isOpen, onClose, onSaved, muscleGroups }: ExerciseModalProps) {
     const isEditing = !!exercise;
     const isSystemExercise = exercise ? !exercise.trainerId : false;
 
@@ -139,7 +140,7 @@ export default function ExerciseModal({ exercise, isOpen, onClose, onSaved }: Ex
                             Grupo Muscular *
                         </label>
                         <div className="flex flex-wrap gap-2">
-                            {MUSCLE_GROUPS.map((group) => (
+                            {(muscleGroups || MUSCLE_GROUPS_FALLBACK).map((group) => (
                                 <button
                                     key={group}
                                     type="button"

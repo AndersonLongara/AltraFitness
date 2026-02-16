@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Trash, FloppyDisk, Barbell, Heart, Note, CaretRight, X, User, CheckCircle } from "@phosphor-icons/react";
+import { Plus, Trash, FloppyDisk, Barbell, Heart, Note, CaretRight, X, User, CheckCircle, PencilSimple } from "@phosphor-icons/react";
 import ExerciseSelector from "./ExerciseSelector";
 import { createWorkoutPlan, updateWorkoutPlan, deleteWorkoutPlan } from "@/app/actions/workout-plans";
 import { useRouter } from "next/navigation";
@@ -59,6 +59,7 @@ interface WorkoutSheetBuilderProps {
     students: { id: string, name: string }[];
     exercises: { id: string, name: string, muscleGroup: string }[];
     trainerId: string;
+    muscleGroups?: string[];  // From DB
     initialData?: {
         id: string;
         name: string;
@@ -90,7 +91,7 @@ interface WorkoutSheetBuilderProps {
 }
 
 
-export default function WorkoutSheetBuilder({ students, exercises, trainerId, initialData, returnTo }: WorkoutSheetBuilderProps) {
+export default function WorkoutSheetBuilder({ students, exercises, trainerId, initialData, returnTo, muscleGroups }: WorkoutSheetBuilderProps) {
     const router = useRouter();
 
     // Header State
@@ -132,6 +133,8 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [editingSplitId, setEditingSplitId] = useState<string | null>(null);
+    const [editingSplitTitle, setEditingSplitTitle] = useState("");
     const [isTemplate, setIsTemplate] = useState(initialData?.isTemplate || false);
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [selectedExerciseIds, setSelectedExerciseIds] = useState<string[]>([]);
@@ -202,6 +205,16 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
         if (activeSplitId === id) {
             setActiveSplitId(newSplits[0]?.id || null);
         }
+    };
+
+    const handleRenameSplit = (id: string, newTitle: string) => {
+        const trimmed = newTitle.trim();
+        if (!trimmed) {
+            setEditingSplitId(null);
+            return;
+        }
+        setSplits(prev => prev.map(s => s.id === id ? { ...s, title: trimmed } : s));
+        setEditingSplitId(null);
     };
 
     const handleAddExercises = (newExercises: { id: string, name: string }[]) => {
@@ -545,7 +558,34 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                                             }
                                         `}
                                     >
-                                        <span className="font-bold whitespace-nowrap">{split.title}</span>
+                                        {editingSplitId === split.id ? (
+                                            <input
+                                                type="text"
+                                                value={editingSplitTitle}
+                                                onChange={(e) => setEditingSplitTitle(e.target.value)}
+                                                onBlur={() => handleRenameSplit(split.id, editingSplitTitle)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') handleRenameSplit(split.id, editingSplitTitle);
+                                                    if (e.key === 'Escape') setEditingSplitId(null);
+                                                }}
+                                                autoFocus
+                                                className="bg-transparent border-b border-current/50 outline-none font-bold text-inherit w-24"
+                                                onClick={(e) => e.stopPropagation()}
+                                            />
+                                        ) : (
+                                            <span
+                                                className="font-bold whitespace-nowrap group/title cursor-text flex items-center gap-1"
+                                                onDoubleClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setEditingSplitId(split.id);
+                                                    setEditingSplitTitle(split.title);
+                                                }}
+                                                title="Clique duplo para renomear"
+                                            >
+                                                {split.title}
+                                                <PencilSimple size={12} weight="bold" className="opacity-0 group-hover/title:opacity-50 transition-opacity" />
+                                            </span>
+                                        )}
                                         <button
                                             onClick={(e) => handleRemoveSplit(split.id, e)}
                                             className={`p-1 rounded-full transition-colors ${activeSplitId === split.id ? 'hover:bg-slate-700 dark:hover:bg-amber-500/30' : 'hover:bg-slate-100 dark:hover:bg-white/20'}`}
@@ -967,6 +1007,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                 onClose={() => setIsExerciseSelectorOpen(false)}
                 onSelectExercises={handleAddExercises}
                 exercises={exercises}
+                muscleGroups={muscleGroups}
             />
 
             {/* Bulk Action Bar */}

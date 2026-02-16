@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { MagnifyingGlass, Barbell, Anchor, PersonSimpleRun, Trophy, Baseball, Target, SquaresFour, CaretLeft, CaretRight, HandFist, Horse, Plus, ArrowsOutSimple } from "@phosphor-icons/react";
 import ExerciseCard from "@/components/workouts/ExerciseCard";
 import ExerciseModal from "@/components/workouts/ExerciseModal";
-import { FILTER_CATEGORIES, normalizeMuscleGroup } from "@/lib/exercise-categories";
+import { normalizeMuscleGroup } from "@/lib/exercise-categories";
 
 interface Exercise {
     id: string;
@@ -19,6 +19,8 @@ interface Exercise {
 
 interface ExerciseLibraryListProps {
     initialExercises: Exercise[];
+    categories: string[];       // From DB: ['Todos', 'Peito', 'Costas', ...]
+    muscleGroups: string[];     // From DB: ['Peito', 'Costas', ...]
 }
 
 const PAGE_SIZE = 10;
@@ -38,7 +40,7 @@ const CATEGORY_CONFIG: Record<string, { icon: React.ReactNode, accent: string, b
     'Outros': { icon: <SquaresFour size={18} weight="bold" />, accent: 'text-slate-600', bg: 'bg-slate-100', border: 'border-slate-200' },
 };
 
-export default function ExerciseLibraryList({ initialExercises }: ExerciseLibraryListProps) {
+export default function ExerciseLibraryList({ initialExercises, categories, muscleGroups }: ExerciseLibraryListProps) {
     const router = useRouter();
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("Todos");
@@ -121,7 +123,7 @@ export default function ExerciseLibraryList({ initialExercises }: ExerciseLibrar
 
             {/* Category chips - wrapping grid */}
             <div className="flex flex-wrap gap-2">
-                {FILTER_CATEGORIES.map((tag) => {
+                {categories.map((tag) => {
                     const config = CATEGORY_CONFIG[tag] || CATEGORY_CONFIG['Todos'];
                     const isActive = category === tag;
                     return (
@@ -224,6 +226,7 @@ export default function ExerciseLibraryList({ initialExercises }: ExerciseLibrar
                 isOpen={modalOpen}
                 onClose={handleCloseModal}
                 onSaved={handleSaved}
+                muscleGroups={muscleGroups}
             />
         </div>
     );

@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { students, exercises } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
+import { getExerciseCategories } from "@/lib/exercise-categories";
 
 export const dynamic = 'force-dynamic';
 
@@ -12,25 +13,27 @@ export default async function NewWorkoutPage() {
     const { userId } = await auth();
     if (!userId) return null;
 
-    const studentsList = await db.select({
-        id: students.id,
-        name: students.name
-    })
-        .from(students)
-        .where(eq(students.trainerId, userId));
-
-    const exercisesList = await db.select({
-        id: exercises.id,
-        name: exercises.name,
-        muscleGroup: exercises.muscleGroup
-    })
-        .from(exercises)
-        .where(
-            or(
-                eq(exercises.trainerId, userId),
-                isNull(exercises.trainerId)
-            )
-        );
+    const [studentsList, exercisesList, muscleGroups] = await Promise.all([
+        db.select({
+            id: students.id,
+            name: students.name
+        })
+            .from(students)
+            .where(eq(students.trainerId, userId)),
+        db.select({
+            id: exercises.id,
+            name: exercises.name,
+            muscleGroup: exercises.muscleGroup
+        })
+            .from(exercises)
+            .where(
+                or(
+                    eq(exercises.trainerId, userId),
+                    isNull(exercises.trainerId)
+                )
+            ),
+        getExerciseCategories(),
+    ]);
 
     return (
         <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
@@ -54,6 +57,7 @@ export default async function NewWorkoutPage() {
                         students={studentsList}
                         exercises={exercisesList as any}
                         trainerId={userId}
+                        muscleGroups={muscleGroups}
                     />
                 </div>
             </main>

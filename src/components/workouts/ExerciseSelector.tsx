@@ -2,7 +2,7 @@
 
 import { X, MagnifyingGlass, CheckCircle, PlusCircle, Check, Barbell, Lightning, Heart, Target, Stairs, Tree, Wind, Cube, ArrowsOutSimple } from "@phosphor-icons/react";
 import { useState, useMemo } from "react";
-import { MUSCLE_GROUPS, normalizeMuscleGroup } from "@/lib/exercise-categories";
+import { MUSCLE_GROUPS as MUSCLE_GROUPS_FALLBACK, normalizeMuscleGroup } from "@/lib/exercise-categories";
 
 interface Exercise {
     id: string;
@@ -15,6 +15,7 @@ interface ExerciseSelectorProps {
     onClose: () => void;
     onSelectExercises: (exercises: Exercise[]) => void;
     exercises: Exercise[];
+    muscleGroups?: string[];  // From DB
 }
 
 const CATEGORY_MAP: Record<string, { icon: any, color: string, bgColor: string }> = {
@@ -32,17 +33,19 @@ const CATEGORY_MAP: Record<string, { icon: any, color: string, bgColor: string }
     "OUTROS": { icon: Cube, color: "text-slate-600", bgColor: "bg-slate-50" },
 };
 
-export default function ExerciseSelector({ isOpen, onClose, onSelectExercises, exercises }: ExerciseSelectorProps) {
+export default function ExerciseSelector({ isOpen, onClose, onSelectExercises, exercises, muscleGroups }: ExerciseSelectorProps) {
     const [search, setSearch] = useState("");
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-    // Get unique categories from data, ordered by MUSCLE_GROUPS
+    const availableGroups = muscleGroups || [...MUSCLE_GROUPS_FALLBACK];
+
+    // Get unique categories from data, ordered by muscleGroups
     const categories = useMemo(() => {
         const existingNormalized = new Set(exercises.map(ex => normalizeMuscleGroup(ex.muscleGroup)));
         // Return categories in correct order, only those that have exercises
-        return MUSCLE_GROUPS.filter(g => existingNormalized.has(normalizeMuscleGroup(g)));
-    }, [exercises]);
+        return availableGroups.filter(g => existingNormalized.has(normalizeMuscleGroup(g)));
+    }, [exercises, availableGroups]);
 
     if (!isOpen) return null;
 

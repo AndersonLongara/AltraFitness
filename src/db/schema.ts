@@ -132,6 +132,15 @@ export const studentBadges = sqliteTable('student_badges', {
     earnedAt: integer('earned_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
+// Exercise Categories (Muscle Groups)
+export const exerciseCategories = sqliteTable('exercise_categories', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    name: text('name').notNull().unique(),           // e.g., 'Peito', 'Costas', 'Mobilidade'
+    sortOrder: integer('sort_order').notNull().default(0),
+    active: integer('active', { mode: 'boolean' }).default(true),
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
 // Exercises (Library)
 export const exercises = sqliteTable('exercises', {
     id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -775,6 +784,7 @@ export const schema = {
     leads,
     badges,
     studentBadges,
+    exerciseCategories,
     exercises,
     workoutPlans,
     workouts,

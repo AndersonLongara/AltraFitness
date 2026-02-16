@@ -6,6 +6,7 @@ import { exercises } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
 import ExerciseLibraryList from "@/components/workouts/ExerciseLibraryList";
+import { getExerciseCategories, getFilterCategories } from "@/lib/exercise-categories";
 
 export const dynamic = 'force-dynamic';
 
@@ -13,20 +14,24 @@ export default async function ExerciseLibraryPage() {
     const { userId } = await auth();
     if (!userId) return null;
 
-    const dbExercises = await db.select({
-        id: exercises.id,
-        trainerId: exercises.trainerId,
-        name: exercises.name,
-        muscleGroup: exercises.muscleGroup,
-        videoUrl: exercises.videoUrl,
-        imageUrl: exercises.imageUrl,
-        description: exercises.description,
-    }).from(exercises).where(
-        or(
-            eq(exercises.trainerId, userId),
-            isNull(exercises.trainerId)
-        )
-    );
+    const [dbExercises, filterCategories, muscleGroups] = await Promise.all([
+        db.select({
+            id: exercises.id,
+            trainerId: exercises.trainerId,
+            name: exercises.name,
+            muscleGroup: exercises.muscleGroup,
+            videoUrl: exercises.videoUrl,
+            imageUrl: exercises.imageUrl,
+            description: exercises.description,
+        }).from(exercises).where(
+            or(
+                eq(exercises.trainerId, userId),
+                isNull(exercises.trainerId)
+            )
+        ),
+        getFilterCategories(),
+        getExerciseCategories(),
+    ]);
 
     return (
         <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
@@ -49,7 +54,11 @@ export default async function ExerciseLibraryPage() {
                     </div>
                 </header>
 
-                <ExerciseLibraryList initialExercises={dbExercises} />
+                <ExerciseLibraryList
+                    initialExercises={dbExercises}
+                    categories={filterCategories}
+                    muscleGroups={muscleGroups}
+                />
             </main>
         </div>
     );

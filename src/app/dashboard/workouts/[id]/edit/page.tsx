@@ -6,6 +6,7 @@ import { students, exercises, workoutPlans } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { getExerciseCategories } from "@/lib/exercise-categories";
 
 export const dynamic = 'force-dynamic';
 
@@ -43,25 +44,27 @@ export default async function EditWorkoutPage({
         redirect("/dashboard/workouts");
     }
 
-    const studentsList = await db.select({
-        id: students.id,
-        name: students.name
-    })
-        .from(students)
-        .where(eq(students.trainerId, userId));
-
-    const exercisesList = await db.select({
-        id: exercises.id,
-        name: exercises.name,
-        muscleGroup: exercises.muscleGroup
-    })
-        .from(exercises)
-        .where(
-            or(
-                eq(exercises.trainerId, userId),
-                isNull(exercises.trainerId)
-            )
-        );
+    const [studentsList, exercisesList, muscleGroups] = await Promise.all([
+        db.select({
+            id: students.id,
+            name: students.name
+        })
+            .from(students)
+            .where(eq(students.trainerId, userId)),
+        db.select({
+            id: exercises.id,
+            name: exercises.name,
+            muscleGroup: exercises.muscleGroup
+        })
+            .from(exercises)
+            .where(
+                or(
+                    eq(exercises.trainerId, userId),
+                    isNull(exercises.trainerId)
+                )
+            ),
+        getExerciseCategories(),
+    ]);
 
     const backPath = plan.isTemplate
         ? "/dashboard/workouts/templates"
@@ -105,6 +108,7 @@ export default async function EditWorkoutPage({
                         trainerId={userId}
                         initialData={formattedPlan as any}
                         returnTo={backLink}
+                        muscleGroups={muscleGroups}
                     />
                 </div>
             </main>
