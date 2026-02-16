@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User, CalendarCheck, FileText, ChartLineUp, Play, PencilSimple, Trash, Plus, Copy, ForkKnife, Scales, ClipboardText, PaperPlaneRight } from "@phosphor-icons/react";
+import { User, CalendarCheck, FileText, ChartLineUp, Play, PencilSimple, Trash, Plus, Copy, ForkKnife, Scales, ClipboardText, PaperPlaneRight, LinkSimple, WhatsappLogo, Check } from "@phosphor-icons/react";
 import Link from "next/link";
 import { format } from "date-fns";
 import StudentForm from "@/components/students/StudentForm";
@@ -44,7 +44,25 @@ export default function StudentProfileTabs({
     const [isAssignFormOpen, setIsAssignFormOpen] = useState(false);
     const [selectedFormId, setSelectedFormId] = useState("");
     const [dietToDelete, setDietToDelete] = useState<any>(null);
+    const [linkCopied, setLinkCopied] = useState(false);
     const router = useRouter();
+
+    const inviteLink = student.inviteToken
+        ? `${typeof window !== 'undefined' ? window.location.origin : ''}/join/${student.inviteToken}`
+        : null;
+
+    const handleCopyInviteLink = () => {
+        if (!inviteLink) return;
+        navigator.clipboard.writeText(inviteLink);
+        setLinkCopied(true);
+        setTimeout(() => setLinkCopied(false), 2000);
+    };
+
+    const handleShareWhatsApp = () => {
+        if (!inviteLink) return;
+        const msg = encodeURIComponent(`Ol\u00e1 ${student.name}! \ud83d\udcaa\n\nClique no link abaixo para completar seu cadastro na plataforma:\n\n${inviteLink}`);
+        window.open(`https://wa.me/${student.phone?.replace(/\D/g, '')}?text=${msg}`, '_blank');
+    };
 
     const handleAssignForm = async () => {
         if (!selectedFormId) return;
@@ -144,6 +162,42 @@ export default function StudentProfileTabs({
                         </div>
                     </div>
                 </div>
+
+                {/* Invite Link Banner */}
+                {student.inviteToken && !student.active && inviteLink && (
+                    <div className="mx-8 mb-4 p-4 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-2xl">
+                        <div className="flex items-center gap-2 mb-2">
+                            <LinkSimple size={18} weight="bold" className="text-amber-600 dark:text-amber-400" />
+                            <span className="text-sm font-bold text-amber-700 dark:text-amber-300">Convite pendente</span>
+                            <span className="text-xs text-amber-500 dark:text-amber-400/70">— o aluno ainda não acessou</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-white dark:bg-white/10 border border-amber-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-slate-600 dark:text-slate-300 truncate font-mono">
+                                {inviteLink}
+                            </div>
+                            <button
+                                onClick={handleCopyInviteLink}
+                                className={`px-3 py-2 rounded-xl font-bold text-sm flex items-center gap-1.5 transition-colors ${
+                                    linkCopied
+                                        ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                                        : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-500/30'
+                                }`}
+                            >
+                                {linkCopied ? <Check size={16} weight="bold" /> : <Copy size={16} weight="bold" />}
+                                {linkCopied ? 'Copiado!' : 'Copiar'}
+                            </button>
+                            {student.phone && (
+                                <button
+                                    onClick={handleShareWhatsApp}
+                                    className="px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold text-sm flex items-center gap-1.5 transition-colors"
+                                >
+                                    <WhatsappLogo size={16} weight="fill" />
+                                    WhatsApp
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                )}
 
                 {/* Tabs */}
                 <div className="flex border-b border-slate-100 dark:border-white/10 px-8 pt-4 overflow-x-auto">

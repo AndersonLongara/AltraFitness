@@ -173,6 +173,7 @@ export async function acceptInvite(token: string, phone: string) {
             phone,
             email, // Sync email from Clerk
             active: true,
+            inviteToken: null,
             updatedAt: new Date()
         })
         .where(eq(students.id, student.id));
