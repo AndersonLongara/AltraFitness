@@ -20,7 +20,7 @@ interface ExerciseLibraryListProps {
     initialExercises: Exercise[];
 }
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 10;
 
 const CATEGORIES = ['Todos', 'Peito', 'Costas', 'Pernas', 'Ombros', 'Bíceps', 'Tríceps', 'Core', 'Glúteos', 'Mobilidade'];
 

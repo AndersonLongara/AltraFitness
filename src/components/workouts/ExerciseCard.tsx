@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { useState, ReactNode } from "react";
 import { PlayCircle, PencilSimple, Image as ImageIcon } from "@phosphor-icons/react";
 
 interface ExerciseCardProps {
@@ -14,17 +14,29 @@ interface ExerciseCardProps {
     onEdit?: () => void;
 }
 
+function isValidUrl(url: string): boolean {
+    try {
+        const u = new URL(url);
+        return u.protocol === 'http:' || u.protocol === 'https:';
+    } catch {
+        return false;
+    }
+}
+
 export default function ExerciseCard({ name, muscleGroup, videoUrl, imageUrl, icon, accentColor, bgColor, onEdit }: ExerciseCardProps) {
+    const [imgError, setImgError] = useState(false);
+    const showImage = imageUrl && isValidUrl(imageUrl) && !imgError;
+
     return (
         <div className="bg-pure-white dark:bg-[#1E2A36] rounded-2xl soft-shadow border border-slate-100 dark:border-white/10 hover:border-emerald-100 dark:hover:border-emerald-500/30 transition-colors overflow-hidden group">
             {/* Image preview */}
-            {imageUrl && (
+            {showImage && (
                 <div className="relative h-32 w-full bg-slate-100 dark:bg-white/5">
                     <img
                         src={imageUrl}
                         alt={name}
                         className="w-full h-full object-cover"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        onError={() => setImgError(true)}
                     />
                 </div>
             )}
@@ -40,7 +52,7 @@ export default function ExerciseCard({ name, muscleGroup, videoUrl, imageUrl, ic
                             <span className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
                                 {muscleGroup}
                             </span>
-                            {imageUrl && (
+                            {showImage && (
                                 <ImageIcon size={12} weight="bold" className="text-slate-300 dark:text-slate-600" />
                             )}
                         </div>
