@@ -752,13 +752,14 @@ export async function getSuperAdminUsers(): Promise<SuperAdminUserRow[]> {
   await requireSuperAdmin();
 
   const roles = await db.select().from(userRoles);
-  const trainerIds = new Set(roles.filter((r) => r.role === "trainer").map((r) => r.userId));
-  const trainerRows = await db
-    .select({ id: trainers.id, name: trainers.name, email: trainers.email, createdAt: trainers.createdAt })
-    .from(trainers)
-    .where(inArray(trainers.id, Array.from(trainerIds)));
+  const roleUserIds = new Set(roles.map((r) => r.userId));
 
-  const trainerMap = Object.fromEntries(trainerRows.map((t) => [t.id, t]));
+  // Also fetch all trainers (some may not have a user_roles entry yet)
+  const allTrainerRows = await db
+    .select({ id: trainers.id, name: trainers.name, email: trainers.email, createdAt: trainers.createdAt })
+    .from(trainers);
+
+  const trainerMap = Object.fromEntries(allTrainerRows.map((t) => [t.id, t]));
 
   const result: SuperAdminUserRow[] = [];
   for (const row of roles) {
@@ -792,6 +793,20 @@ export async function getSuperAdminUsers(): Promise<SuperAdminUserRow[]> {
       createdAt,
       hasTrainerRecord: role === "trainer",
     });
+  }
+
+  // Include trainers that exist in the trainers table but have no user_roles entry
+  for (const t of allTrainerRows) {
+    if (!roleUserIds.has(t.id)) {
+      result.push({
+        userId: t.id,
+        name: t.name,
+        email: t.email,
+        role: "trainer",
+        createdAt: t.createdAt ? new Date(t.createdAt).toISOString() : null,
+        hasTrainerRecord: true,
+      });
+    }
   }
 
   result.sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
