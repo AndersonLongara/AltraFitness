@@ -1,4 +1,4 @@
-import { Plus, ArrowLeft } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import Link from "next/link";
 import { db } from "@/db";
@@ -13,7 +13,15 @@ export default async function ExerciseLibraryPage() {
     const { userId } = await auth();
     if (!userId) return null;
 
-    const dbExercises = await db.select().from(exercises).where(
+    const dbExercises = await db.select({
+        id: exercises.id,
+        trainerId: exercises.trainerId,
+        name: exercises.name,
+        muscleGroup: exercises.muscleGroup,
+        videoUrl: exercises.videoUrl,
+        imageUrl: exercises.imageUrl,
+        description: exercises.description,
+    }).from(exercises).where(
         or(
             eq(exercises.trainerId, userId),
             isNull(exercises.trainerId)
@@ -39,17 +47,9 @@ export default async function ExerciseLibraryPage() {
                             </p>
                         </div>
                     </div>
-
-                    <Link
-                        href="/dashboard/workouts/new"
-                        className="px-6 py-4 bg-graphite-dark dark:bg-amber-500 dark:text-white text-white font-bold rounded-2xl hover:bg-black dark:hover:bg-amber-600 transition-colors flex items-center gap-2 shadow-lg shadow-slate-200 dark:shadow-none"
-                    >
-                        <Plus size={20} weight="bold" />
-                        Nova Prescrição
-                    </Link>
                 </header>
 
-                <ExerciseLibraryList initialExercises={dbExercises as any} />
+                <ExerciseLibraryList initialExercises={dbExercises} />
             </main>
         </div>
     );

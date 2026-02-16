@@ -137,8 +137,9 @@ export const exercises = sqliteTable('exercises', {
     id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     trainerId: text('trainer_id').references(() => trainers.id),
     name: text('name').notNull(),
-    muscleGroup: text('muscle_group').notNull(), // e.g., 'Chest', 'Back', 'Legs'
+    muscleGroup: text('muscle_group').notNull(), // e.g., 'Peito', 'Costas', 'Pernas', 'Mobilidade'
     videoUrl: text('video_url'),
+    imageUrl: text('image_url'),
     description: text('description'),
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),

@@ -20,14 +20,14 @@ export async function searchFoods(query: string, filter?: 'protein' | 'carbs' | 
     if (filter && (!query || query.length < 2)) {
         return await db.query.foods.findMany({
             orderBy: orderBy,
-            limit: 20,
+            limit: 50,
         });
     }
 
     const results = await db.query.foods.findMany({
         where: like(foods.name, `%${query}%`),
         orderBy: orderBy,
-        limit: 20,
+        limit: 50,
     });
 
     // Sort to prioritize TACO/TBCA if not filtering by macro
