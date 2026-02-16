@@ -1,10 +1,10 @@
-import { getPlatformPlansForOnboarding } from "@/app/actions/onboarding";
+import { getPlatformPlansForOnboarding, type PlatformPlanOption } from "@/app/actions/onboarding";
 import OnboardingClient from "./OnboardingClient";
 
 export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
-    let platformPlans;
+    let platformPlans: PlatformPlanOption[];
     try {
         platformPlans = await getPlatformPlansForOnboarding();
     } catch (err) {
