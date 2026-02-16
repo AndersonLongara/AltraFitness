@@ -75,41 +75,47 @@ function normalizePlanToSlug(plan: PlanOption | string): string {
 
 /**
  * List active platform plans for onboarding (name, price, features, trial, etc.).
+ * Em caso de falha de DB (ex.: Vercel sem TURSO_DATABASE_URL), retorna [] para não derrubar a página.
  */
 export async function getPlatformPlansForOnboarding(): Promise<PlatformPlanOption[]> {
-    const rows = await db
-        .select({
-            id: platformPlans.id,
-            slug: platformPlans.slug,
-            name: platformPlans.name,
-            priceCents: platformPlans.priceCents,
-            durationMonths: platformPlans.durationMonths,
-            maxStudents: platformPlans.maxStudents,
-            pricePerStudentCents: platformPlans.pricePerStudentCents,
-            features: platformPlans.features,
-            hasAi: platformPlans.hasAi,
-            hasPriority: platformPlans.hasPriority,
-            trialDays: platformPlans.trialDays,
-            hasSalesPipeline: platformPlans.hasSalesPipeline,
-        })
-        .from(platformPlans)
-        .where(eq(platformPlans.active, true))
-        .orderBy(asc(platformPlans.sortOrder));
+    try {
+        const rows = await db
+            .select({
+                id: platformPlans.id,
+                slug: platformPlans.slug,
+                name: platformPlans.name,
+                priceCents: platformPlans.priceCents,
+                durationMonths: platformPlans.durationMonths,
+                maxStudents: platformPlans.maxStudents,
+                pricePerStudentCents: platformPlans.pricePerStudentCents,
+                features: platformPlans.features,
+                hasAi: platformPlans.hasAi,
+                hasPriority: platformPlans.hasPriority,
+                trialDays: platformPlans.trialDays,
+                hasSalesPipeline: platformPlans.hasSalesPipeline,
+            })
+            .from(platformPlans)
+            .where(eq(platformPlans.active, true))
+            .orderBy(asc(platformPlans.sortOrder));
 
-    return rows.map((r) => ({
-        id: r.id,
-        slug: r.slug,
-        name: r.name,
-        priceCents: r.priceCents ?? 0,
-        durationMonths: r.durationMonths ?? 1,
-        maxStudents: r.maxStudents ?? null,
-        pricePerStudentCents: r.pricePerStudentCents ?? null,
-        features: (r.features as string[]) ?? null,
-        hasAi: r.hasAi ?? false,
-        hasPriority: r.hasPriority ?? false,
-        trialDays: r.trialDays ?? null,
-        hasSalesPipeline: r.hasSalesPipeline ?? false,
-    }));
+        return rows.map((r) => ({
+            id: r.id,
+            slug: r.slug,
+            name: r.name,
+            priceCents: r.priceCents ?? 0,
+            durationMonths: r.durationMonths ?? 1,
+            maxStudents: r.maxStudents ?? null,
+            pricePerStudentCents: r.pricePerStudentCents ?? null,
+            features: (r.features as string[]) ?? null,
+            hasAi: r.hasAi ?? false,
+            hasPriority: r.hasPriority ?? false,
+            trialDays: r.trialDays ?? null,
+            hasSalesPipeline: r.hasSalesPipeline ?? false,
+        }));
+    } catch (err) {
+        console.error("[onboarding] getPlatformPlansForOnboarding failed:", err);
+        return [];
+    }
 }
 
 /**
