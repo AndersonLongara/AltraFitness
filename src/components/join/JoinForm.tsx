@@ -3,18 +3,21 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { acceptInvite } from "@/app/actions/students";
-import { SpinnerGap, SignIn, User, ArrowRight } from "@phosphor-icons/react";
-import { useUser, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { SpinnerGap, SignIn, User, ArrowRight, SignOut, CurrencyDollar, Tag } from "@phosphor-icons/react";
+import { useUser, useClerk, SignInButton, SignUpButton } from "@clerk/nextjs";
 
 interface JoinFormProps {
     token: string;
     initialName: string;
     initialPhone: string | null;
+    planName: string | null;
+    planPrice: number | null;
 }
 
-export default function JoinForm({ token, initialName, initialPhone }: JoinFormProps) {
+export default function JoinForm({ token, initialName, initialPhone, planName, planPrice }: JoinFormProps) {
     const router = useRouter();
     const { isSignedIn, user, isLoaded } = useUser();
+    const { signOut } = useClerk();
     const [phone, setPhone] = useState(initialPhone || '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -86,8 +89,33 @@ export default function JoinForm({ token, initialName, initialPhone }: JoinFormP
                     <p className="text-xs font-bold text-emerald-600 uppercase tracking-wide">Aceitando como</p>
                     <p className="text-sm font-semibold text-graphite-dark truncate">{user.primaryEmailAddress?.emailAddress}</p>
                 </div>
-                <UserButton />
+                <button
+                    onClick={() => signOut({ redirectUrl: `/join/${token}` })}
+                    className="px-3 py-1.5 bg-white border border-slate-200 text-slate-500 hover:text-rose-500 hover:border-rose-200 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors"
+                    title="Sair e entrar com outra conta"
+                >
+                    <SignOut size={14} weight="bold" />
+                    Trocar conta
+                </button>
             </div>
+
+            {/* Plan Info */}
+            {planName && (
+                <div className="bg-blue-50 rounded-2xl p-4 flex items-center gap-3">
+                    <div className="bg-white p-2 rounded-full">
+                        <Tag size={20} className="text-blue-600" weight="duotone" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-blue-600 uppercase tracking-wide">Seu Plano</p>
+                        <p className="text-sm font-semibold text-graphite-dark">{planName}</p>
+                    </div>
+                    {planPrice !== null && (
+                        <span className="text-lg font-extrabold text-blue-600">
+                            R$ {(planPrice / 100).toFixed(2).replace('.', ',')}
+                        </span>
+                    )}
+                </div>
+            )}
 
             <div className="space-y-4">
                 <div>

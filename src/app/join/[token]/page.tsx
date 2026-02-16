@@ -11,7 +11,8 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
     const student = await db.query.students.findFirst({
         where: eq(students.inviteToken, token),
         with: {
-            trainer: true
+            trainer: true,
+            plan: true,
         }
     });
 
@@ -50,6 +51,8 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
                     token={token}
                     initialName={student.name}
                     initialPhone={student.phone}
+                    planName={student.plan?.name || null}
+                    planPrice={student.plan?.price || null}
                 />
             </div>
         </div>
