@@ -78,14 +78,14 @@ export default function PlansManager({ plans }: { plans: Plan[] }) {
                             />
                         </div>
                         <select
-                            className="p-2 rounded-xl border border-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-white text-sm font-medium outline-none focus:border-performance-green"
+                            className="p-2 rounded-xl border border-slate-200 dark:border-white/10 dark:bg-[#1E2A36] dark:text-white text-sm font-medium outline-none focus:border-performance-green bg-white"
                             value={newPlan.durationMonths}
                             onChange={e => setNewPlan({ ...newPlan, durationMonths: e.target.value })}
                         >
-                            <option value="1">1 Mês (Mensal)</option>
-                            <option value="3">3 Meses (Trimestral)</option>
-                            <option value="6">6 Meses (Semestral)</option>
-                            <option value="12">12 Meses (Anual)</option>
+                            <option value="1" className="bg-white dark:bg-[#1E2A36] dark:text-white text-slate-800">1 Mês (Mensal)</option>
+                            <option value="3" className="bg-white dark:bg-[#1E2A36] dark:text-white text-slate-800">3 Meses (Trimestral)</option>
+                            <option value="6" className="bg-white dark:bg-[#1E2A36] dark:text-white text-slate-800">6 Meses (Semestral)</option>
+                            <option value="12" className="bg-white dark:bg-[#1E2A36] dark:text-white text-slate-800">12 Meses (Anual)</option>
                         </select>
                     </div>
                     <div className="flex justify-end gap-2">
