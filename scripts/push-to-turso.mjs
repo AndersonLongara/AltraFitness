@@ -22,10 +22,23 @@ const statements = [
     \`id\` text PRIMARY KEY NOT NULL,
     \`name\` text NOT NULL,
     \`email\` text NOT NULL,
+    \`cpf\` text,
+    \`phone\` text,
+    \`birth_date\` integer,
+    \`presential_students\` integer DEFAULT 0,
+    \`online_students\` integer DEFAULT 0,
+    \`team_code\` text,
+    \`subscription_plan\` text DEFAULT 'free',
+    \`subscription_status\` text DEFAULT 'active',
+    \`trial_ends_at\` integer,
+    \`theme\` text DEFAULT 'system',
+    \`asaas_api_key\` text,
+    \`asaas_customer_id\` text,
     \`created_at\` integer DEFAULT (strftime('%s', 'now')),
     \`updated_at\` integer DEFAULT (strftime('%s', 'now'))
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS \`trainers_email_unique\` ON \`trainers\` (\`email\`)`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS \`trainers_team_code_unique\` ON \`trainers\` (\`team_code\`)`,
 
   // 2. plans
   `CREATE TABLE IF NOT EXISTS \`plans\` (
@@ -55,6 +68,10 @@ const statements = [
     \`xp\` integer DEFAULT 0,
     \`access_types\` text,
     \`invite_token\` text,
+    \`birth_date\` integer,
+    \`gender\` text,
+    \`height\` integer,
+    \`weight\` integer,
     \`level\` integer DEFAULT 1,
     \`current_xp\` integer DEFAULT 0,
     \`current_streak\` integer DEFAULT 0,
@@ -143,6 +160,9 @@ const statements = [
     \`status\` text DEFAULT 'pending',
     \`method\` text,
     \`notes\` text,
+    \`asaas_payment_id\` text,
+    \`asaas_invoice_url\` text,
+    \`billing_type\` text,
     \`created_at\` integer DEFAULT (strftime('%s', 'now')),
     \`updated_at\` integer DEFAULT (strftime('%s', 'now')),
     FOREIGN KEY (\`trainer_id\`) REFERENCES \`trainers\`(\`id\`) ON UPDATE no action ON DELETE no action,
@@ -259,12 +279,15 @@ const statements = [
   `CREATE TABLE IF NOT EXISTS \`nutritional_plans\` (
     \`id\` text PRIMARY KEY NOT NULL,
     \`trainer_id\` text NOT NULL,
-    \`student_id\` text NOT NULL,
+    \`student_id\` text,
     \`title\` text NOT NULL,
     \`daily_kcal\` integer NOT NULL,
     \`protein_g\` integer NOT NULL,
     \`carbs_g\` integer NOT NULL,
     \`fat_g\` integer NOT NULL,
+    \`water_goal_ml\` integer DEFAULT 2500,
+    \`days_of_week\` text,
+    \`is_template\` integer DEFAULT false,
     \`active\` integer DEFAULT true,
     \`created_at\` integer DEFAULT (strftime('%s', 'now')),
     \`updated_at\` integer DEFAULT (strftime('%s', 'now')),
@@ -286,8 +309,10 @@ const statements = [
   `CREATE TABLE IF NOT EXISTS \`meal_items\` (
     \`id\` text PRIMARY KEY NOT NULL,
     \`meal_id\` text NOT NULL,
+    \`food_id\` text,
     \`food_name\` text NOT NULL,
-    \`portion\` text NOT NULL,
+    \`portion\` integer NOT NULL,
+    \`unit\` text DEFAULT 'g',
     \`calories\` integer,
     \`protein\` integer,
     \`carbs\` integer,
@@ -424,6 +449,97 @@ const statements = [
     FOREIGN KEY (\`response_id\`) REFERENCES \`student_forms\`(\`id\`) ON UPDATE no action ON DELETE cascade,
     FOREIGN KEY (\`question_id\`) REFERENCES \`form_questions\`(\`id\`) ON UPDATE no action ON DELETE no action
   )`,
+
+  // ===== Tables added in migrations 0003-0011 =====
+
+  // 28. user_roles
+  `CREATE TABLE IF NOT EXISTS \`user_roles\` (
+    \`user_id\` text PRIMARY KEY NOT NULL,
+    \`role\` text NOT NULL,
+    \`updated_at\` integer DEFAULT (strftime('%s', 'now'))
+  )`,
+
+  // 29. platform_plans
+  `CREATE TABLE IF NOT EXISTS \`platform_plans\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`slug\` text NOT NULL,
+    \`name\` text NOT NULL,
+    \`price_cents\` integer NOT NULL DEFAULT 0,
+    \`duration_months\` integer NOT NULL DEFAULT 1,
+    \`max_students\` integer,
+    \`price_per_student_cents\` integer,
+    \`features\` text,
+    \`has_ai\` integer DEFAULT false,
+    \`has_priority\` integer DEFAULT false,
+    \`has_sales_pipeline\` integer DEFAULT false,
+    \`trial_days\` integer,
+    \`active\` integer DEFAULT true,
+    \`sort_order\` integer DEFAULT 0,
+    \`created_at\` integer DEFAULT (strftime('%s', 'now')),
+    \`updated_at\` integer DEFAULT (strftime('%s', 'now'))
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS \`platform_plans_slug_unique\` ON \`platform_plans\` (\`slug\`)`,
+
+  // 30. platform_charges
+  `CREATE TABLE IF NOT EXISTS \`platform_charges\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`trainer_id\` text NOT NULL,
+    \`amount\` integer NOT NULL,
+    \`due_date\` integer NOT NULL,
+    \`description\` text,
+    \`status\` text DEFAULT 'pending',
+    \`paid_at\` integer,
+    \`asaas_payment_id\` text,
+    \`asaas_invoice_url\` text,
+    \`billing_type\` text DEFAULT 'UNDEFINED',
+    \`created_at\` integer DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (\`trainer_id\`) REFERENCES \`trainers\`(\`id\`) ON UPDATE no action ON DELETE no action
+  )`,
+
+  // 31. platform_settings
+  `CREATE TABLE IF NOT EXISTS \`platform_settings\` (
+    \`key\` text PRIMARY KEY NOT NULL,
+    \`value\` text,
+    \`updated_at\` integer DEFAULT (strftime('%s', 'now'))
+  )`,
+];
+
+// ===== ALTER TABLE statements to add missing columns on existing tables =====
+// These use try/catch because SQLite does not support IF NOT EXISTS for ADD COLUMN
+const alterStatements = [
+  // trainers - missing columns from migrations 0003-0011
+  `ALTER TABLE \`trainers\` ADD COLUMN \`cpf\` text`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`phone\` text`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`birth_date\` integer`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`presential_students\` integer DEFAULT 0`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`online_students\` integer DEFAULT 0`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`team_code\` text`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`subscription_plan\` text DEFAULT 'free'`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`subscription_status\` text DEFAULT 'active'`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`trial_ends_at\` integer`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`theme\` text DEFAULT 'system'`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`asaas_api_key\` text`,
+  `ALTER TABLE \`trainers\` ADD COLUMN \`asaas_customer_id\` text`,
+
+  // payments - missing Asaas columns from migration 0004
+  `ALTER TABLE \`payments\` ADD COLUMN \`asaas_payment_id\` text`,
+  `ALTER TABLE \`payments\` ADD COLUMN \`asaas_invoice_url\` text`,
+  `ALTER TABLE \`payments\` ADD COLUMN \`billing_type\` text`,
+
+  // nutritional_plans - missing columns from migration 0003
+  `ALTER TABLE \`nutritional_plans\` ADD COLUMN \`water_goal_ml\` integer DEFAULT 2500`,
+  `ALTER TABLE \`nutritional_plans\` ADD COLUMN \`days_of_week\` text`,
+  `ALTER TABLE \`nutritional_plans\` ADD COLUMN \`is_template\` integer DEFAULT false`,
+
+  // meal_items - missing columns from migration 0003
+  `ALTER TABLE \`meal_items\` ADD COLUMN \`food_id\` text`,
+  `ALTER TABLE \`meal_items\` ADD COLUMN \`unit\` text DEFAULT 'g'`,
+
+  // students - missing columns
+  `ALTER TABLE \`students\` ADD COLUMN \`birth_date\` integer`,
+  `ALTER TABLE \`students\` ADD COLUMN \`gender\` text`,
+  `ALTER TABLE \`students\` ADD COLUMN \`height\` integer`,
+  `ALTER TABLE \`students\` ADD COLUMN \`weight\` integer`,
 ];
 
 async function run() {
@@ -431,7 +547,7 @@ async function run() {
   const existing = await client.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
   console.log('Existing tables:', existing.rows.map(r => r.name));
 
-  console.log('\nCreating missing tables...');
+  console.log('\nCreating missing tables and indexes...');
   for (let i = 0; i < statements.length; i++) {
     try {
       await client.execute(statements[i]);
@@ -442,9 +558,30 @@ async function run() {
     }
   }
 
+  console.log('\nAdding missing columns to existing tables...');
+  let added = 0;
+  let skipped = 0;
+  for (const stmt of alterStatements) {
+    try {
+      await client.execute(stmt);
+      console.log(`  OK: ${stmt}`);
+      added++;
+    } catch (err) {
+      // "duplicate column name" means the column already exists - that's fine
+      if (err.message && err.message.includes('duplicate column')) {
+        console.log(`  SKIP (already exists): ${stmt}`);
+        skipped++;
+      } else {
+        console.error(`  ERROR: ${stmt} -> ${err.message}`);
+        throw err;
+      }
+    }
+  }
+  console.log(`  Columns: ${added} added, ${skipped} already existed`);
+
   // Verify
   const tables = await client.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
-  console.log('\n=== Tables created ===');
+  console.log('\n=== Tables in database ===');
   tables.rows.forEach(r => console.log(`  - ${r.name}`));
   console.log(`\nTotal: ${tables.rows.length} tables`);
   

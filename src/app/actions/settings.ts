@@ -372,7 +372,7 @@ export async function hasSalesAccess(): Promise<boolean> {
         where: eq(trainers.id, trainer.id),
         columns: { subscriptionPlan: true },
     });
-    const planSlug = trainerRecord?.subscriptionPlan || "free_5";
+    const planSlug = trainerRecord?.subscriptionPlan || "free";
     const platformPlan = await db.query.platformPlans.findFirst({
         where: eq(platformPlans.slug, planSlug),
         columns: { hasSalesPipeline: true },
