@@ -30,9 +30,12 @@ interface StudentData {
  * Get current user's role from Clerk publicMetadata
  * Fallback to database lookup for legacy users without metadata
  */
-/** E-mail do usuário: primário do Clerk ou primeiro da lista (para compatibilidade). */
-function getPrimaryEmail(user: { primaryEmailAddress?: { emailAddress?: string } | null; emailAddresses?: { emailAddress: string }[] }): string | undefined {
-    return user.primaryEmailAddress?.emailAddress ?? user.emailAddresses?.[0]?.emailAddress;
+/** Retorna todos os e-mails do usuário (primário primeiro, depois os demais) para checagem de superadmin. */
+function getUserEmails(user: { primaryEmailAddress?: { emailAddress?: string } | null; emailAddresses?: { emailAddress: string }[] }): string[] {
+    const primary = user.primaryEmailAddress?.emailAddress;
+    const fromList = (user.emailAddresses ?? []).map((e) => e.emailAddress).filter(Boolean);
+    const emails = primary ? [primary, ...fromList.filter((e) => e !== primary)] : fromList;
+    return [...new Set(emails)];
 }
 
 export async function getRole(): Promise<UserRole | null> {
@@ -40,15 +43,22 @@ export async function getRole(): Promise<UserRole | null> {
         const user = await currentUser();
         if (!user) return null;
 
-        const email = getPrimaryEmail(user);
+        // Superadmin por e-mail: checar ANTES do banco (SUPERADMIN_EMAIL), para não depender do Turso
+        const emails = getUserEmails(user);
+        if (emails.some((email) => isSuperAdminEmail(email))) return "superadmin";
 
-        // Superadmin tem prioridade: quem está em user_roles ou na lista SUPERADMIN_EMAIL deve acessar o painel
-        const roleRow = await db.query.userRoles.findFirst({
-            where: eq(userRoles.userId, user.id),
-            columns: { role: true },
-        });
-        if (roleRow?.role === "superadmin") return "superadmin";
-        if (email && isSuperAdminEmail(email)) return "superadmin";
+        // Superadmin por tabela user_roles no banco
+        try {
+            const roleRow = await db.query.userRoles.findFirst({
+                where: eq(userRoles.userId, user.id),
+                columns: { role: true },
+            });
+            if (roleRow?.role === "superadmin") return "superadmin";
+        } catch (dbErr) {
+            console.error("[getRole] user_roles lookup failed:", dbErr);
+        }
+
+        const email = emails[0]; // e-mail primário ou primeiro da lista
 
         // Clerk publicMetadata (onboarding / webhook)
         const metadata = user.publicMetadata as { role?: UserRole };
@@ -71,6 +81,10 @@ export async function getRole(): Promise<UserRole | null> {
         });
         if (trainer) return "trainer";
 
+        // Diagnóstico: se chegou aqui com e-mails, pode ser SUPERADMIN_EMAIL não definida no ambiente
+        if (emails.length > 0) {
+            console.warn("[getRole] No role. SUPERADMIN_EMAIL:", process.env.SUPERADMIN_EMAIL ? "definida" : "NAO DEFINIDA", "| emails count:", emails.length);
+        }
         return null;
     } catch (error) {
         console.error("[getRole] Error:", error);
