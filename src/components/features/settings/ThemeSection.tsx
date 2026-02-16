@@ -26,7 +26,7 @@ export default function ThemeSection() {
     }, [setTheme]);
 
     return (
-        <div className="bg-white dark:bg-pure-white rounded-[24px] p-6 soft-shadow border border-slate-100 dark:border-slate-200">
+        <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 soft-shadow border border-slate-100 dark:border-white/10">
             <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
                 Aparência
             </h3>
@@ -46,7 +46,7 @@ export default function ThemeSection() {
                                 "flex items-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all border",
                                 isActive
                                     ? "bg-performance-green text-graphite-dark border-performance-green"
-                                    : "bg-slate-50 dark:bg-slate-100 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-200 hover:bg-slate-100 dark:hover:bg-slate-200"
+                                    : "bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10"
                             )}
                         >
                             <Icon size={20} weight={isActive ? "fill" : "duotone"} />

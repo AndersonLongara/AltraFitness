@@ -172,7 +172,7 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
 
                     {/* Team Code */}
                         {profile.teamCode && (
-                        <div className="bg-graphite-dark dark:bg-slate-200 rounded-[24px] p-6 soft-shadow">
+                        <div className="bg-graphite-dark dark:bg-[#1E2A36] rounded-[24px] p-6 soft-shadow dark:border dark:border-white/10">
                             <div className="flex items-center justify-between mb-3">
                                 <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
                                     Código do Time
@@ -205,26 +205,26 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
                     )}
 
                     {/* Student Counts */}
-                    <div className="bg-white dark:bg-pure-white rounded-[24px] p-6 soft-shadow border border-slate-100 dark:border-white/10">
+                    <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 soft-shadow border border-slate-100 dark:border-white/10">
                         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
                             Alunos Informados
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-slate-50 rounded-xl p-4 text-center">
+                            <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 text-center">
                                 <UsersFour size={24} weight="duotone" className="text-performance-green mx-auto mb-2" />
-                                <p className="text-2xl font-extrabold text-graphite-dark">{profile.presentialStudents}</p>
+                                <p className="text-2xl font-extrabold text-graphite-dark dark:text-white">{profile.presentialStudents}</p>
                                 <p className="text-xs font-semibold text-slate-400">Presenciais</p>
                             </div>
-                            <div className="bg-slate-50 rounded-xl p-4 text-center">
+                            <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 text-center">
                                 <WifiHigh size={24} weight="duotone" className="text-blue-500 mx-auto mb-2" />
-                                <p className="text-2xl font-extrabold text-graphite-dark">{profile.onlineStudents}</p>
+                                <p className="text-2xl font-extrabold text-graphite-dark dark:text-white">{profile.onlineStudents}</p>
                                 <p className="text-xs font-semibold text-slate-400">Online</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Subscription Quick View */}
-                    <div className="bg-white dark:bg-pure-white rounded-[24px] p-6 soft-shadow border border-slate-100 dark:border-white/10">
+                    <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 soft-shadow border border-slate-100 dark:border-white/10">
                         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
                             Plano Atual
                         </h3>
@@ -232,12 +232,12 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
                             <div className="flex items-center gap-3">
                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
                                     profile.subscriptionPlan === "free_5" || profile.subscriptionPlan === "free"
-                                        ? "bg-slate-100"
+                                        ? "bg-slate-100 dark:bg-white/10"
                                         : profile.subscriptionPlan === "free_trial"
-                                            ? "bg-purple-50"
+                                            ? "bg-purple-50 dark:bg-purple-500/10"
                                             : profile.subscriptionPlan === "annual"
-                                                ? "bg-amber-50"
-                                                : "bg-emerald-50"
+                                                ? "bg-amber-50 dark:bg-amber-500/10"
+                                                : "bg-emerald-50 dark:bg-emerald-500/10"
                                 }`}>
                                     <IdentificationCard
                                         size={22}
@@ -254,7 +254,7 @@ export default function ProfileSection({ profile }: ProfileSectionProps) {
                                     />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-graphite-dark">
+                                    <p className="font-bold text-graphite-dark dark:text-white">
                                         {profile.subscriptionPlan === "free_5" || profile.subscriptionPlan === "free"
                                             ? "Free Starter"
                                             : profile.subscriptionPlan === "free_trial"

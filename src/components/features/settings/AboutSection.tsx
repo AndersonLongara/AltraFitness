@@ -8,13 +8,13 @@ export default function AboutSection() {
     return (
         <div className="space-y-6">
             {/* App Info */}
-            <div className="bg-white dark:bg-pure-white rounded-[32px] p-8 soft-shadow border border-slate-100 dark:border-white/10">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[32px] p-8 soft-shadow border border-slate-100 dark:border-white/10">
                 <div className="flex items-center gap-4 mb-6">
                     <div className="w-16 h-16 bg-graphite-dark rounded-2xl flex items-center justify-center">
                         <span className="text-performance-green font-black text-2xl">A.</span>
                     </div>
                     <div>
-                        <h2 className="text-2xl font-extrabold text-graphite-dark">AltraFit</h2>
+                        <h2 className="text-2xl font-extrabold text-graphite-dark dark:text-white">AltraFit</h2>
                         <p className="text-sm font-medium text-slate-400">
                             Versão {APP_VERSION} · Plataforma de Gestão Fitness
                         </p>
@@ -51,7 +51,7 @@ export default function AboutSection() {
             </div>
 
             {/* Legal */}
-            <div className="bg-white dark:bg-pure-white rounded-[24px] p-6 soft-shadow border border-slate-100 dark:border-white/10">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 soft-shadow border border-slate-100 dark:border-white/10">
                 <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">
                     Legal
                 </h3>
@@ -78,21 +78,21 @@ function InfoCard({
     description: string;
 }) {
     return (
-        <div className="bg-slate-50 dark:bg-slate-200 rounded-2xl p-4 border border-slate-100 dark:border-white/10">
+        <div className="bg-slate-50 dark:bg-white/5 rounded-2xl p-4 border border-slate-100 dark:border-white/10">
             <div className="flex items-center gap-3 mb-2">
                 <div className="w-8 h-8 bg-performance-green/10 rounded-lg flex items-center justify-center">
                     <Icon size={18} weight="duotone" className="text-performance-green" />
                 </div>
-                <h4 className="text-sm font-bold text-graphite-dark">{title}</h4>
+                <h4 className="text-sm font-bold text-graphite-dark dark:text-white">{title}</h4>
             </div>
-            <p className="text-xs text-slate-500 font-medium leading-relaxed">{description}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-relaxed">{description}</p>
         </div>
     );
 }
 
 function LegalLink({ label }: { label: string }) {
     return (
-        <button className="block text-sm font-medium text-slate-500 hover:text-performance-green transition-colors">
+        <button className="block text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-performance-green transition-colors">
             {label} →
         </button>
     );

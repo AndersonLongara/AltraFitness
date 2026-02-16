@@ -57,7 +57,7 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
             )}
 
             {/* Current Plan Summary */}
-            <div className="bg-white dark:bg-pure-white rounded-[32px] p-8 soft-shadow border border-slate-100 dark:border-white/10">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[32px] p-8 soft-shadow border border-slate-100 dark:border-white/10">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex items-center gap-4">
                         <div className={cn(
@@ -81,7 +81,7 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
                             )}
                         </div>
                         <div>
-                            <h2 className="text-2xl font-extrabold text-graphite-dark">
+                            <h2 className="text-2xl font-extrabold text-graphite-dark dark:text-white">
                                 Plano {subscription.displayName}
                             </h2>
                             <p className="text-sm font-medium text-slate-400">
@@ -103,15 +103,15 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
                     {/* Quick Stats */}
                     <div className="flex gap-6">
                         <div className="text-center">
-                            <p className="text-2xl font-extrabold text-graphite-dark">{usage.totalStudents}</p>
+                            <p className="text-2xl font-extrabold text-graphite-dark dark:text-white">{usage.totalStudents}</p>
                             <p className="text-xs font-semibold text-slate-400">Alunos</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-extrabold text-graphite-dark">{usage.totalPlans}</p>
+                            <p className="text-2xl font-extrabold text-graphite-dark dark:text-white">{usage.totalPlans}</p>
                             <p className="text-xs font-semibold text-slate-400">Planos</p>
                         </div>
                         <div className="text-center">
-                            <p className="text-2xl font-extrabold text-graphite-dark">
+                            <p className="text-2xl font-extrabold text-graphite-dark dark:text-white">
                                 {(usage.revenueThisMonth / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                             </p>
                             <p className="text-xs font-semibold text-slate-400">Receita Total</p>
@@ -121,14 +121,14 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
 
                 {/* Usage Bar (only for free plan) */}
                 {usagePercent !== null && (
-                    <div className="mt-6 pt-6 border-t border-slate-100">
+                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/10">
                         <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-bold text-graphite-dark">Uso de Alunos</span>
+                            <span className="text-sm font-bold text-graphite-dark dark:text-white">Uso de Alunos</span>
                             <span className="text-sm font-bold text-slate-400">
                                 {usage.totalStudents}/{subscription.limits.maxStudents}
                             </span>
                         </div>
-                        <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        <div className="w-full bg-slate-100 dark:bg-white/10 rounded-full h-3 overflow-hidden">
                             <div
                                 className={cn(
                                     "h-full rounded-full transition-all duration-500",
@@ -146,7 +146,7 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
                 )}
 
                 {/* Features list */}
-                <div className="mt-6 pt-6 border-t border-slate-100">
+                <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/10">
                     <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Recursos Incluídos</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {subscription.features.map((feature, i) => (
@@ -154,7 +154,7 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
                                 <div className="w-5 h-5 rounded-full bg-performance-green/10 flex items-center justify-center flex-shrink-0">
                                     <Check size={12} weight="bold" className="text-performance-green" />
                                 </div>
-                                <span className="text-sm font-medium text-graphite-dark">{feature}</span>
+                                <span className="text-sm font-medium text-graphite-dark dark:text-white">{feature}</span>
                             </div>
                         ))}
                     </div>
@@ -163,7 +163,7 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
 
             {/* Plan Comparison */}
             <div>
-                <h3 className="text-lg font-extrabold text-graphite-dark mb-4">Alterar Plano</h3>
+                <h3 className="text-lg font-extrabold text-graphite-dark dark:text-white mb-4">Alterar Plano</h3>
                 <div
                     className="grid gap-6"
                     style={{
@@ -197,13 +197,13 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
                                     "rounded-[24px] p-6 border-2 transition-all duration-200 relative flex flex-col",
                                     isCurrent
                                         ? color === "green"
-                                            ? "border-performance-green bg-emerald-50/50"
+                                            ? "border-performance-green bg-emerald-50/50 dark:bg-emerald-500/10"
                                             : color === "gold"
-                                                ? "border-amber-400 bg-amber-50/50"
+                                                ? "border-amber-400 bg-amber-50/50 dark:bg-amber-400/10"
                                                 : color === "purple"
-                                                    ? "border-purple-400 bg-purple-50/50"
-                                                    : "border-slate-300 bg-slate-50/50"
-                                        : "border-slate-100 bg-white hover:border-slate-200",
+                                                    ? "border-purple-400 bg-purple-50/50 dark:bg-purple-400/10"
+                                                    : "border-slate-300 bg-slate-50/50 dark:bg-slate-300/10"
+                                        : "border-slate-100 bg-white hover:border-slate-200 dark:border-white/10 dark:bg-[#1E2A36] dark:hover:border-white/20",
                                     "soft-shadow"
                                 )}
                             >
@@ -231,9 +231,9 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
                                     </div>
                                 )}
 
-                                <h4 className="text-lg font-extrabold text-graphite-dark mt-2">{plan.name}</h4>
+                                <h4 className="text-lg font-extrabold text-graphite-dark dark:text-white mt-2">{plan.name}</h4>
                                 <div className="mt-2 mb-1">
-                                    <span className="text-3xl font-black text-graphite-dark">{priceStr}</span>
+                                    <span className="text-3xl font-black text-graphite-dark dark:text-white">{priceStr}</span>
                                     <span className="text-slate-400 font-medium text-sm">{periodStr}</span>
                                 </div>
                                 {extraStr && (
@@ -257,7 +257,7 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
                                             <div className="w-4 h-4 rounded-full bg-performance-green/15 flex items-center justify-center flex-shrink-0">
                                                 <Check size={10} weight="bold" className="text-performance-green" />
                                             </div>
-                                            <span className="text-graphite-dark font-medium">{f}</span>
+                                            <span className="text-graphite-dark dark:text-white font-medium">{f}</span>
                                         </li>
                                     ))}
                                 </ul>
@@ -268,14 +268,14 @@ export default function SubscriptionSection({ subscription, usage, platformPlans
                                     className={cn(
                                         "w-full py-3 rounded-xl font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 mt-auto",
                                         isCurrent
-                                            ? "bg-slate-100 text-slate-400 cursor-default"
+                                            ? "bg-slate-100 dark:bg-white/10 text-slate-400 cursor-default"
                                             : color === "green"
                                                 ? "bg-performance-green text-white hover:bg-emerald-600 shadow-lg shadow-emerald-200"
                                                 : color === "purple"
                                                     ? "bg-purple-500 text-white hover:bg-purple-600 shadow-lg shadow-purple-200"
                                                     : color === "gold"
                                                         ? "bg-amber-400 text-amber-900 hover:bg-amber-500"
-                                                        : "bg-slate-200 text-graphite-dark hover:bg-slate-300",
+                                                    : "bg-slate-200 dark:bg-white/10 text-graphite-dark dark:text-white hover:bg-slate-300 dark:hover:bg-white/20",
                                         "disabled:opacity-50"
                                     )}
                                 >
