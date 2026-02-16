@@ -204,16 +204,12 @@ export async function getRoleRedirectUrl(): Promise<string> {
     }
 }
 
-/** E-mail do superadmin padrão (sempre considerado superadmin, mesmo sem variável de ambiente). */
-const DEFAULT_SUPERADMIN_EMAIL = "anderson.longara@gmail.com";
-
-/** Verifica se o e-mail está na lista de superadmins (SUPERADMIN_EMAIL ou e-mail padrão anderson.longara@gmail.com). */
+/** Verifica se o e-mail está na lista de superadmins (variável de ambiente SUPERADMIN_EMAIL, separada por vírgula). */
 export async function isSuperAdminEmail(email: string): Promise<boolean> {
-    const lower = email.trim().toLowerCase();
-    if (lower === DEFAULT_SUPERADMIN_EMAIL) return true;
     const list = process.env.SUPERADMIN_EMAIL?.trim();
     if (!list) return false;
-    const emails = list.split(",").map((e) => e.trim().toLowerCase());
+    const lower = email.trim().toLowerCase();
+    const emails = list.split(",").map((e) => e.trim().toLowerCase()).filter(Boolean);
     return emails.includes(lower);
 }
 
