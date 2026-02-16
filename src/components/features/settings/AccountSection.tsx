@@ -28,13 +28,13 @@ export default function AccountSection({ profile }: { profile?: TrainerProfile }
 
     return (
         <div className="space-y-6">
-            <div className="bg-white dark:bg-pure-white rounded-[32px] soft-shadow overflow-hidden border border-slate-100 dark:border-white/10 p-6">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[32px] soft-shadow overflow-hidden border border-slate-100 dark:border-white/10 p-6">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
                         <CurrencyCircleDollar size={20} weight="duotone" />
                     </div>
                     <div>
-                        <h3 className="font-bold text-graphite-dark">Cobranças Asaas</h3>
+                        <h3 className="font-bold text-graphite-dark dark:text-white">Cobranças Asaas</h3>
                         <p className="text-sm text-slate-500">Configure sua chave de API para enviar cobranças PIX, Boleto ou Cartão aos alunos.</p>
                     </div>
                 </div>
@@ -51,7 +51,7 @@ export default function AccountSection({ profile }: { profile?: TrainerProfile }
                     Como criar conta Asaas e obter a chave?
                 </button>
                 {showInstructions && (
-                    <div className="bg-slate-50 dark:bg-slate-200 rounded-xl p-4 mb-4 text-sm text-slate-600 dark:text-slate-400 space-y-2 border border-slate-100 dark:border-white/10">
+                    <div className="bg-slate-50 dark:bg-white/5 rounded-xl p-4 mb-4 text-sm text-slate-600 dark:text-slate-400 space-y-2 border border-slate-100 dark:border-white/10">
                         <p><strong>1. Criar conta</strong></p>
                         <ul className="list-disc list-inside space-y-1 ml-2">
                             <li>Produção: <a href="https://www.asaas.com/" target="_blank" rel="noopener noreferrer" className="text-performance-green hover:underline">asaas.com</a></li>
@@ -88,24 +88,43 @@ export default function AccountSection({ profile }: { profile?: TrainerProfile }
             </div>
 
             {/* Clerk UserProfile embedded */}
-            <div className="bg-white dark:bg-pure-white rounded-[32px] soft-shadow overflow-hidden border border-slate-100 dark:border-white/10">
+            <div className="bg-white dark:bg-[#1E2A36] rounded-[32px] soft-shadow overflow-hidden border border-slate-100 dark:border-white/10">
                 <div className="p-2 md:p-4 overflow-x-auto">
                     <UserProfile
                         appearance={{
+                            variables: {
+                                colorBackground: "transparent",
+                                colorText: "inherit",
+                                colorTextSecondary: "#94A3B8",
+                            },
                             elements: {
                                 rootBox: "w-full mx-auto",
-                                card: "shadow-none border-none p-0 w-full",
+                                card: "shadow-none border-none p-0 w-full !bg-transparent",
                                 navbar: "hidden md:flex",
-                                navbarMobileMenuButton: "text-graphite-dark",
-                                headerTitle: "text-xl font-bold text-graphite-dark",
-                                headerSubtitle: "text-slate-500",
-                                profileSectionTitleText: "text-graphite-dark font-bold",
-                                accordionTriggerButton: "text-graphite-dark font-bold",
+                                navbarMobileMenuButton: "text-graphite-dark dark:text-white",
+                                navbarButton: "dark:text-slate-300 dark:hover:text-white",
+                                navbarButtonActive: "dark:text-white",
+                                pageScrollBox: "!bg-transparent",
+                                page: "!bg-transparent",
+                                headerTitle: "text-xl font-bold text-graphite-dark dark:text-white",
+                                headerSubtitle: "text-slate-500 dark:text-slate-400",
+                                profileSectionTitleText: "text-graphite-dark dark:text-white font-bold",
+                                profileSectionContent: "dark:text-slate-300",
+                                profileSectionPrimaryButton: "dark:text-slate-300",
+                                accordionTriggerButton: "text-graphite-dark dark:text-white font-bold",
+                                accordionContent: "dark:text-slate-300",
                                 formButtonPrimary:
                                     "bg-performance-green hover:bg-emerald-600 text-white font-bold rounded-xl",
                                 formFieldInput:
-                                    "rounded-xl border-slate-200 focus:border-performance-green focus:ring-performance-green/20",
+                                    "rounded-xl border-slate-200 dark:border-white/10 dark:bg-white/5 dark:text-white focus:border-performance-green focus:ring-performance-green/20",
+                                formFieldLabel: "dark:text-slate-400",
                                 badge: "bg-performance-green/10 text-performance-green font-bold",
+                                userPreviewMainIdentifier: "dark:text-white",
+                                userPreviewSecondaryIdentifier: "dark:text-slate-400",
+                                menuButton: "dark:text-slate-300",
+                                menuList: "dark:bg-[#1E2A36] dark:border-white/10",
+                                menuItem: "dark:text-slate-300 dark:hover:bg-white/5",
+                                footer: "hidden",
                             },
                         }}
                     />
