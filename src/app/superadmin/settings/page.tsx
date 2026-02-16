@@ -6,11 +6,21 @@ import { getPlatformAsaasConfigForSettings } from "@/app/actions/superadmin";
 
 export const dynamic = "force-dynamic";
 
+const defaultAsaas = { hasApiKey: false, sandbox: false, hasWebhookToken: false };
+
 export default async function SuperAdminSettingsPage() {
-  const [user, asaas] = await Promise.all([
-    currentUser(),
-    getPlatformAsaasConfigForSettings(),
-  ]);
+  let user: Awaited<ReturnType<typeof currentUser>> = null;
+  let asaas = defaultAsaas;
+  try {
+    const [u, a] = await Promise.all([
+      currentUser(),
+      getPlatformAsaasConfigForSettings(),
+    ]);
+    user = u;
+    asaas = a ?? defaultAsaas;
+  } catch (err) {
+    console.error("[SuperAdminSettingsPage] Error:", err instanceof Error ? err.message : String(err));
+  }
 
   return (
     <>

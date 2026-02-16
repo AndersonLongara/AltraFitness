@@ -657,15 +657,20 @@ const PLATFORM_KEYS = {
   WEBHOOK_TOKEN: "asaas_webhook_token",
 } as const;
 
-/** Retorna a config Asaas para exibição no painel (sem revelar chaves). */
+/** Retorna a config Asaas para exibição no painel (sem revelar chaves). Em falha de DB retorna valores seguros. */
 export async function getPlatformAsaasConfigForSettings() {
   await requireSuperAdmin();
-  const config = await getPlatformAsaasConfig();
-  return {
-    hasApiKey: config.hasApiKey,
-    sandbox: config.sandbox,
-    hasWebhookToken: config.hasWebhookToken,
-  };
+  try {
+    const config = await getPlatformAsaasConfig();
+    return {
+      hasApiKey: config.hasApiKey,
+      sandbox: config.sandbox,
+      hasWebhookToken: config.hasWebhookToken,
+    };
+  } catch (err) {
+    console.error("[getPlatformAsaasConfigForSettings] Error:", err instanceof Error ? err.message : String(err));
+    return { hasApiKey: false, sandbox: false, hasWebhookToken: false };
+  }
 }
 
 /**

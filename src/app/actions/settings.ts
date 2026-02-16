@@ -344,20 +344,25 @@ export interface ConfigTutorialStatus {
 }
 
 export async function getConfigTutorialStatus(): Promise<ConfigTutorialStatus> {
-    const trainer = await getCurrentTrainer();
-    const [trainerRecord, plansCount, studentsCount] = await Promise.all([
-        db.query.trainers.findFirst({
-            where: eq(trainers.id, trainer.id),
-            columns: { asaasApiKey: true },
-        }),
-        db.$count(plans, eq(plans.trainerId, trainer.id)),
-        db.$count(students, eq(students.trainerId, trainer.id)),
-    ]);
-    return {
-        hasAsaasKey: !!(trainerRecord?.asaasApiKey),
-        plansCount,
-        studentsCount,
-    };
+    try {
+        const trainer = await getCurrentTrainer();
+        const [trainerRecord, plansCount, studentsCount] = await Promise.all([
+            db.query.trainers.findFirst({
+                where: eq(trainers.id, trainer.id),
+                columns: { asaasApiKey: true },
+            }),
+            db.$count(plans, eq(plans.trainerId, trainer.id)),
+            db.$count(students, eq(students.trainerId, trainer.id)),
+        ]);
+        return {
+            hasAsaasKey: !!(trainerRecord?.asaasApiKey),
+            plansCount: plansCount ?? 0,
+            studentsCount: studentsCount ?? 0,
+        };
+    } catch (err) {
+        console.error("[getConfigTutorialStatus] Error:", err instanceof Error ? err.message : String(err));
+        return { hasAsaasKey: false, plansCount: 0, studentsCount: 0 };
+    }
 }
 
 /** Retorna se o personal tem acesso ao pipeline de vendas (conforme plano da plataforma). */

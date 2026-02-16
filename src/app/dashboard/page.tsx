@@ -14,77 +14,79 @@ import { getConfigTutorialStatus } from "@/app/actions/settings";
 
 export const dynamic = 'force-dynamic';
 
+const defaultConfigTutorial = { hasAsaasKey: false, plansCount: 0, studentsCount: 0 };
+
 export default async function DashboardPage() {
     const user = await currentUser();
     const userId = user?.id;
     if (!userId) return null;
 
-    const configTutorial = await getConfigTutorialStatus();
-    const now = new Date();
-    const startMonth = startOfMonth(now);
-    const endMonth = endOfMonth(now);
-    const next30Days = addDays(now, 30);
+    let configTutorial = defaultConfigTutorial;
+    let studentsCount = 0;
+    let newStudentsCount = 0;
+    let expiringStudents: Awaited<ReturnType<typeof db.query.students.findMany>> = [];
+    let monthlyRevenue = 0;
+    let chartData: { name: string; value: number }[] = [];
 
-    // --- 1. Operations ---
-    const studentsCount = await db.$count(students, eq(students.trainerId, userId));
+    try {
+        configTutorial = await getConfigTutorialStatus();
+        const now = new Date();
+        const startMonth = startOfMonth(now);
+        const endMonth = endOfMonth(now);
+        const next30Days = addDays(now, 30);
 
-    // New Students this month (Mock logic for "Novas Matrículas")
-    const newStudentsCount = await db.$count(students, and(
-        eq(students.trainerId, userId),
-        gte(students.createdAt, startMonth)
-    ));
-
-    // Expiring Plans (Next 30 days)
-    const expiringStudents = await db.query.students.findMany({
-        where: and(
+        studentsCount = await db.$count(students, eq(students.trainerId, userId));
+        newStudentsCount = await db.$count(students, and(
             eq(students.trainerId, userId),
-            gt(students.planEnd, now),
-            lte(students.planEnd, next30Days)
-        ),
-        limit: 5,
-        with: { plan: true }
-    });
+            gte(students.createdAt, startMonth)
+        ));
 
+        expiringStudents = await db.query.students.findMany({
+            where: and(
+                eq(students.trainerId, userId),
+                gt(students.planEnd, now),
+                lte(students.planEnd, next30Days)
+            ),
+            limit: 5,
+            with: { plan: true }
+        });
 
-    // --- 2. Financials & Chart Data ---
-    // Revenue This Month (Paid)
-    const monthlyPayments = await db.query.payments.findMany({
-        where: and(
-            eq(payments.trainerId, userId),
-            eq(payments.status, 'paid'),
-            gte(payments.paidAt, startMonth),
-            lte(payments.paidAt, endMonth)
-        )
-    });
-    const monthlyRevenue = monthlyPayments.reduce((acc, curr) => acc + curr.amount, 0);
+        const monthlyPayments = await db.query.payments.findMany({
+            where: and(
+                eq(payments.trainerId, userId),
+                eq(payments.status, 'paid'),
+                gte(payments.paidAt, startMonth),
+                lte(payments.paidAt, endMonth)
+            )
+        });
+        monthlyRevenue = monthlyPayments.reduce((acc, curr) => acc + curr.amount, 0);
 
-    // Chart Data (Last 6 Months)
-    const sixMonthsAgo = subMonths(now, 5);
-    const recentMonts = eachMonthOfInterval({ start: sixMonthsAgo, end: now });
+        const sixMonthsAgo = subMonths(now, 5);
+        const recentMonts = eachMonthOfInterval({ start: sixMonthsAgo, end: now });
+        const historicalPayments = await db.query.payments.findMany({
+            where: and(
+                eq(payments.trainerId, userId),
+                eq(payments.status, 'paid'),
+                gte(payments.paidAt, startOfMonth(sixMonthsAgo))
+            )
+        });
 
-    // Fetch all payments from 6 months ago
-    const historicalPayments = await db.query.payments.findMany({
-        where: and(
-            eq(payments.trainerId, userId),
-            eq(payments.status, 'paid'),
-            gte(payments.paidAt, startOfMonth(sixMonthsAgo))
-        )
-    });
+        chartData = recentMonts.map(month => {
+            const monthStart = startOfMonth(month);
+            const monthEnd = endOfMonth(month);
+            const revenue = historicalPayments
+                .filter(p => p.paidAt && p.paidAt >= monthStart && p.paidAt <= monthEnd)
+                .reduce((acc, curr) => acc + curr.amount, 0);
+            return {
+                name: format(month, 'MMM', { locale: ptBR }).toUpperCase(),
+                value: revenue
+            };
+        });
+    } catch (err) {
+        console.error("[DashboardPage] Error loading data:", err instanceof Error ? err.message : String(err));
+    }
 
-    const chartData = recentMonts.map(month => {
-        const monthStart = startOfMonth(month);
-        const monthEnd = endOfMonth(month);
-
-        const revenue = historicalPayments
-            .filter(p => p.paidAt && p.paidAt >= monthStart && p.paidAt <= monthEnd)
-            .reduce((acc, curr) => acc + curr.amount, 0);
-
-        return {
-            name: format(month, 'MMM', { locale: ptBR }).toUpperCase(),
-            value: revenue
-        };
-    });
-
+    const now = new Date();
     const hasAnyData = studentsCount > 0 || monthlyRevenue > 0;
     const revenueFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(monthlyRevenue / 100);
 
