@@ -93,12 +93,12 @@ export default function StudentProfileTabs({
 
     return (
         <>
-            <div className="bg-pure-white rounded-3xl soft-shadow overflow-hidden relative">
+            <div className="bg-pure-white dark:bg-[#1E2A36] rounded-3xl soft-shadow overflow-hidden relative border border-transparent dark:border-white/10">
                 <div className="h-32 bg-gradient-to-r from-emerald-500 to-emerald-600"></div>
                 <div className="px-8 pb-8">
                     <div className="-mt-20 mb-6">
-                        <div className="w-40 h-40 rounded-full bg-white p-1.5 shadow-xl">
-                            <div className="w-full h-full rounded-full bg-slate-200 flex items-center justify-center text-slate-400 overflow-hidden">
+                        <div className="w-40 h-40 rounded-full bg-white dark:bg-[#1E2A36] p-1.5 shadow-xl">
+                            <div className="w-full h-full rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-slate-400 dark:text-slate-500 overflow-hidden">
                                 {student.photoUrl ? (
                                     <img src={student.photoUrl} alt={student.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -110,16 +110,16 @@ export default function StudentProfileTabs({
 
                     <div className="flex justify-between items-start">
                         <div>
-                            <h2 className="text-3xl font-extrabold text-graphite-dark">{student.name}</h2>
+                            <h2 className="text-3xl font-extrabold text-graphite-dark dark:text-white">{student.name}</h2>
                             <div className="flex items-center gap-2 mt-2">
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${student.active ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${student.active ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-400'}`}>
                                     {student.active ? 'Ativo' : 'Inativo'}
                                 </span>
-                                <span className="text-slate-400 text-sm">• {student.email || 'Sem e-mail'}</span>
+                                <span className="text-slate-400 dark:text-slate-500 text-sm">• {student.email || 'Sem e-mail'}</span>
                                 {student.plan && (
                                     <button
                                         onClick={() => setIsPlanModalOpen(true)}
-                                        className="text-xs font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 px-2 py-1 rounded-lg ml-2 transition-colors"
+                                        className="text-xs font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 px-2 py-1 rounded-lg ml-2 transition-colors"
                                     >
                                         {student.plan.name}
                                     </button>
@@ -129,14 +129,14 @@ export default function StudentProfileTabs({
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => setIsEditOpen(true)}
-                                className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center gap-2"
+                                className="px-4 py-2 bg-slate-100 dark:bg-white/10 text-slate-700 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-white/20 transition-colors flex items-center gap-2"
                             >
                                 <PencilSimple size={18} weight="bold" />
                                 Editar
                             </button>
                             <button
                                 onClick={() => setIsDeleteOpen(true)}
-                                className="px-4 py-2 bg-rose-50 text-rose-600 font-bold rounded-xl hover:bg-rose-100 transition-colors flex items-center gap-2"
+                                className="px-4 py-2 bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold rounded-xl hover:bg-rose-100 dark:hover:bg-rose-500/20 transition-colors flex items-center gap-2"
                                 title="Excluir Aluno"
                             >
                                 <Trash size={18} weight="bold" />
@@ -146,34 +146,34 @@ export default function StudentProfileTabs({
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-slate-100 px-8 pt-4 overflow-x-auto">
+                <div className="flex border-b border-slate-100 dark:border-white/10 px-8 pt-4 overflow-x-auto">
                     <button
                         onClick={() => setActiveTab("dashboard")}
-                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'dashboard' ? 'border-performance-green text-performance-green' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'dashboard' ? 'border-performance-green text-performance-green dark:text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         Dashboard
                     </button>
                     <button
                         onClick={() => setActiveTab("history")}
-                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'history' ? 'border-performance-green text-performance-green' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'history' ? 'border-performance-green text-performance-green dark:text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         Treinos
                     </button>
                     <button
                         onClick={() => setActiveTab("diet")}
-                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'diet' ? 'border-performance-green text-performance-green' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'diet' ? 'border-performance-green text-performance-green dark:text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         Nutrição
                     </button>
                     <button
                         onClick={() => setActiveTab("assessments")}
-                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'assessments' ? 'border-performance-green text-performance-green' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'assessments' ? 'border-performance-green text-performance-green dark:text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         Avaliações
                     </button>
                     <button
                         onClick={() => setActiveTab("forms")}
-                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'forms' ? 'border-performance-green text-performance-green' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
+                        className={`pb-4 px-4 font-bold text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === 'forms' ? 'border-performance-green text-performance-green dark:text-emerald-400' : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     >
                         Formulários
                     </button>
@@ -195,7 +195,7 @@ export default function StudentProfileTabs({
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setIsAssessmentModalOpen(true)}
-                                    className="flex-1 py-4 bg-slate-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-lg shadow-slate-200 transition-all"
+                                    className="flex-1 py-4 bg-slate-800 dark:bg-[#1E2A36] text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-900 dark:hover:bg-white/10 shadow-lg shadow-slate-200 dark:shadow-none transition-all dark:border dark:border-white/10"
                                 >
                                     <Plus size={20} weight="bold" />
                                     Nova Avaliação
@@ -216,14 +216,14 @@ export default function StudentProfileTabs({
                             <div className="flex gap-3">
                                 <Link
                                     href={`/dashboard/workouts/new?studentId=${student.id}`}
-                                    className="flex-1 py-4 bg-graphite-dark text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-black transition-all"
+                                    className="flex-1 py-4 bg-graphite-dark dark:bg-[#1E2A36] text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-white/10 transition-all dark:border dark:border-white/10"
                                 >
                                     <Plus size={20} weight="bold" />
                                     Nova Ficha
                                 </Link>
                                 <Link
                                     href={`/dashboard/workouts/templates`}
-                                    className="flex-1 py-4 bg-amber-50 text-amber-600 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-amber-100 transition-all border border-amber-100"
+                                    className="flex-1 py-4 bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-all border border-amber-100 dark:border-amber-500/30"
                                     title="Aplicar Modelo de Treino"
                                 >
                                     <Copy size={20} weight="bold" />
@@ -237,15 +237,15 @@ export default function StudentProfileTabs({
                                         <Link
                                             key={plan.id}
                                             href={`/dashboard/workouts/${plan.id}/edit`}
-                                            className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer group"
+                                            className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer group border border-transparent dark:border-white/10"
                                         >
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-performance-green shadow-sm group-hover:bg-performance-green group-hover:text-white transition-colors">
+                                                <div className="w-12 h-12 bg-white dark:bg-white/10 rounded-xl flex items-center justify-center text-performance-green shadow-sm group-hover:bg-performance-green group-hover:text-white transition-colors">
                                                     <CalendarCheck size={24} weight="duotone" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-slate-700">{plan.name}</h4>
-                                                    <p className="text-xs text-slate-400">
+                                                    <h4 className="font-bold text-slate-700 dark:text-slate-200">{plan.name}</h4>
+                                                    <p className="text-xs text-slate-400 dark:text-slate-500">
                                                         {plan.active ? 'Ativa' : 'Inativa'} • {plan.createdAt ? format(new Date(plan.createdAt), "dd/MM/yyyy") : '--'}
                                                     </p>
                                                 </div>
@@ -262,7 +262,7 @@ export default function StudentProfileTabs({
                                         </Link>
                                     ))
                                 ) : (
-                                    <div className="text-center py-12 text-slate-400">
+                                    <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                                         <p>Nenhuma ficha registrada.</p>
                                     </div>
                                 )}
@@ -275,7 +275,7 @@ export default function StudentProfileTabs({
                             <div className="flex gap-3">
                                 <Link
                                     href={`/dashboard/students/${student.id}/diet/new`}
-                                    className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all"
+                                    className="flex-1 py-4 bg-emerald-500 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600 shadow-lg shadow-emerald-200 dark:shadow-none transition-all"
                                 >
                                     <Plus size={20} weight="bold" />
                                     Nova Dieta
@@ -288,15 +288,15 @@ export default function StudentProfileTabs({
                                         <Link
                                             key={diet.id}
                                             href={`/dashboard/students/${student.id}/diet/${diet.id}/edit`}
-                                            className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors cursor-pointer group"
+                                            className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors cursor-pointer group border border-transparent dark:border-white/10"
                                         >
                                             <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-emerald-500 shadow-sm group-hover:bg-emerald-500 group-hover:text-white transition-colors">
+                                                <div className="w-12 h-12 bg-white dark:bg-white/10 rounded-xl flex items-center justify-center text-emerald-500 shadow-sm group-hover:bg-emerald-500 group-hover:text-white transition-colors">
                                                     <ForkKnife size={24} weight="duotone" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-slate-700">{diet.title}</h4>
-                                                    <p className="text-xs text-slate-400">
+                                                    <h4 className="font-bold text-slate-700 dark:text-slate-200">{diet.title}</h4>
+                                                    <p className="text-xs text-slate-400 dark:text-slate-500">
                                                         {diet.active ? 'Ativa' : 'Inativa'} • {diet.dailyKcal} kcal • {diet.createdAt ? format(new Date(diet.createdAt), "dd/MM/yyyy") : '--'}
                                                     </p>
                                                 </div>
@@ -323,7 +323,7 @@ export default function StudentProfileTabs({
                                         </Link>
                                     ))
                                 ) : (
-                                    <div className="text-center py-12 text-slate-400">
+                                    <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                                         <p>Nenhuma dieta registrada.</p>
                                     </div>
                                 )}
@@ -336,7 +336,7 @@ export default function StudentProfileTabs({
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setIsAssignFormOpen(true)}
-                                    className="flex-1 py-4 bg-slate-800 text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-900 shadow-lg shadow-slate-200 transition-all"
+                                    className="flex-1 py-4 bg-slate-800 dark:bg-[#1E2A36] text-white rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-slate-900 dark:hover:bg-white/10 shadow-lg shadow-slate-200 dark:shadow-none transition-all dark:border dark:border-white/10"
                                 >
                                     <PaperPlaneRight size={20} weight="bold" />
                                     Enviar Formulário
@@ -348,18 +348,18 @@ export default function StudentProfileTabs({
                                     assignedForms.map((assignment: any) => (
                                         <div
                                             key={assignment.id}
-                                            className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors group"
+                                            className="flex items-center justify-between p-4 bg-slate-50 dark:bg-white/5 rounded-2xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors group border border-transparent dark:border-white/10"
                                         >
                                             <div className="flex items-center gap-4">
                                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center shadow-sm transition-colors ${assignment.status === 'completed'
-                                                        ? 'bg-white text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white'
-                                                        : 'bg-white text-slate-400'
+                                                        ? 'bg-white dark:bg-white/10 text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white'
+                                                        : 'bg-white dark:bg-white/10 text-slate-400 dark:text-slate-500'
                                                     }`}>
                                                     <ClipboardText size={24} weight="duotone" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-bold text-slate-700">{assignment.form.title}</h4>
-                                                    <p className="text-xs text-slate-400">
+                                                    <h4 className="font-bold text-slate-700 dark:text-slate-200">{assignment.form.title}</h4>
+                                                    <p className="text-xs text-slate-400 dark:text-slate-500">
                                                         {assignment.status === 'completed'
                                                             ? `Respondido em ${format(new Date(assignment.completedAt), "dd/MM/yyyy")}`
                                                             : `Enviado em ${format(new Date(assignment.assignedAt), "dd/MM/yyyy")}`
@@ -369,10 +369,10 @@ export default function StudentProfileTabs({
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${assignment.status === 'completed'
-                                                        ? 'bg-emerald-100 text-emerald-600'
+                                                        ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
                                                         : assignment.status === 'viewed'
-                                                            ? 'bg-amber-100 text-amber-600'
-                                                            : 'bg-slate-200 text-slate-500'
+                                                            ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                                                            : 'bg-slate-200 dark:bg-white/10 text-slate-500 dark:text-slate-400'
                                                     }`}>
                                                     {assignment.status === 'completed' ? 'Respondido' : assignment.status === 'viewed' ? 'Visto' : 'Pendente'}
                                                 </span>
@@ -380,7 +380,7 @@ export default function StudentProfileTabs({
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="text-center py-12 text-slate-400">
+                                    <div className="text-center py-12 text-slate-400 dark:text-slate-500">
                                         <p>Nenhum formulário enviado.</p>
                                     </div>
                                 )}
@@ -410,27 +410,27 @@ export default function StudentProfileTabs({
 
             {/* Delete Confirmation Modal */}
             {isDeleteOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 backdrop-blur-sm p-4">
-                    <div className="bg-pure-white w-full max-w-sm rounded-3xl soft-shadow overflow-hidden p-6 space-y-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 dark:bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-pure-white dark:bg-[#1E2A36] w-full max-w-sm rounded-3xl soft-shadow overflow-hidden p-6 space-y-4 border border-transparent dark:border-white/10">
                         <div className="text-center">
-                            <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mx-auto mb-4">
+                            <div className="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400 mx-auto mb-4">
                                 <Trash size={32} weight="duotone" />
                             </div>
-                            <h3 className="text-xl font-bold text-graphite-dark mb-2">Excluir Aluno?</h3>
-                            <p className="text-slate-500 text-sm">
+                            <h3 className="text-xl font-bold text-graphite-dark dark:text-white mb-2">Excluir Aluno?</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">
                                 Tem certeza que deseja excluir <strong>{student.name}</strong>? Esta ação não pode ser desfeita.
                             </p>
                         </div>
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={() => setIsDeleteOpen(false)}
-                                className="flex-1 px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                                className="flex-1 px-4 py-3 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="flex-1 px-4 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-colors shadow-lg shadow-rose-200"
+                                className="flex-1 px-4 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-colors shadow-lg shadow-rose-200 dark:shadow-none"
                             >
                                 Excluir
                             </button>
@@ -441,27 +441,27 @@ export default function StudentProfileTabs({
 
             {/* Delete Diet Confirmation Modal */}
             {dietToDelete && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 backdrop-blur-sm p-4">
-                    <div className="bg-pure-white w-full max-w-sm rounded-3xl soft-shadow overflow-hidden p-6 space-y-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 dark:bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-pure-white dark:bg-[#1E2A36] w-full max-w-sm rounded-3xl soft-shadow overflow-hidden p-6 space-y-4 border border-transparent dark:border-white/10">
                         <div className="text-center">
-                            <div className="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 mx-auto mb-4">
+                            <div className="w-16 h-16 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center text-rose-600 dark:text-rose-400 mx-auto mb-4">
                                 <Trash size={32} weight="duotone" />
                             </div>
-                            <h3 className="text-xl font-bold text-graphite-dark mb-2">Excluir Dieta?</h3>
-                            <p className="text-slate-500 text-sm">
+                            <h3 className="text-xl font-bold text-graphite-dark dark:text-white mb-2">Excluir Dieta?</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">
                                 Tem certeza que deseja excluir a dieta <strong>{dietToDelete.title}</strong>? Esta ação não pode ser desfeita.
                             </p>
                         </div>
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={() => setDietToDelete(null)}
-                                className="flex-1 px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                                className="flex-1 px-4 py-3 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleDeleteDiet}
-                                className="flex-1 px-4 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-colors shadow-lg shadow-rose-200"
+                                className="flex-1 px-4 py-3 bg-rose-500 text-white font-bold rounded-xl hover:bg-rose-600 transition-colors shadow-lg shadow-rose-200 dark:shadow-none"
                             >
                                 Excluir
                             </button>
@@ -472,14 +472,14 @@ export default function StudentProfileTabs({
             {/* Plan Selection Modal */}
             {/* Assign Form Modal */}
             {isAssignFormOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 backdrop-blur-sm p-4">
-                    <div className="bg-pure-white w-full max-w-sm rounded-3xl soft-shadow overflow-hidden p-6 space-y-4">
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-graphite-dark/60 dark:bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-pure-white dark:bg-[#1E2A36] w-full max-w-sm rounded-3xl soft-shadow overflow-hidden p-6 space-y-4 border border-transparent dark:border-white/10">
                         <div className="text-center">
-                            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 mx-auto mb-4">
+                            <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-500 dark:text-slate-400 mx-auto mb-4">
                                 <PaperPlaneRight size={32} weight="duotone" />
                             </div>
-                            <h3 className="text-xl font-bold text-graphite-dark mb-2">Enviar Formulário</h3>
-                            <p className="text-slate-500 text-sm">
+                            <h3 className="text-xl font-bold text-graphite-dark dark:text-white mb-2">Enviar Formulário</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm">
                                 Selecione um formulário para enviar para <strong>{student.name}</strong>.
                             </p>
                         </div>
@@ -488,11 +488,11 @@ export default function StudentProfileTabs({
                             <select
                                 value={selectedFormId}
                                 onChange={(e) => setSelectedFormId(e.target.value)}
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-700 font-bold focus:border-emerald-500 focus:ring-emerald-500 outline-none"
+                                className="w-full bg-slate-50 dark:bg-white/10 border border-slate-200 dark:border-white/10 rounded-xl p-3 text-slate-700 dark:text-slate-200 font-bold focus:border-emerald-500 focus:ring-emerald-500 outline-none"
                             >
-                                <option value="">Selecione um modelo...</option>
+                                <option value="" className="bg-white dark:bg-[#1E2A36]">Selecione um modelo...</option>
                                 {forms.map((form: any) => (
-                                    <option key={form.id} value={form.id}>{form.title}</option>
+                                    <option key={form.id} value={form.id} className="bg-white dark:bg-[#1E2A36]">{form.title}</option>
                                 ))}
                             </select>
                         </div>
@@ -500,14 +500,14 @@ export default function StudentProfileTabs({
                         <div className="flex gap-3 pt-2">
                             <button
                                 onClick={() => setIsAssignFormOpen(false)}
-                                className="flex-1 px-4 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-colors"
+                                className="flex-1 px-4 py-3 bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-white/20 transition-colors"
                             >
                                 Cancelar
                             </button>
                             <button
                                 onClick={handleAssignForm}
                                 disabled={!selectedFormId}
-                                className="flex-1 px-4 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex-1 px-4 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 dark:shadow-none disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Enviar
                             </button>

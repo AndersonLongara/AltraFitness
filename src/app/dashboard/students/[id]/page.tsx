@@ -76,16 +76,16 @@ export default async function StudentProfilePage({ params }: PageProps) {
     });
 
     return (
-        <div className="min-h-screen bg-ice-white pl-0 md:pl-24 pb-24">
+        <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
             <LayoutSidebar />
 
             <main className="max-w-7xl mx-auto p-6 md:p-8 space-y-6">
                 {/* Header / Nav */}
                 <div className="flex items-center gap-4 mb-6">
-                    <Link href="/dashboard/students" className="p-2 -ml-2 text-slate-400 hover:text-slate-600 rounded-xl hover:bg-slate-100 transition-colors">
+                    <Link href="/dashboard/students" className="p-2 -ml-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
                         <ArrowLeft size={24} weight="bold" />
                     </Link>
-                    <h1 className="text-2xl font-bold text-graphite-dark">Perfil do Aluno</h1>
+                    <h1 className="text-2xl font-bold text-graphite-dark dark:text-white">Perfil do Aluno</h1>
                 </div>
 
                 <StudentProfileTabs

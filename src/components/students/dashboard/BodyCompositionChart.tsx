@@ -24,9 +24,9 @@ interface BodyCompositionChartProps {
 export default function BodyCompositionChart({ data }: BodyCompositionChartProps) {
     if (!data || data.length === 0 || data.every(d => !d.leanMass && !d.fatMass)) {
         return (
-            <div className="h-[250px] flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+            <div className="h-[250px] flex flex-col items-center justify-center bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
                 <span className="text-3xl mb-2">💪</span>
-                <p className="text-slate-400 text-sm font-medium">Sem dados de composição corporal</p>
+                <p className="text-slate-400 dark:text-slate-500 text-sm font-medium">Sem dados de composição corporal</p>
             </div>
         );
     }
@@ -55,8 +55,8 @@ export default function BodyCompositionChart({ data }: BodyCompositionChartProps
     };
 
     return (
-        <div className="bg-white p-6 rounded-3xl soft-shadow h-full flex flex-col">
-            <h3 className="text-base font-bold text-slate-700 mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-[#1E2A36] p-6 rounded-3xl soft-shadow dark:shadow-none dark:border dark:border-white/10 h-full flex flex-col">
+            <h3 className="text-base font-bold text-slate-700 dark:text-white mb-6 flex items-center gap-2">
                 <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
                 Composição Corporal
             </h3>
@@ -64,7 +64,7 @@ export default function BodyCompositionChart({ data }: BodyCompositionChartProps
             <div className="flex-1 min-h-[250px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={validData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }} barSize={32}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} className="[&_line]:stroke-slate-100 dark:[&_line]:stroke-white/5" />
                         <XAxis
                             dataKey="date"
                             tickFormatter={formatDate}

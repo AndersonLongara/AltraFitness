@@ -22,9 +22,9 @@ interface WeightEvolutionChartProps {
 export default function WeightEvolutionChart({ data }: WeightEvolutionChartProps) {
     if (!data || data.length === 0) {
         return (
-            <div className="h-[250px] flex flex-col items-center justify-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+            <div className="h-[250px] flex flex-col items-center justify-center bg-slate-50/50 dark:bg-white/5 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
                 <span className="text-3xl mb-2">⚖️</span>
-                <p className="text-slate-400 text-sm font-medium">Sem dados de peso suficientes</p>
+                <p className="text-slate-400 dark:text-slate-500 text-sm font-medium">Sem dados de peso suficientes</p>
             </div>
         );
     }
@@ -50,8 +50,8 @@ export default function WeightEvolutionChart({ data }: WeightEvolutionChartProps
     };
 
     return (
-        <div className="bg-white p-6 rounded-3xl soft-shadow h-full flex flex-col">
-            <h3 className="text-base font-bold text-slate-700 mb-6 flex items-center gap-2">
+        <div className="bg-white dark:bg-[#1E2A36] p-6 rounded-3xl soft-shadow dark:shadow-none dark:border dark:border-white/10 h-full flex flex-col">
+            <h3 className="text-base font-bold text-slate-700 dark:text-white mb-6 flex items-center gap-2">
                 <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
                 Evolução de Peso
             </h3>
@@ -65,7 +65,7 @@ export default function WeightEvolutionChart({ data }: WeightEvolutionChartProps
                                 <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                             </linearGradient>
                         </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} className="[&_line]:stroke-slate-100 dark:[&_line]:stroke-white/5" />
                         <XAxis
                             dataKey="date"
                             tickFormatter={formatDate}
