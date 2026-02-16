@@ -1,7 +1,8 @@
 "use client";
 
-import { X, MagnifyingGlass, CheckCircle, PlusCircle, Check, Barbell, Lightning, Heart, Target, Stairs, Tree, Wind, Cube } from "@phosphor-icons/react";
+import { X, MagnifyingGlass, CheckCircle, PlusCircle, Check, Barbell, Lightning, Heart, Target, Stairs, Tree, Wind, Cube, ArrowsOutSimple } from "@phosphor-icons/react";
 import { useState, useMemo } from "react";
+import { MUSCLE_GROUPS, normalizeMuscleGroup } from "@/lib/exercise-categories";
 
 interface Exercise {
     id: string;
@@ -23,9 +24,11 @@ const CATEGORY_MAP: Record<string, { icon: any, color: string, bgColor: string }
     "OMBROS": { icon: Barbell, color: "text-purple-600", bgColor: "bg-purple-50" },
     "BICEPS": { icon: Barbell, color: "text-rose-600", bgColor: "bg-rose-50" },
     "TRICEPS": { icon: Barbell, color: "text-rose-600", bgColor: "bg-rose-50" },
+    "CORE": { icon: Stairs, color: "text-emerald-600", bgColor: "bg-emerald-50" },
     "ABDOMEN": { icon: Stairs, color: "text-orange-600", bgColor: "bg-orange-50" },
     "CARDIO": { icon: Lightning, color: "text-amber-500", bgColor: "bg-amber-50" },
     "GLUTEOS": { icon: Heart, color: "text-pink-600", bgColor: "bg-pink-50" },
+    "MOBILIDADE": { icon: ArrowsOutSimple, color: "text-teal-600", bgColor: "bg-teal-50" },
     "OUTROS": { icon: Cube, color: "text-slate-600", bgColor: "bg-slate-50" },
 };
 
@@ -34,10 +37,11 @@ export default function ExerciseSelector({ isOpen, onClose, onSelectExercises, e
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-    // Get unique categories from data
+    // Get unique categories from data, ordered by MUSCLE_GROUPS
     const categories = useMemo(() => {
-        const cats = Array.from(new Set(exercises.map(ex => ex.muscleGroup.toUpperCase())));
-        return cats.sort();
+        const existingNormalized = new Set(exercises.map(ex => normalizeMuscleGroup(ex.muscleGroup)));
+        // Return categories in correct order, only those that have exercises
+        return MUSCLE_GROUPS.filter(g => existingNormalized.has(normalizeMuscleGroup(g)));
     }, [exercises]);
 
     if (!isOpen) return null;
@@ -45,7 +49,7 @@ export default function ExerciseSelector({ isOpen, onClose, onSelectExercises, e
     const filtered = exercises.filter(ex => {
         const matchesSearch = ex.name.toLowerCase().includes(search.toLowerCase()) ||
             ex.muscleGroup.toLowerCase().includes(search.toLowerCase());
-        const matchesCategory = !selectedCategory || ex.muscleGroup.toUpperCase() === selectedCategory;
+        const matchesCategory = !selectedCategory || ex.muscleGroup === selectedCategory;
         return matchesSearch && matchesCategory;
     });
 
@@ -65,7 +69,7 @@ export default function ExerciseSelector({ isOpen, onClose, onSelectExercises, e
     };
 
     const getCategoryInfo = (cat: string) => {
-        return CATEGORY_MAP[cat.toUpperCase()] || CATEGORY_MAP["OUTROS"];
+        return CATEGORY_MAP[normalizeMuscleGroup(cat)] || CATEGORY_MAP["OUTROS"];
     };
 
     return (

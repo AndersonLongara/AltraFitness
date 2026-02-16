@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MagnifyingGlass, Barbell, Anchor, PersonSimpleRun, Trophy, Baseball, Target, SquaresFour, CaretLeft, CaretRight, HandFist, Horse, Plus, ArrowsOutSimple } from "@phosphor-icons/react";
 import ExerciseCard from "@/components/workouts/ExerciseCard";
 import ExerciseModal from "@/components/workouts/ExerciseModal";
+import { FILTER_CATEGORIES, normalizeMuscleGroup } from "@/lib/exercise-categories";
 
 interface Exercise {
     id: string;
@@ -22,16 +23,6 @@ interface ExerciseLibraryListProps {
 
 const PAGE_SIZE = 10;
 
-const CATEGORIES = ['Todos', 'Peito', 'Costas', 'Pernas', 'Ombros', 'Bíceps', 'Tríceps', 'Core', 'Glúteos', 'Mobilidade'];
-
-// Map category filter to muscle groups that should match
-const CATEGORY_MATCH: Record<string, string[]> = {
-    'Bíceps': ['Bíceps'],
-    'Tríceps': ['Tríceps'],
-    'Glúteos': ['Glúteos'],
-    'Mobilidade': ['Mobilidade'],
-};
-
 const CATEGORY_CONFIG: Record<string, { icon: React.ReactNode, accent: string, bg: string, border: string }> = {
     'Todos': { icon: <SquaresFour size={18} weight="bold" />, accent: 'text-slate-600', bg: 'bg-slate-100', border: 'border-slate-200' },
     'Peito': { icon: <Barbell size={18} weight="bold" />, accent: 'text-rose-600', bg: 'bg-rose-100', border: 'border-rose-200' },
@@ -43,6 +34,8 @@ const CATEGORY_CONFIG: Record<string, { icon: React.ReactNode, accent: string, b
     'Core': { icon: <Target size={18} weight="bold" />, accent: 'text-emerald-600', bg: 'bg-emerald-100', border: 'border-emerald-200' },
     'Glúteos': { icon: <Horse size={18} weight="bold" />, accent: 'text-pink-600', bg: 'bg-pink-100', border: 'border-pink-200' },
     'Mobilidade': { icon: <ArrowsOutSimple size={18} weight="bold" />, accent: 'text-teal-600', bg: 'bg-teal-100', border: 'border-teal-200' },
+    'Cardio': { icon: <PersonSimpleRun size={18} weight="bold" />, accent: 'text-amber-600', bg: 'bg-amber-100', border: 'border-amber-200' },
+    'Outros': { icon: <SquaresFour size={18} weight="bold" />, accent: 'text-slate-600', bg: 'bg-slate-100', border: 'border-slate-200' },
 };
 
 export default function ExerciseLibraryList({ initialExercises }: ExerciseLibraryListProps) {
@@ -58,8 +51,7 @@ export default function ExerciseLibraryList({ initialExercises }: ExerciseLibrar
             const matchesSearch = ex.name.toLowerCase().includes(search.toLowerCase());
             let matchesCategory = category === "Todos";
             if (!matchesCategory) {
-                const groups = CATEGORY_MATCH[category] || [category];
-                matchesCategory = groups.includes(ex.muscleGroup);
+                matchesCategory = normalizeMuscleGroup(ex.muscleGroup) === normalizeMuscleGroup(category);
             }
             return matchesSearch && matchesCategory;
         });
@@ -129,7 +121,7 @@ export default function ExerciseLibraryList({ initialExercises }: ExerciseLibrar
 
             {/* Category chips - wrapping grid */}
             <div className="flex flex-wrap gap-2">
-                {CATEGORIES.map((tag) => {
+                {FILTER_CATEGORIES.map((tag) => {
                     const config = CATEGORY_CONFIG[tag] || CATEGORY_CONFIG['Todos'];
                     const isActive = category === tag;
                     return (

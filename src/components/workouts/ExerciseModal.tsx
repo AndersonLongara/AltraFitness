@@ -3,11 +3,7 @@
 import { useState, useTransition } from "react";
 import { X, FloppyDisk, Trash, Image as ImageIcon, VideoCamera, Barbell } from "@phosphor-icons/react";
 import { createExercise, updateExercise, deleteExercise } from "@/app/actions/exercises";
-
-const MUSCLE_GROUPS = [
-    'Peito', 'Costas', 'Pernas', 'Ombros', 'Bíceps', 'Tríceps',
-    'Core', 'Glúteos', 'Mobilidade', 'Cardio', 'Outros'
-];
+import { MUSCLE_GROUPS } from "@/lib/exercise-categories";
 
 interface Exercise {
     id: string;
