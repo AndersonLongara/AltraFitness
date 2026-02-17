@@ -12,6 +12,7 @@ interface Lead {
     phone: string;
     pipelineStage: string | null;
     estimatedValue: number | null;
+    closedValue: number | null;
     temperature: string | null;
     photoUrl?: string | null;
     socialHandle?: string | null;
@@ -126,9 +127,14 @@ export default function LeadCard({ lead, onClick }: LeadCardProps) {
 
                 <div className="flex items-center justify-between pt-3 border-t border-slate-50 dark:border-white/10">
                     <div className="flex flex-col">
-                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Valor Estimado</span>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
+                            {['won', 'lost'].includes(lead.pipelineStage || '') ? 'Valor Fechado' : 'Valor Estimado'}
+                        </span>
                         <span className="text-sm font-black text-slate-700 dark:text-white">
-                            R$ {lead.estimatedValue?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
+                            R$ {(['won', 'lost'].includes(lead.pipelineStage || '') 
+                                ? lead.closedValue 
+                                : lead.estimatedValue
+                            )?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
                         </span>
                     </div>
 

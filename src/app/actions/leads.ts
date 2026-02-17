@@ -62,7 +62,7 @@ export async function updateLeadStage(id: string, stage: string) {
     revalidatePath("/dashboard/sales");
 }
 
-export async function updateLeadMetadata(id: string, data: { temperature?: string; estimatedValue?: number; planId?: string | null }) {
+export async function updateLeadMetadata(id: string, data: { temperature?: string; estimatedValue?: number; closedValue?: number | null; planId?: string | null }) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
     
@@ -83,7 +83,8 @@ export async function updateLeadMetadata(id: string, data: { temperature?: strin
         id: verifyLead?.id,
         planId: verifyLead?.planId,
         temperature: verifyLead?.temperature,
-        estimatedValue: verifyLead?.estimatedValue
+        estimatedValue: verifyLead?.estimatedValue,
+        closedValue: verifyLead?.closedValue
     });
     
     revalidatePath("/dashboard/sales");

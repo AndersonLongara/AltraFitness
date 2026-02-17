@@ -18,6 +18,7 @@ interface Lead {
     photoUrl?: string | null;
     pipelineStage: string | null;
     estimatedValue: number | null;
+    closedValue: number | null;
     temperature: string | null;
     stageData?: Record<string, any> | null;
     planId?: string | null;
@@ -66,6 +67,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
     const router = useRouter();
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [estimatedValue, setEstimatedValue] = useState<string>("");
+    const [closedValue, setClosedValue] = useState<string>("");
     const [temperature, setTemperature] = useState<string>("warm");
     const [isSaving, setIsSaving] = useState(false);
     
@@ -98,6 +100,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             
             setFormData(lead.stageData || {});
             setEstimatedValue(lead.estimatedValue?.toString() || "");
+            setClosedValue(lead.closedValue?.toString() || "");
             setTemperature(lead.temperature || "warm");
             
             // Fetch plans first, then set selected plan
@@ -305,10 +308,12 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             // Save Stage Data
             await updateLeadStageData(lead.id, formData);
 
-            // Save Metadata (Value, Temperature & PlanId) by updating lead directly
+            // Save Metadata (Value, Temperature, ClosedValue & PlanId) by updating lead directly
             const value = parseFloat(estimatedValue.replace(',', '.'));
+            const closedVal = parseFloat(closedValue.replace(',', '.'));
             const metadataToSave = {
                 estimatedValue: isNaN(value) ? 0 : value,
+                closedValue: isNaN(closedVal) ? null : closedVal,
                 temperature,
                 planId: selectedPlanId || null
             };
@@ -419,6 +424,24 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                         </select>
                                     </div>
                                 </div>
+
+                                {/* Closed Value (for won/lost stages) */}
+                                {['won', 'lost'].includes(currentStage) && (
+                                    <div className="mt-4">
+                                        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
+                                            <label className="text-xs font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 flex items-center gap-2 mb-2">
+                                                <CurrencyDollar size={16} weight="bold" /> Valor Fechado (R$)
+                                            </label>
+                                            <input
+                                                type="number"
+                                                value={closedValue}
+                                                onChange={(e) => setClosedValue(e.target.value)}
+                                                placeholder="0,00"
+                                                className="bg-white dark:bg-[#1E2A36] font-bold text-lg text-graphite-dark dark:text-white w-full outline-none p-2 rounded-lg"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                                 
                                 {/* Plan Selection (for contacted, scheduled, negotiation) */}
                                 {['contacted', 'scheduled', 'negotiation', 'won'].includes(currentStage) && (

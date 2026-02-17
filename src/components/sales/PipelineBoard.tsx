@@ -15,6 +15,7 @@ interface Lead {
     phone: string;
     pipelineStage: string | null;
     estimatedValue: number | null;
+    closedValue: number | null;
     temperature: string | null;
     photoUrl?: string | null;
     socialHandle?: string | null;
@@ -163,7 +164,13 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
                         leads={leads.filter(l => (l.pipelineStage || 'new') === col.id)}
                         totalValue={leads
                             .filter(l => (l.pipelineStage || 'new') === col.id)
-                            .reduce((sum, l) => sum + (l.estimatedValue || 0), 0)
+                            .reduce((sum, l) => {
+                                // Use closedValue for won/lost, estimatedValue for other stages
+                                const value = ['won', 'lost'].includes(col.id) 
+                                    ? (l.closedValue || 0) 
+                                    : (l.estimatedValue || 0);
+                                return sum + value;
+                            }, 0)
                         }
                     >
                         {leads

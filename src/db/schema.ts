@@ -105,6 +105,7 @@ export const leads = sqliteTable('leads', {
     // Pipeline Fields
     pipelineStage: text('pipeline_stage').default('new'), // new, contacted, scheduled, negotiation, won, lost
     estimatedValue: integer('estimated_value').default(0),
+    closedValue: integer('closed_value'), // Final value when won or lost
     temperature: text('temperature').default('warm'), // cold, warm, hot
     stageData: text('stage_data', { mode: 'json' }).$type<Record<string, any>>(), // Dynamic fields per stage
     lastContactAt: integer('last_contact_at', { mode: 'timestamp' }),
