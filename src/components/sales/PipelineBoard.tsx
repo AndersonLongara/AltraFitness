@@ -50,6 +50,7 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
     }, [initialLeads]);
     
     const triggerConfetti = () => {
+        console.log('🎊 Triggering confetti animation!');
         const duration = 3000;
         const animationEnd = Date.now() + duration;
         const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
@@ -98,6 +99,8 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
         const leadId = active.id as string;
         const newStage = over.id as string;
         const currentLead = leads.find(l => l.id === leadId);
+        
+        console.log('🔄 Drag end:', { leadId, newStage, currentStage: currentLead?.pipelineStage });
 
         if (currentLead && currentLead.pipelineStage !== newStage) {
             // Optimistic Update
@@ -114,6 +117,7 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
 
                 // Trigger conversion if dropped in 'won'
                 if (newStage === 'won') {
+                    console.log('🎉 Lead moved to won stage!', currentLead.name);
                     // Celebration animation!
                     triggerConfetti();
                     setCelebratedLeadName(currentLead.name);

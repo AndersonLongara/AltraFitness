@@ -7,6 +7,7 @@ import Image from "next/image";
 import { updateLeadStageData, updateLeadMetadata, getTrainerPlans } from "@/app/actions/leads";
 import { getLeadQuestionnaireTemplates, getLeadFormResponses, assignFormToLead } from "@/app/actions/lead-forms";
 import { getForms } from "@/app/actions/forms";
+import { useRouter } from "next/navigation";
 
 
 interface Lead {
@@ -62,6 +63,7 @@ const STAGE_FIELDS: Record<string, { key: string; label: string; type: 'text' | 
 };
 
 export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProps) {
+    const router = useRouter();
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [estimatedValue, setEstimatedValue] = useState<string>("");
     const [temperature, setTemperature] = useState<string>("warm");
@@ -89,24 +91,31 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             setFormData(lead.stageData || {});
             setEstimatedValue(lead.estimatedValue?.toString() || "");
             setTemperature(lead.temperature || "warm");
-            setSelectedPlanId(lead.planId || "");
             
-            // Fetch plans for contacted, scheduled and negotiation stages
-            if (['contacted', 'scheduled', 'negotiation'].includes(lead.pipelineStage || '')) {
-                fetchPlans();
-            }
+            // Fetch plans first, then set selected plan
+            const loadData = async () => {
+                // Fetch plans for contacted, scheduled and negotiation stages
+                if (['contacted', 'scheduled', 'negotiation', 'won'].includes(lead.pipelineStage || '')) {
+                    await fetchPlans();
+                }
+                
+                // Set selected plan after plans are loaded
+                setSelectedPlanId(lead.planId || "");
+                
+                // Fetch forms, questionnaires and lead forms
+                if (lead.pipelineStage === 'scheduled') {
+                    fetchForms();
+                    fetchQuestionnaires();
+                    fetchLeadForms();
+                }
+                
+                // Fetch lead forms responses for negotiation stage
+                if (lead.pipelineStage === 'negotiation') {
+                    fetchLeadForms();
+                }
+            };
             
-            // Fetch forms, questionnaires and lead forms
-            if (lead.pipelineStage === 'scheduled') {
-                fetchForms();
-                fetchQuestionnaires();
-                fetchLeadForms();
-            }
-            
-            // Fetch lead forms responses for negotiation stage
-            if (lead.pipelineStage === 'negotiation') {
-                fetchLeadForms();
-            }
+            loadData();
         }
     }, [lead]);
     
@@ -267,6 +276,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                 planId: selectedPlanId || null
             });
 
+            router.refresh();
             onClose();
         } catch (error) {
             console.error("Failed to save lead details", error);
@@ -369,11 +379,11 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                                 value={selectedPlanId}
                                                 onChange={(e) => setSelectedPlanId(e.target.value)}
                                                 disabled={currentStage === 'won'}
-                                                className="bg-transparent font-bold text-graphite-dark dark:text-white w-full outline-none appearance-none disabled:opacity-50"
+                                                className="bg-transparent font-bold text-graphite-dark dark:text-white w-full outline-none appearance-none disabled:opacity-50 [&>option]:bg-white [&>option]:dark:bg-[#1E2A36] [&>option]:text-graphite-dark [&>option]:dark:text-white"
                                             >
-                                                <option value="">Nenhum plano selecionado</option>
+                                                <option value="" className="bg-white dark:bg-[#1E2A36] text-graphite-dark dark:text-white">Nenhum plano selecionado</option>
                                                 {availablePlans.map((plan) => (
-                                                    <option key={plan.id} value={plan.id}>
+                                                    <option key={plan.id} value={plan.id} className="bg-white dark:bg-[#1E2A36] text-graphite-dark dark:text-white">
                                                         {plan.name} - R$ {(plan.price / 100).toFixed(2).replace('.', ',')} ({plan.durationMonths} {plan.durationMonths === 1 ? 'mês' : 'meses'})
                                                     </option>
                                                 ))}
