@@ -69,7 +69,6 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                     <SignInButton 
                         mode="redirect" 
                         forceRedirectUrl={`/auth-redirect?invite_token=${token}`}
-                        signInForceRedirectUrl={`/auth-redirect?invite_token=${token}`}
                     >
                         <button className="w-full py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 active:scale-95 transition-all text-lg">
                             Entrar na minha conta
@@ -79,7 +78,6 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                     <SignUpButton 
                         mode="redirect" 
                         forceRedirectUrl={`/auth-redirect?invite_token=${token}`}
-                        signUpForceRedirectUrl={`/auth-redirect?invite_token=${token}`}
                     >
                         <button className="w-full py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 active:scale-95 transition-all text-lg">
                             Criar nova conta
