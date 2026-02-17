@@ -14,32 +14,42 @@ export default async function OnboardingPage() {
     const cookieStore = await cookies();
     const inviteTokenCookie = cookieStore.get('invite_token')?.value;
     if (inviteTokenCookie) {
-        const studentByToken = await db.query.students.findFirst({
-            where: eq(students.inviteToken, inviteTokenCookie),
-            columns: { id: true },
-        });
-        if (studentByToken) {
-            redirect(`/join/${inviteTokenCookie}`);
+        try {
+            const studentByToken = await db.query.students.findFirst({
+                where: eq(students.inviteToken, inviteTokenCookie),
+                columns: { id: true },
+            });
+            if (studentByToken) {
+                redirect(`/join/${inviteTokenCookie}`);
+            }
+            // Token invalid - cookie will be cleared client-side
+        } catch (err) {
+            console.error('[onboarding] Cookie check failed:', err);
+            // Continue to next check
         }
-        // Token invalid - cookie will be cleared client-side
     }
 
     // 2) Fallback: check by email
-    const user = await currentUser();
-    if (user) {
-        const email = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
-        if (email) {
-            const pendingStudent = await db.query.students.findFirst({
-                where: and(
-                    eq(students.email, email),
-                    isNotNull(students.inviteToken),
-                ),
-                columns: { inviteToken: true },
-            });
-            if (pendingStudent?.inviteToken) {
-                redirect(`/join/${pendingStudent.inviteToken}`);
+    try {
+        const user = await currentUser();
+        if (user) {
+            const email = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
+            if (email) {
+                const pendingStudent = await db.query.students.findFirst({
+                    where: and(
+                        eq(students.email, email),
+                        isNotNull(students.inviteToken),
+                    ),
+                    columns: { inviteToken: true },
+                });
+                if (pendingStudent?.inviteToken) {
+                    redirect(`/join/${pendingStudent.inviteToken}`);
+                }
             }
         }
+    } catch (err) {
+        console.error('[onboarding] Email check failed:', err);
+        // Continue to onboarding
     }
 
     let platformPlans: PlatformPlanOption[];
