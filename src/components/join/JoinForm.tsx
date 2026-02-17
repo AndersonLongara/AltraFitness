@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { acceptInvite } from "@/app/actions/students";
 import { SpinnerGap, SignIn, User, ArrowRight, SignOut, CurrencyDollar, Tag } from "@phosphor-icons/react";
@@ -21,6 +21,11 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
     const [phone, setPhone] = useState(initialPhone || '');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Set invite token cookie on mount (for OAuth redirect detection)
+    useEffect(() => {
+        document.cookie = `invite_token=${token}; path=/; max-age=3600; samesite=lax`;
+    }, [token]);
 
     const handleSubmit = async () => {
         if (!isSignedIn) return; // Should not happen due to UI state

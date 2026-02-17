@@ -20,9 +20,8 @@ export default async function OnboardingPage() {
         });
         if (studentByToken) {
             redirect(`/join/${inviteTokenCookie}`);
-        } else {
-            cookieStore.delete('invite_token');
         }
+        // Token invalid - cookie will be cleared client-side
     }
 
     // 2) Fallback: check by email

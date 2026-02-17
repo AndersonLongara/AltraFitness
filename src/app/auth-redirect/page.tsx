@@ -22,10 +22,8 @@ export default async function AuthRedirectPage() {
         });
         if (studentByToken) {
             redirect(`/join/${inviteTokenCookie}`);
-        } else {
-            // Token consumed or invalid, clean up
-            cookieStore.delete('invite_token');
         }
+        // Token consumed or invalid - cookie will be cleared client-side
     }
 
     // 2) Fallback: check by email
