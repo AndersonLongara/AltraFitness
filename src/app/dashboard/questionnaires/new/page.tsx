@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createForm } from "@/app/actions/forms";
-import { Plus, Trash, TextT, ListNumbers, CheckSquare, Hash, Calendar, CheckCircle, DotsSixVertical, At } from "@phosphor-icons/react";
+import { Plus, Trash, TextT, ListNumbers, CheckSquare, Hash, Calendar, CheckCircle, DotsSixVertical, At, Phone } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 
@@ -209,6 +209,7 @@ export default function NewQuestionnairePage() {
                                                 <option value="text">Texto Curto</option>
                                                 <option value="long_text">Texto Longo</option>
                                                 <option value="email">E-mail</option>
+                                                <option value="phone">Celular</option>
                                                 <option value="number">Número</option>
                                                 <option value="date">Data</option>
                                                 <option value="scale">Escala 1-5</option>
@@ -292,6 +293,10 @@ export default function NewQuestionnairePage() {
                         <button type="button" onClick={() => addQuestion('email')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
                             <At size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />
                             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">E-mail</span>
+                        </button>
+                        <button type="button" onClick={() => addQuestion('phone')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
+                            <Phone size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Celular</span>
                         </button>
                         <button type="button" onClick={() => addQuestion('number')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
                             <Hash size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />

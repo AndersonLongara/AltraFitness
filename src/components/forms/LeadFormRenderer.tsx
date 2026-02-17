@@ -256,6 +256,34 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
                         />
                     )}
 
+                    {currentQuestion.type === 'phone' && (
+                        <input
+                            type="tel"
+                            value={answers[currentQuestion.id] || ''}
+                            onChange={(e) => {
+                                // Phone mask: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
+                                let value = e.target.value.replace(/\D/g, '');
+                                if (value.length > 11) value = value.slice(0, 11);
+                                
+                                if (value.length > 10) {
+                                    value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+                                } else if (value.length > 6) {
+                                    value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+                                } else if (value.length > 2) {
+                                    value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+                                } else if (value.length > 0) {
+                                    value = value.replace(/^(\d*)/, '($1');
+                                }
+                                
+                                handleAnswer(value);
+                            }}
+                            placeholder="(11) 98765-4321"
+                            className="w-full text-xl md:text-2xl font-medium border-b-2 border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400 outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors"
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handleNext()}
+                        />
+                    )}
+
                     {currentQuestion.type === 'date' && (
                         <input
                             type="date"
