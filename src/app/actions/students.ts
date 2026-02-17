@@ -1,7 +1,7 @@
 "use server";
 
 import { db, client } from "@/db";
-import { students, payments, workouts, nutritionalPlans, studentBadges, plans, leads } from "@/db/schema";
+import { students, payments, workouts, nutritionalPlans, studentBadges, plans, leads, forms, studentForms } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getCurrentTrainer } from "@/lib/auth-helpers";
@@ -93,6 +93,16 @@ export async function createStudent(data: {
             status: 'pending',
             notes: `Mensalidade inicial - ${plan.name}`,
         });
+    }
+
+    // Auto-assign on_signup forms
+    const signupForms = await db.query.forms.findMany({
+        where: and(eq(forms.trainerId, trainer.id), eq(forms.triggerType, 'on_signup'), eq(forms.isActive, true)),
+    });
+    if (signupForms.length > 0) {
+        await db.insert(studentForms).values(
+            signupForms.map(f => ({ formId: f.id, studentId: newStudent.id, status: 'pending' as const }))
+        );
     }
 
     revalidatePath("/dashboard/students");
@@ -236,6 +246,25 @@ export async function acceptInvite(token: string, data: {
             .set(updateData)
             .where(eq(students.id, student.id));
 
+        // Auto-assign on_signup forms if not already assigned
+        const existingAssignments = await db.query.studentForms.findMany({
+            where: eq(studentForms.studentId, student.id),
+        });
+        if (existingAssignments.length === 0) {
+            const signupForms = await db.query.forms.findMany({
+                where: and(
+                    eq(forms.trainerId, student.trainerId),
+                    eq(forms.triggerType, 'on_signup'),
+                    eq(forms.isActive, true)
+                ),
+            });
+            if (signupForms.length > 0) {
+                await db.insert(studentForms).values(
+                    signupForms.map(f => ({ formId: f.id, studentId: student.id, status: 'pending' as const }))
+                );
+            }
+        }
+
         console.log('[acceptInvite] Success');
         return { success: true };
     } catch (error) {
@@ -285,6 +314,16 @@ export async function createStudentWithInvite(data: {
         status: 'pending',
         notes: `Mensalidade inicial - ${plan.name}`,
     });
+
+    // Auto-assign on_signup forms
+    const signupForms = await db.query.forms.findMany({
+        where: and(eq(forms.trainerId, trainer.id), eq(forms.triggerType, 'on_signup'), eq(forms.isActive, true)),
+    });
+    if (signupForms.length > 0) {
+        await db.insert(studentForms).values(
+            signupForms.map(f => ({ formId: f.id, studentId: newStudent.id, status: 'pending' as const }))
+        );
+    }
 
     revalidatePath("/dashboard/students");
 

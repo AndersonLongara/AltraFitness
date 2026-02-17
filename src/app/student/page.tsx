@@ -128,6 +128,17 @@ export default async function StudentDashboardPage(props: {
                 />
             )}
 
+            {/* Pending Forms - Also shown above the dimmed content when profile is incomplete */}
+            {isProfileIncomplete && pendingForms.length > 0 && (
+                <div className="relative z-40 mb-8">
+                    <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
+                        📝 Formulários Pendentes
+                        <span className="px-2 py-0.5 bg-red-500/20 text-red-400 text-xs font-black rounded-full">{pendingForms.length}</span>
+                    </h3>
+                    <PendingFormsList pendingForms={pendingForms} />
+                </div>
+            )}
+
             {/* Dashboard content - dimmed and non-interactive when profile is incomplete */}
             <div className={isProfileIncomplete ? 'opacity-30 pointer-events-none select-none blur-[2px]' : ''}>
 
