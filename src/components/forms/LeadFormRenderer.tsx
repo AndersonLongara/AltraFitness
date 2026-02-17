@@ -10,24 +10,24 @@ interface LeadFormRendererProps {
     token: string;
     form: {
         title: string;
-        description: string;
+        description: string | null;
         trainer: {
             name: string;
-            photoUrl?: string;
+            photoUrl?: string | null;
         };
         questions: {
             id: string;
             type: string;
             question: string;
-            description?: string;
-            options?: string[];
-            required: boolean;
+            description?: string | null;
+            options?: string[] | null;
+            required: boolean | null;
             order: number;
         }[];
     };
     trainer: {
         name: string;
-        photoUrl?: string;
+        photoUrl?: string | null;
     };
     lead: {
         name: string;
@@ -57,7 +57,7 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
     };
 
     const handleNext = async () => {
-        if (currentQuestion.required && !answers[currentQuestion.id]) {
+        if (Boolean(currentQuestion.required) && !answers[currentQuestion.id]) {
             return;
         }
 
@@ -193,7 +193,7 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
                     </span>
                     <h2 className="text-2xl md:text-3xl font-extrabold text-deep-teal dark:text-ice-white leading-tight">
                         {currentQuestion.question}
-                        {currentQuestion.required && <span className="text-rose-500 ml-1">*</span>}
+                        {Boolean(currentQuestion.required) && <span className="text-rose-500 ml-1">*</span>}
                     </h2>
                     {currentQuestion.description && (
                         <p className="text-soft-gray dark:text-gray-400 mt-3 text-lg">{currentQuestion.description}</p>
@@ -331,7 +331,7 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
                 <div className="flex items-center gap-4">
                     <button
                         onClick={handleNext}
-                        disabled={isSubmitting || (currentQuestion.required && !answers[currentQuestion.id])}
+                        disabled={isSubmitting || (Boolean(currentQuestion.required) && !answers[currentQuestion.id])}
                         className="flex-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center gap-2"
                     >
                         {isSubmitting ? 'Enviando...' : isLastQuestion ? 'Finalizar' : 'Próxima'}
