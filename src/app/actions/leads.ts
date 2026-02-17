@@ -72,8 +72,22 @@ export async function updateLeadMetadata(id: string, data: { temperature?: strin
         .set({ ...data, updatedAt: new Date() } as Record<string, unknown>)
         .where(and(eq(leads.id, id), eq(leads.trainerId, userId)));
     
-    console.log('✅ updateLeadMetadata completed');
+    console.log('✅ updateLeadMetadata update completed');
+    
+    // Verify the data was saved
+    const verifyLead = await db.query.leads.findFirst({
+        where: and(eq(leads.id, id), eq(leads.trainerId, userId))
+    });
+    
+    console.log('🔍 Verification - Lead after update:', {
+        id: verifyLead?.id,
+        planId: verifyLead?.planId,
+        temperature: verifyLead?.temperature,
+        estimatedValue: verifyLead?.estimatedValue
+    });
+    
     revalidatePath("/dashboard/sales");
+    console.log('✅ revalidatePath completed');
 }
 
 export async function updateLeadStageData(id: string, stageData: Record<string, any>) {

@@ -273,6 +273,8 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
 
         setIsSaving(true);
         try {
+            console.log('🚀 handleSave called');
+            
             // Save Stage Data
             await updateLeadStageData(lead.id, formData);
 
@@ -291,10 +293,18 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             
             await updateLeadMetadata(lead.id, metadataToSave);
 
+            console.log('✅ Save completed, refreshing...');
+            
+            // Wait for router.refresh to complete before closing
+            await new Promise(resolve => setTimeout(resolve, 500));
             router.refresh();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            console.log('✅ Closing modal...');
             onClose();
         } catch (error) {
-            console.error("Failed to save lead details", error);
+            console.error("❌ Failed to save lead details", error);
+            alert(`Erro ao salvar: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
         } finally {
             setIsSaving(false);
         }
@@ -873,7 +883,12 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                         {/* Actions */}
                         <div className="flex justify-end pt-2">
                             <button
-                                onClick={handleSave}
+                                type="button"
+                                onClick={(e) => {
+                                    console.log('🖱️ Save button clicked');
+                                    e.preventDefault();
+                                    handleSave();
+                                }}
                                 disabled={isSaving}
                                 className="px-8 py-3 bg-performance-green dark:bg-emerald-500 text-graphite-dark dark:text-white font-bold rounded-xl shadow-lg shadow-emerald-200 dark:shadow-none hover:brightness-110 disabled:opacity-50 transition-all flex items-center gap-2"
                             >
