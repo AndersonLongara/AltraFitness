@@ -160,6 +160,7 @@ export async function acceptInvite(token: string, data: {
     phone: string;
     cpf: string;
     birthDate: number; // timestamp
+    photoUrl: string | null;
 }) {
     const { userId } = await auth();
     const user = await currentUser();
@@ -180,6 +181,7 @@ export async function acceptInvite(token: string, data: {
             phone: data.phone,
             cpf: data.cpf,
             birthDate: new Date(data.birthDate),
+            photoUrl: data.photoUrl,
             active: true,
             inviteToken: null,
             updatedAt: new Date()

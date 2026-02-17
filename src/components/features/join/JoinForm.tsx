@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { acceptInvite } from "@/app/actions/students";
-import { SpinnerGap, SignIn, User, ArrowRight, SignOut, CurrencyDollar, Tag } from "@phosphor-icons/react";
+import { enrichInstagramProfile } from "@/app/actions/leads";
+import { SpinnerGap, SignIn, User, ArrowRight, SignOut, CurrencyDollar, Tag, InstagramLogo } from "@phosphor-icons/react";
 import { useUser, useClerk, SignInButton, SignUpButton } from "@clerk/nextjs";
 
 interface JoinFormProps {
@@ -30,6 +31,10 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
     
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Instagram enrichment states
+    const [isEnrichingInstagram, setIsEnrichingInstagram] = useState(false);
+    const [instagramData, setInstagramData] = useState<{ name: string; photoUrl: string; bio: string } | null>(null);
 
     // Format CPF: 000.000.000-00
     const formatCpf = (value: string) => {
@@ -61,6 +66,28 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
         console.log('[JoinForm] Current cookies:', document.cookie);
     }, [token]);
 
+    const handleInstagramEnrichment = async () => {
+        if (!instagram || instagram.length < 3) return;
+        
+        setIsEnrichingInstagram(true);
+        setInstagramData(null);
+        
+        try {
+            const data = await enrichInstagramProfile(instagram);
+            if (data) {
+                setInstagramData(data);
+                // Auto-fill name only if it's empty
+                if (!name.trim()) {
+                    setName(data.name || '');
+                }
+            }
+        } catch (error) {
+            console.error('Instagram enrichment failed:', error);
+        } finally {
+            setIsEnrichingInstagram(false);
+        }
+    };
+
     const handleSubmit = async () => {
         if (!isSignedIn) return;
 
@@ -89,14 +116,32 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
             return;
         }
 
+        const day = parseInt(birthDay);
+        const month = parseInt(birthMonth);
+        const year = parseInt(birthYear);
+        const currentYear = new Date().getFullYear();
+
+        if (day < 1 || day > 31) {
+            setError('Dia inválido. Digite um dia entre 1 e 31.');
+            return;
+        }
+        if (month < 1 || month > 12) {
+            setError('Mês inválido. Digite um mês entre 1 e 12.');
+            return;
+        }
+        if (year < 1900 || year > currentYear) {
+            setError(`Ano inválido. Digite um ano entre 1900 e ${currentYear}.`);
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
             // Create birthDate timestamp from day, month, year
             const birthDate = new Date(
-                parseInt(birthYear),
-                parseInt(birthMonth) - 1, // JS months are 0-indexed
-                parseInt(birthDay)
+                year,
+                month - 1, // JS months are 0-indexed
+                day
             );
 
             await acceptInvite(token, {
@@ -106,6 +151,7 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                 phone: phone.replace(/\D/g, ''),
                 cpf: cpf.replace(/\D/g, ''),
                 birthDate: birthDate.getTime(),
+                photoUrl: instagramData?.photoUrl || null,
             });
             
             // Clear the invite cookie
@@ -230,10 +276,35 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                             type="text"
                             value={instagram}
                             onChange={(e) => setInstagram(e.target.value.replace('@', ''))}
+                            onBlur={handleInstagramEnrichment}
                             placeholder="seuusuario"
                             className="w-full p-4 pl-8 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600"
                         />
+                        {isEnrichingInstagram && (
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                <SpinnerGap className="animate-spin text-[#2ECC71]" size={20} />
+                            </div>
+                        )}
                     </div>
+                    {instagramData && (
+                        <div className="mt-3 p-3 bg-[#2ECC71]/10 border border-[#2ECC71]/20 rounded-xl flex items-center gap-3">
+                            {instagramData.photoUrl && (
+                                <img 
+                                    src={instagramData.photoUrl} 
+                                    alt="Instagram Profile" 
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-[#2ECC71]"
+                                />
+                            )}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-[#2ECC71] uppercase tracking-wide">Perfil Encontrado</p>
+                                <p className="text-sm font-semibold text-white truncate">{instagramData.name}</p>
+                                {instagramData.bio && (
+                                    <p className="text-xs text-slate-400 truncate mt-0.5">{instagramData.bio}</p>
+                                )}
+                            </div>
+                            <InstagramLogo size={20} className="text-[#2ECC71]" weight="duotone" />
+                        </div>
+                    )}
                 </div>
 
                 {/* WhatsApp */}
@@ -275,12 +346,7 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                         <input
                             type="number"
                             value={birthDay}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === '' || (parseInt(val) >= 1 && parseInt(val) <= 31)) {
-                                    setBirthDay(val);
-                                }
-                            }}
+                            onChange={(e) => setBirthDay(e.target.value)}
                             placeholder="Dia"
                             min="1"
                             max="31"
@@ -289,12 +355,7 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                         <input
                             type="number"
                             value={birthMonth}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === '' || (parseInt(val) >= 1 && parseInt(val) <= 12)) {
-                                    setBirthMonth(val);
-                                }
-                            }}
+                            onChange={(e) => setBirthMonth(e.target.value)}
                             placeholder="Mês"
                             min="1"
                             max="12"
@@ -303,13 +364,7 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                         <input
                             type="number"
                             value={birthYear}
-                            onChange={(e) => {
-                                const val = e.target.value;
-                                const currentYear = new Date().getFullYear();
-                                if (val === '' || (parseInt(val) >= 1900 && parseInt(val) <= currentYear)) {
-                                    setBirthYear(val);
-                                }
-                            }}
+                            onChange={(e) => setBirthYear(e.target.value)}
                             placeholder="Ano"
                             min="1900"
                             max={new Date().getFullYear()}
