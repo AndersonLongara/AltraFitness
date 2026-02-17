@@ -26,6 +26,7 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
     useEffect(() => {
         document.cookie = `invite_token=${token}; path=/; max-age=3600; samesite=lax`;
         console.log('[JoinForm] Set invite_token cookie:', token);
+        console.log('[JoinForm] Current cookies:', document.cookie);
     }, [token]);
 
     const handleSubmit = async () => {
@@ -65,13 +66,21 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                 </div>
 
                 <div className="space-y-3">
-                    <SignInButton mode="modal" forceRedirectUrl={`/auth-redirect?invite_token=${token}`}>
-                        <button className="w-full py-4 bg-emerald-500 text-white font-bold rounded-2xl shadow-xl shadow-emerald-200 hover:brightness-110 active:scale-95 transition-all text-lg">
+                    <SignInButton 
+                        mode="redirect" 
+                        forceRedirectUrl={`/auth-redirect?invite_token=${token}`}
+                        signInForceRedirectUrl={`/auth-redirect?invite_token=${token}`}
+                    >
+                        <button className="w-full py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 active:scale-95 transition-all text-lg">
                             Entrar na minha conta
                         </button>
                     </SignInButton>
 
-                    <SignUpButton mode="modal" forceRedirectUrl={`/auth-redirect?invite_token=${token}`}>
+                    <SignUpButton 
+                        mode="redirect" 
+                        forceRedirectUrl={`/auth-redirect?invite_token=${token}`}
+                        signUpForceRedirectUrl={`/auth-redirect?invite_token=${token}`}
+                    >
                         <button className="w-full py-4 bg-white border border-slate-200 text-slate-700 font-bold rounded-2xl hover:bg-slate-50 active:scale-95 transition-all text-lg">
                             Criar nova conta
                         </button>

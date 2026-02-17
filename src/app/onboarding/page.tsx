@@ -13,6 +13,8 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
     const params = await searchParams;
     const inviteTokenParam = params.invite_token;
 
+    console.log('[onboarding] inviteTokenParam:', inviteTokenParam);
+
     // 0) Check URL parameter first (from OAuth redirect)
     if (inviteTokenParam) {
         try {
@@ -32,6 +34,8 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
     // 1) Check cookie (fallback)
     const cookieStore = await cookies();
     const inviteTokenCookie = cookieStore.get('invite_token')?.value;
+    console.log('[onboarding] inviteTokenCookie:', inviteTokenCookie);
+    
     if (inviteTokenCookie) {
         try {
             const studentByToken = await db.query.students.findFirst({
@@ -53,6 +57,7 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
         const user = await currentUser();
         if (user) {
             const email = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
+            console.log('[onboarding] Checking email:', email);
             if (email) {
                 const pendingStudent = await db.query.students.findFirst({
                     where: and(
@@ -70,6 +75,8 @@ export default async function OnboardingPage({ searchParams }: { searchParams: P
         console.error('[onboarding] Email check failed:', err);
         // Continue to onboarding
     }
+
+    console.log('[onboarding] No pending invite found, proceeding to normal onboarding flow');
 
     let platformPlans: PlatformPlanOption[];
     try {
