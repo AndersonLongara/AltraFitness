@@ -162,33 +162,64 @@ export async function acceptInvite(token: string, data: {
     birthDate: number; // timestamp
     photoUrl: string | null;
 }) {
-    const { userId } = await auth();
-    const user = await currentUser();
+    try {
+        console.log('[acceptInvite] Starting with data:', { token, ...data, photoUrl: data.photoUrl ? 'present' : 'null' });
 
-    if (!userId || !user) throw new Error("Você precisa estar logado para aceitar o convite.");
+        const { userId } = await auth();
+        const user = await currentUser();
 
-    const student = await db.query.students.findFirst({
-        where: eq(students.inviteToken, token)
-    });
+        if (!userId || !user) {
+            console.error('[acceptInvite] No user found');
+            throw new Error("Você precisa estar logado para aceitar o convite.");
+        }
 
-    if (!student) throw new Error("Convite inválido ou expirado.");
+        const student = await db.query.students.findFirst({
+            where: eq(students.inviteToken, token)
+        });
 
-    await db.update(students)
-        .set({
-            name: data.name,
-            email: data.email,
-            instagram: data.instagram,
-            phone: data.phone,
-            cpf: data.cpf,
+        if (!student) {
+            console.error('[acceptInvite] Student not found for token:', token);
+            throw new Error("Convite inválido ou expirado.");
+        }
+
+        console.log('[acceptInvite] Updating student:', student.id);
+
+        // Sanitize photoUrl - if too large, discard it
+        let finalPhotoUrl = data.photoUrl;
+        if (finalPhotoUrl && finalPhotoUrl.length > 5 * 1024 * 1024) {
+            console.warn('[acceptInvite] PhotoUrl too large, discarding');
+            finalPhotoUrl = null;
+        }
+
+        const updateData = {
+            name: data.name?.trim() || '',
+            email: data.email?.trim() || '',
+            instagram: data.instagram?.trim() || null,
+            phone: data.phone || '',
+            cpf: data.cpf || '',
             birthDate: new Date(data.birthDate),
-            photoUrl: data.photoUrl,
+            photoUrl: finalPhotoUrl,
             active: true,
             inviteToken: null,
             updatedAt: new Date()
-        })
-        .where(eq(students.id, student.id));
+        };
 
-    return { success: true };
+        console.log('[acceptInvite] Update data:', { 
+            ...updateData, 
+            photoUrlLength: updateData.photoUrl?.length || 0,
+            photoUrl: updateData.photoUrl ? 'present' : 'null'
+        });
+
+        await db.update(students)
+            .set(updateData)
+            .where(eq(students.id, student.id));
+
+        console.log('[acceptInvite] Success');
+        return { success: true };
+    } catch (error) {
+        console.error('[acceptInvite] Error:', error);
+        throw error;
+    }
 }
 
 export async function createStudentWithInvite(data: {

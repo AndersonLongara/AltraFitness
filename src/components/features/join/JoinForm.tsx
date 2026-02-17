@@ -145,6 +145,30 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                 day
             );
 
+            // Validate date is valid
+            if (isNaN(birthDate.getTime())) {
+                setError('Data de nascimento inválida.');
+                setLoading(false);
+                return;
+            }
+
+            // Check photoUrl size (max 5MB for base64)
+            let finalPhotoUrl = instagramData?.photoUrl || null;
+            if (finalPhotoUrl && finalPhotoUrl.length > 5 * 1024 * 1024) {
+                console.warn('PhotoUrl too large, discarding');
+                finalPhotoUrl = null;
+            }
+
+            console.log('[JoinForm] Submitting with:', {
+                name: name.trim(),
+                email: userEmail,
+                instagram: instagram.trim(),
+                phone: phone.replace(/\D/g, ''),
+                cpf: cpf.replace(/\D/g, ''),
+                birthDate: birthDate.getTime(),
+                hasPhoto: !!finalPhotoUrl
+            });
+
             await acceptInvite(token, {
                 name: name.trim(),
                 email: userEmail,
@@ -152,7 +176,7 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                 phone: phone.replace(/\D/g, ''),
                 cpf: cpf.replace(/\D/g, ''),
                 birthDate: birthDate.getTime(),
-                photoUrl: instagramData?.photoUrl || null,
+                photoUrl: finalPhotoUrl,
             });
             
             // Clear the invite cookie
