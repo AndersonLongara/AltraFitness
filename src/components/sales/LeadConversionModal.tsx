@@ -160,7 +160,7 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
                                                 Desconto Aplicado
                                             </div>
                                             <div className="text-sm font-medium text-emerald-600 dark:text-emerald-300 mt-0.5">
-                                                {discountPercent}% de desconto - Economize {((selectedPlan.price - proposalValue!) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                                {discountPercent}% de desconto - Economize {((selectedPlan.price - proposalValueCents) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                             </div>
                                         </div>
                                     </div>
