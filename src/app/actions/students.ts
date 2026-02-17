@@ -1,6 +1,6 @@
 "use server";
 
-import { db } from "@/db";
+import { db, client } from "@/db";
 import { students, payments, workouts, nutritionalPlans, studentBadges, plans } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
@@ -164,6 +164,7 @@ export async function acceptInvite(token: string, data: {
 }) {
     try {
         console.log('[acceptInvite] Starting with data:', { token, ...data, photoUrl: data.photoUrl ? 'present' : 'null' });
+        console.log('[acceptInvite] DB URL:', process.env.TURSO_DATABASE_URL);
 
         const { userId } = await auth();
         const user = await currentUser();
@@ -171,6 +172,20 @@ export async function acceptInvite(token: string, data: {
         if (!userId || !user) {
             console.error('[acceptInvite] No user found');
             throw new Error("Você precisa estar logado para aceitar o convite.");
+        }
+
+        // Ensure instagram column exists (self-healing migration)
+        try {
+            const tableInfo = await client.execute('PRAGMA table_info(students)');
+            const columns = tableInfo.rows.map((row: any) => row.name);
+            console.log('[acceptInvite] DB columns:', columns);
+            if (!columns.includes('instagram')) {
+                console.log('[acceptInvite] Adding missing instagram column...');
+                await client.execute('ALTER TABLE students ADD COLUMN instagram TEXT');
+                console.log('[acceptInvite] instagram column added successfully');
+            }
+        } catch (migrationErr) {
+            console.error('[acceptInvite] Migration check error:', migrationErr);
         }
 
         const student = await db.query.students.findFirst({
