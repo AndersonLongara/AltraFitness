@@ -88,6 +88,7 @@ export async function createForm(data: {
 export async function updateForm(formId: string, data: {
     title: string;
     description: string;
+    welcomeTitle?: string;
     type: string;
     triggerType: string;
     isActive: boolean;
@@ -108,6 +109,7 @@ export async function updateForm(formId: string, data: {
     await db.update(forms).set({
         title: data.title,
         description: data.description,
+        welcomeTitle: data.welcomeTitle,
         type: data.type,
         triggerType: data.triggerType,
         isActive: data.isActive,
