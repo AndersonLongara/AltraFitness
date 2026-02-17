@@ -62,11 +62,13 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
 
     const selectedPlan = plans.find(p => p.id === selectedPlanId);
     const proposalValue = lead.stageData?.proposalValue || lead.estimatedValue;
-    const hasDiscount = selectedPlan && proposalValue && proposalValue < selectedPlan.price;
+    // Converter proposalValue de reais para centavos para comparar com plan.price
+    const proposalValueCents = proposalValue ? proposalValue * 100 : 0;
+    const hasDiscount = selectedPlan && proposalValueCents && proposalValueCents < selectedPlan.price;
     const discountPercent = hasDiscount 
-        ? Math.round(((selectedPlan!.price - proposalValue) / selectedPlan!.price) * 100)
+        ? Math.round(((selectedPlan!.price - proposalValueCents) / selectedPlan!.price) * 100)
         : 0;
-    const finalValue = hasDiscount ? proposalValue : selectedPlan?.price;
+    const finalValue = hasDiscount ? proposalValueCents : selectedPlan?.price;
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
