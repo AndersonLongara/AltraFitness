@@ -122,8 +122,12 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
                     triggerConfetti();
                     setCelebratedLeadName(currentLead.name);
                     setShowCelebration(true);
-                    setTimeout(() => setShowCelebration(false), 5000);
-                    onConvert(leadId);
+                    
+                    // Wait a bit before opening conversion modal so confetti is visible
+                    setTimeout(() => {
+                        setShowCelebration(false);
+                        onConvert(leadId);
+                    }, 3000);
                 }
             } catch (error) {
                 console.error("Failed to update stage:", error);

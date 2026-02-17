@@ -88,6 +88,13 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
 
     useEffect(() => {
         if (lead) {
+            console.log('📋 LeadDetailsModal useEffect - Lead data:', {
+                id: lead.id,
+                name: lead.name,
+                planId: lead.planId,
+                stage: lead.pipelineStage
+            });
+            
             setFormData(lead.stageData || {});
             setEstimatedValue(lead.estimatedValue?.toString() || "");
             setTemperature(lead.temperature || "warm");
@@ -100,6 +107,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                 }
                 
                 // Set selected plan after plans are loaded
+                console.log('📋 Setting selectedPlanId to:', lead.planId || "");
                 setSelectedPlanId(lead.planId || "");
                 
                 // Fetch forms, questionnaires and lead forms
@@ -270,11 +278,18 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
 
             // Save Metadata (Value, Temperature & PlanId) by updating lead directly
             const value = parseFloat(estimatedValue.replace(',', '.'));
-            await updateLeadMetadata(lead.id, {
+            const metadataToSave = {
                 estimatedValue: isNaN(value) ? 0 : value,
                 temperature,
                 planId: selectedPlanId || null
+            };
+            
+            console.log('💾 Saving lead metadata:', {
+                leadId: lead.id,
+                metadata: metadataToSave
             });
+            
+            await updateLeadMetadata(lead.id, metadataToSave);
 
             router.refresh();
             onClose();
@@ -377,7 +392,10 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                             </label>
                                             <select
                                                 value={selectedPlanId}
-                                                onChange={(e) => setSelectedPlanId(e.target.value)}
+                                                onChange={(e) => {
+                                                    console.log('🔄 Plan changed:', e.target.value);
+                                                    setSelectedPlanId(e.target.value);
+                                                }}
                                                 disabled={currentStage === 'won'}
                                                 className="bg-transparent font-bold text-graphite-dark dark:text-white w-full outline-none appearance-none disabled:opacity-50 [&>option]:bg-white [&>option]:dark:bg-[#1E2A36] [&>option]:text-graphite-dark [&>option]:dark:text-white"
                                             >

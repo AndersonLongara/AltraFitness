@@ -65,9 +65,14 @@ export async function updateLeadStage(id: string, stage: string) {
 export async function updateLeadMetadata(id: string, data: { temperature?: string; estimatedValue?: number; planId?: string | null }) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
+    
+    console.log('💾 updateLeadMetadata called:', { id, data, userId });
+    
     await db.update(leads)
         .set({ ...data, updatedAt: new Date() } as Record<string, unknown>)
         .where(and(eq(leads.id, id), eq(leads.trainerId, userId)));
+    
+    console.log('✅ updateLeadMetadata completed');
     revalidatePath("/dashboard/sales");
 }
 
