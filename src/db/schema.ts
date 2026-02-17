@@ -679,6 +679,7 @@ export const forms = sqliteTable('forms', {
     trainerId: text('trainer_id').notNull().references(() => trainers.id),
     title: text('title').notNull(),
     description: text('description'),
+    welcomeTitle: text('welcome_title'),
     type: text('type').default('checkin'), // 'checkin', 'onboarding', 'feedback', 'custom'
     triggerType: text('trigger_type').default('manual'), // 'manual', 'on_signup', 'weekly', 'monthly', 'no_plan'
     isActive: integer('is_active', { mode: 'boolean' }).default(true),

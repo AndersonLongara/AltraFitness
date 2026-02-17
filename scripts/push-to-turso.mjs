@@ -406,6 +406,7 @@ const statements = [
     \`trainer_id\` text NOT NULL,
     \`title\` text NOT NULL,
     \`description\` text,
+    \`welcome_title\` text,
     \`type\` text DEFAULT 'checkin',
     \`trigger_type\` text DEFAULT 'manual',
     \`is_active\` integer DEFAULT true,

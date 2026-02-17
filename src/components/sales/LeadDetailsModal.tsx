@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp, ChatCenteredText, PaperPlaneRight, CheckCircle, Clock } from "@phosphor-icons/react";
+import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp, ChatCenteredText, PaperPlaneRight, CheckCircle, Clock, ListNumbers, NotePencil, CaretLeft, CaretRight } from "@phosphor-icons/react";
 import Image from "next/image";
 import { updateLeadStageData, updateLeadMetadata } from "@/app/actions/leads";
 import { getLeadQuestionnaireTemplates, getLeadFormResponses, assignFormToLead } from "@/app/actions/lead-forms";
+import { getForms } from "@/app/actions/forms";
 
 interface Lead {
     id: string;
@@ -60,11 +61,16 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
     const [temperature, setTemperature] = useState<string>("warm");
     const [isSaving, setIsSaving] = useState(false);
     
-    // Lead questionnaire state
-    const [questionnaires, setQuestionnaires] = useState<any[]>([]);
-    const [selectedQuestionnaireId, setSelectedQuestionnaireId] = useState<string>("");
+    // Lead forms/questionnaires state
+    const [allForms, setAllForms] = useState<any[]>([]);
+    const [allQuestionnaires, setAllQuestionnaires] = useState<any[]>([]);
     const [leadForms, setLeadForms] = useState<any[]>([]);
     const [isSendingForm, setIsSendingForm] = useState(false);
+    
+    // Pagination state
+    const [formsPage, setFormsPage] = useState(1);
+    const [questionnairesPage, setQuestionnairesPage] = useState(1);
+    const ITEMS_PER_PAGE = 3;
 
     useEffect(() => {
         if (lead) {
@@ -72,21 +78,30 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             setEstimatedValue(lead.estimatedValue?.toString() || "");
             setTemperature(lead.temperature || "warm");
             
-            // Fetch questionnaires and lead forms
+            // Fetch forms, questionnaires and lead forms
             if (lead.pipelineStage === 'scheduled') {
+                fetchForms();
                 fetchQuestionnaires();
                 fetchLeadForms();
             }
         }
     }, [lead]);
     
+    const fetchForms = async () => {
+        try {
+            const allTemplates = await getForms();
+            // Filter for regular forms (not questionnaires)
+            const forms = allTemplates.filter(t => t.type !== 'lead_questionnaire' && t.type !== 'questionnaire');
+            setAllForms(forms);
+        } catch (error) {
+            console.error("Failed to fetch forms", error);
+        }
+    };
+    
     const fetchQuestionnaires = async () => {
         try {
             const templates = await getLeadQuestionnaireTemplates();
-            setQuestionnaires(templates);
-            if (templates.length > 0) {
-                setSelectedQuestionnaireId(templates[0].id);
-            }
+            setAllQuestionnaires(templates);
         } catch (error) {
             console.error("Failed to fetch questionnaires", error);
         }
@@ -102,11 +117,11 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
         }
     };
     
-    const handleSendQuestionnaire = async () => {
-        if (!lead || !selectedQuestionnaireId) return;
+    const handleSendQuestionnaire = async (formId: string) => {
+        if (!lead || !formId) return;
         setIsSendingForm(true);
         try {
-            const { token } = await assignFormToLead(selectedQuestionnaireId, lead.id);
+            const { token } = await assignFormToLead(formId, lead.id);
             const link = `${window.location.origin}/f/${token}`;
             const message = `Olá ${lead.name}! Para melhor prepararmos nosso atendimento, por favor preencha este breve questionário: ${link}`;
             const whatsappUrl = `https://wa.me/55${lead.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
@@ -265,88 +280,224 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                             </div>
                         </div>
 
-                        {/* Lead Questionnaire Section (only for scheduled stage) */}
+                        {/* Forms & Questionnaires Section (only for scheduled stage) */}
                         {currentStage === 'scheduled' && (
                             <>
                                 <hr className="border-slate-100 dark:border-white/10" />
+                                
+                                {/* Formulários Section */}
                                 <div>
-                                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                        <ChatCenteredText size={16} /> Questionário Pré-Reunião
-                                    </h3>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <NotePencil size={16} /> Formulários
+                                        </h3>
+                                    </div>
 
-                                    {questionnaires.length > 0 ? (
-                                        <div className="space-y-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
-                                                <select
-                                                    value={selectedQuestionnaireId}
-                                                    onChange={(e) => setSelectedQuestionnaireId(e.target.value)}
-                                                    className="px-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-medium text-graphite-dark dark:text-white outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30"
-                                                >
-                                                    {questionnaires.map(q => (
-                                                        <option key={q.id} value={q.id}>{q.title}</option>
-                                                    ))}
-                                                </select>
-                                                <button
-                                                    onClick={handleSendQuestionnaire}
-                                                    disabled={isSendingForm || !lead.phone}
-                                                    className="px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 disabled:opacity-50 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
-                                                >
-                                                    <PaperPlaneRight size={20} weight="bold" />
-                                                    Enviar via WhatsApp
-                                                </button>
+                                    {allForms.length > 0 ? (
+                                        <>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                {allForms.slice((formsPage - 1) * ITEMS_PER_PAGE, formsPage * ITEMS_PER_PAGE).map((form) => (
+                                                    <div
+                                                        key={form.id}
+                                                        className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-200 dark:border-white/10 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all"
+                                                    >
+                                                        <div className="flex items-start justify-between mb-3">
+                                                            <span className={`inline-block px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ${
+                                                                form.isActive
+                                                                    ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                                                    : 'bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400'
+                                                            }`}>
+                                                                {form.isActive ? 'Ativo' : 'Rascunho'}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => handleSendQuestionnaire(form.id)}
+                                                                disabled={isSendingForm || !lead.phone}
+                                                                className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-500/30 disabled:opacity-50 transition-all"
+                                                                title="Enviar via WhatsApp"
+                                                            >
+                                                                <PaperPlaneRight size={16} weight="bold" />
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <h4 className="text-base font-bold text-graphite-dark dark:text-white mb-1 line-clamp-1">{form.title}</h4>
+                                                        <p className="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 mb-3">{form.description || 'Sem descrição'}</p>
+                                                        
+                                                        <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-white/10">
+                                                            <span className="flex items-center gap-1">
+                                                                <ListNumbers size={12} />
+                                                                {form.questions?.length || 0} perguntas
+                                                            </span>
+                                                            <span className="capitalize">
+                                                                {form.triggerType === 'manual' ? 'Manual' : form.triggerType?.replace('_', ' ') || 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
-
-                                            {/* List of Sent Forms */}
-                                            {leadForms.length > 0 && (
-                                                <div className="space-y-2">
-                                                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Formulários Enviados</p>
-                                                    {leadForms.map((lf) => (
-                                                        <details key={lf.id} className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
-                                                            <summary className="p-4 cursor-pointer flex items-center justify-between hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
-                                                                <div className="flex items-center gap-3">
-                                                                    {lf.status === 'completed' ? (
-                                                                        <CheckCircle size={20} weight="fill" className="text-emerald-500" />
-                                                                    ) : (
-                                                                        <Clock size={20} weight="bold" className="text-amber-500" />
-                                                                    )}
-                                                                    <div>
-                                                                        <p className="font-bold text-graphite-dark dark:text-white">{lf.form.title}</p>
-                                                                        <p className="text-xs text-slate-400 dark:text-slate-500">
-                                                                            {lf.status === 'completed' 
-                                                                                ? `Respondido em ${new Date(lf.completedAt).toLocaleDateString('pt-BR')}`
-                                                                                : 'Aguardando resposta'}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                                                                    lf.status === 'completed' 
-                                                                        ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
-                                                                        : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
-                                                                }`}>
-                                                                    {lf.status === 'completed' ? 'Completo' : 'Pendente'}
-                                                                </span>
-                                                            </summary>
-                                                            {lf.status === 'completed' && (
-                                                                <div className="p-4 border-t border-slate-200 dark:border-white/10 space-y-3 bg-white dark:bg-[#1E2A36]">
-                                                                    {lf.answers.map((answer: any) => (
-                                                                        <div key={answer.id}>
-                                                                            <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{answer.question.question}</p>
-                                                                            <p className="text-sm text-graphite-dark dark:text-white mt-1">{answer.answer}</p>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                        </details>
-                                                    ))}
+                                            
+                                            {/* Pagination Controls for Forms */}
+                                            {allForms.length > ITEMS_PER_PAGE && (
+                                                <div className="flex items-center justify-center gap-2 mt-4">
+                                                    <button
+                                                        onClick={() => setFormsPage(p => Math.max(1, p - 1))}
+                                                        disabled={formsPage === 1}
+                                                        className="p-2 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 disabled:opacity-30 transition-all"
+                                                    >
+                                                        <CaretLeft size={16} weight="bold" />
+                                                    </button>
+                                                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 px-3">
+                                                        {formsPage} / {Math.ceil(allForms.length / ITEMS_PER_PAGE)}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => setFormsPage(p => Math.min(Math.ceil(allForms.length / ITEMS_PER_PAGE), p + 1))}
+                                                        disabled={formsPage >= Math.ceil(allForms.length / ITEMS_PER_PAGE)}
+                                                        className="p-2 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 disabled:opacity-30 transition-all"
+                                                    >
+                                                        <CaretRight size={16} weight="bold" />
+                                                    </button>
                                                 </div>
                                             )}
-                                        </div>
+                                        </>
+                                    ) : (
+                                        <p className="text-slate-400 dark:text-slate-500 italic text-sm">
+                                            Nenhum formulário disponível.
+                                        </p>
+                                    )}
+                                </div>
+
+                                <hr className="border-slate-100 dark:border-white/10" />
+
+                                {/* Questionários Section */}
+                                <div>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                            <ChatCenteredText size={16} /> Questionários
+                                        </h3>
+                                    </div>
+
+                                    {allQuestionnaires.length > 0 ? (
+                                        <>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                                {allQuestionnaires.slice((questionnairesPage - 1) * ITEMS_PER_PAGE, questionnairesPage * ITEMS_PER_PAGE).map((questionnaire) => (
+                                                    <div
+                                                        key={questionnaire.id}
+                                                        className="bg-slate-50 dark:bg-white/5 p-4 rounded-2xl border border-slate-200 dark:border-white/10 hover:border-blue-200 dark:hover:border-blue-500/30 transition-all"
+                                                    >
+                                                        <div className="flex items-start justify-between mb-3">
+                                                            <div className="flex items-center gap-2">
+                                                                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                                                    <ChatCenteredText size={16} weight="bold" className="text-blue-600 dark:text-blue-400" />
+                                                                </div>
+                                                                {questionnaire.triggerType === 'on_scheduled' && (
+                                                                    <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[9px] font-bold rounded-full">
+                                                                        Auto
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleSendQuestionnaire(questionnaire.id)}
+                                                                disabled={isSendingForm || !lead.phone}
+                                                                className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-500/30 disabled:opacity-50 transition-all"
+                                                                title="Enviar via WhatsApp"
+                                                            >
+                                                                <PaperPlaneRight size={16} weight="bold" />
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        <h4 className="text-base font-bold text-graphite-dark dark:text-white mb-1 line-clamp-1">{questionnaire.title}</h4>
+                                                        <p className="text-xs text-slate-400 dark:text-slate-500 line-clamp-2 mb-3">{questionnaire.description || 'Sem descrição'}</p>
+                                                        
+                                                        <div className="flex items-center gap-2 text-[10px] text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-white/10">
+                                                            <span className="flex items-center gap-1">
+                                                                <ListNumbers size={12} />
+                                                                {questionnaire.questions?.length || 0} perguntas
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            
+                                            {/* Pagination Controls for Questionnaires */}
+                                            {allQuestionnaires.length > ITEMS_PER_PAGE && (
+                                                <div className="flex items-center justify-center gap-2 mt-4">
+                                                    <button
+                                                        onClick={() => setQuestionnairesPage(p => Math.max(1, p - 1))}
+                                                        disabled={questionnairesPage === 1}
+                                                        className="p-2 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 disabled:opacity-30 transition-all"
+                                                    >
+                                                        <CaretLeft size={16} weight="bold" />
+                                                    </button>
+                                                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 px-3">
+                                                        {questionnairesPage} / {Math.ceil(allQuestionnaires.length / ITEMS_PER_PAGE)}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => setQuestionnairesPage(p => Math.min(Math.ceil(allQuestionnaires.length / ITEMS_PER_PAGE), p + 1))}
+                                                        disabled={questionnairesPage >= Math.ceil(allQuestionnaires.length / ITEMS_PER_PAGE)}
+                                                        className="p-2 rounded-lg bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-white/20 disabled:opacity-30 transition-all"
+                                                    >
+                                                        <CaretRight size={16} weight="bold" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
                                     ) : (
                                         <p className="text-slate-400 dark:text-slate-500 italic text-sm">
                                             Nenhum questionário disponível. <a href="/dashboard/forms/new?type=lead_questionnaire" className="text-emerald-600 dark:text-emerald-400 hover:underline font-bold">Criar questionário</a>
                                         </p>
                                     )}
                                 </div>
+
+                                {/* List of Sent Forms/Questionnaires Responses */}
+                                {leadForms.length > 0 && (
+                                    <>
+                                        <hr className="border-slate-100 dark:border-white/10" />
+                                        <div>
+                                            <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">
+                                                Respostas Recebidas
+                                            </h3>
+                                            <div className="space-y-2">
+                                                {leadForms.map((lf) => (
+                                                    <details key={lf.id} className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden">
+                                                        <summary className="p-4 cursor-pointer flex items-center justify-between hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                                                            <div className="flex items-center gap-3">
+                                                                {lf.status === 'completed' ? (
+                                                                    <CheckCircle size={20} weight="fill" className="text-emerald-500" />
+                                                                ) : (
+                                                                    <Clock size={20} weight="bold" className="text-amber-500" />
+                                                                )}
+                                                                <div>
+                                                                    <p className="font-bold text-graphite-dark dark:text-white">{lf.form.title}</p>
+                                                                    <p className="text-xs text-slate-400 dark:text-slate-500">
+                                                                        {lf.status === 'completed' 
+                                                                            ? `Respondido em ${new Date(lf.completedAt).toLocaleDateString('pt-BR')}`
+                                                                            : 'Aguardando resposta'}
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                                                lf.status === 'completed' 
+                                                                    ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                                                                    : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                                                            }`}>
+                                                                {lf.status === 'completed' ? 'Completo' : 'Pendente'}
+                                                            </span>
+                                                        </summary>
+                                                        {lf.status === 'completed' && (
+                                                            <div className="p-4 border-t border-slate-200 dark:border-white/10 space-y-3 bg-white dark:bg-[#1E2A36]">
+                                                                {lf.answers.map((answer: any) => (
+                                                                    <div key={answer.id}>
+                                                                        <p className="text-xs font-bold text-slate-500 dark:text-slate-400">{answer.question.question}</p>
+                                                                        <p className="text-sm text-graphite-dark dark:text-white mt-1">{answer.answer}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </details>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </>
                         )}
 

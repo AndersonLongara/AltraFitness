@@ -11,6 +11,7 @@ interface LeadFormRendererProps {
     form: {
         title: string;
         description: string | null;
+        welcomeTitle?: string | null;
         trainer: {
             name: string;
             photoUrl?: string | null;
@@ -123,10 +124,17 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
                         </span>
                     </div>
 
+                    {/* Welcome Title (if exists) */}
+                    {form.welcomeTitle && (
+                        <h1 className="text-4xl md:text-5xl font-extrabold text-deep-teal dark:text-ice-white mb-2 leading-tight">
+                            {form.welcomeTitle}
+                        </h1>
+                    )}
+
                     {/* Title */}
-                    <h1 className="text-3xl md:text-4xl font-extrabold text-deep-teal dark:text-ice-white mb-4 leading-tight">
+                    <h2 className={`${form.welcomeTitle ? 'text-2xl md:text-3xl' : 'text-3xl md:text-4xl'} font-extrabold text-deep-teal dark:text-ice-white mb-4 leading-tight`}>
                         {form.title}
-                    </h1>
+                    </h2>
 
                     {/* Description */}
                     {form.description && (
@@ -230,6 +238,18 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
                             value={answers[currentQuestion.id] || ''}
                             onChange={(e) => handleAnswer(e.target.value)}
                             placeholder="Digite um número..."
+                            className="w-full text-xl md:text-2xl font-medium border-b-2 border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400 outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors"
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handleNext()}
+                        />
+                    )}
+
+                    {currentQuestion.type === 'email' && (
+                        <input
+                            type="email"
+                            value={answers[currentQuestion.id] || ''}
+                            onChange={(e) => handleAnswer(e.target.value)}
+                            placeholder="exemplo@email.com"
                             className="w-full text-xl md:text-2xl font-medium border-b-2 border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400 outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors"
                             autoFocus
                             onKeyDown={(e) => e.key === 'Enter' && handleNext()}

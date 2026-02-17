@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createForm } from "@/app/actions/forms";
-import { Plus, Trash, TextT, ListNumbers, CheckSquare, Hash, Calendar, CheckCircle, DotsSixVertical } from "@phosphor-icons/react";
+import { Plus, Trash, TextT, ListNumbers, CheckSquare, Hash, Calendar, CheckCircle, DotsSixVertical, At } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 
@@ -11,8 +11,9 @@ export default function NewQuestionnairePage() {
     const [isSaving, setIsSaving] = useState(false);
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
+    const [welcomeTitle, setWelcomeTitle] = useState("");
     const [questions, setQuestions] = useState<any[]>([
-        { id: crypto.randomUUID(), type: 'text', question: '', required: true, order: 0 }
+        { id: crypto.randomUUID(), type: 'text', question: '', description: '', required: true, order: 0 }
     ]);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
     const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -24,6 +25,7 @@ export default function NewQuestionnairePage() {
                 id: crypto.randomUUID(),
                 type,
                 question: '',
+                description: '',
                 required: true,
                 order: questions.length,
                 options: type.includes('select') ? ['Opção 1'] : undefined
@@ -79,6 +81,7 @@ export default function NewQuestionnairePage() {
             await createForm({
                 title,
                 description,
+                welcomeTitle,
                 type: 'lead_questionnaire',
                 triggerType: 'manual', // Default to manual
                 questions: questions.map((q, index) => ({
@@ -140,6 +143,19 @@ export default function NewQuestionnairePage() {
                                 className="w-full border border-slate-200 dark:border-white/20 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-100 dark:focus:ring-performance-green/20 outline-none resize-none h-24 bg-white dark:bg-white/5 text-graphite-dark dark:text-white placeholder:text-slate-400"
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">
+                                Título de Boas-Vindas (Opcional)
+                                <span className="text-xs font-normal text-slate-500 dark:text-slate-400 ml-2">Aparece na tela inicial</span>
+                            </label>
+                            <input
+                                type="text"
+                                value={welcomeTitle}
+                                onChange={e => setWelcomeTitle(e.target.value)}
+                                placeholder="Ex: Bem-vindo! Vamos começar sua avaliação"
+                                className="w-full border border-slate-200 dark:border-white/20 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-100 dark:focus:ring-performance-green/20 outline-none bg-white dark:bg-white/5 text-graphite-dark dark:text-white placeholder:text-slate-400"
+                            />
+                        </div>
                     </div>
 
                     {/* Questions Builder */}
@@ -192,12 +208,24 @@ export default function NewQuestionnairePage() {
                                             >
                                                 <option value="text">Texto Curto</option>
                                                 <option value="long_text">Texto Longo</option>
+                                                <option value="email">E-mail</option>
                                                 <option value="number">Número</option>
                                                 <option value="date">Data</option>
                                                 <option value="scale">Escala 1-5</option>
                                                 <option value="single_select">Seleção Única</option>
                                                 <option value="multi_select">Múltipla Escolha</option>
                                             </select>
+                                        </div>
+
+                                        {/* Question Description/Subtitle */}
+                                        <div>
+                                            <input
+                                                type="text"
+                                                value={q.description || ''}
+                                                onChange={e => updateQuestion(q.id, 'description', e.target.value)}
+                                                placeholder="Adicione um subtítulo ou instrução (opcional)..."
+                                                className="w-full text-sm text-slate-600 dark:text-slate-400 placeholder:text-slate-300 dark:placeholder:text-slate-600 bg-transparent border-b border-slate-100 dark:border-white/10 focus:border-emerald-300 dark:focus:border-emerald-500/50 outline-none py-1 transition-colors"
+                                            />
                                         </div>
 
                                         {/* Options for Select Types */}
@@ -260,6 +288,10 @@ export default function NewQuestionnairePage() {
                         <button type="button" onClick={() => addQuestion('text')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
                             <TextT size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />
                             <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Texto</span>
+                        </button>
+                        <button type="button" onClick={() => addQuestion('email')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
+                            <At size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">E-mail</span>
                         </button>
                         <button type="button" onClick={() => addQuestion('number')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white dark:bg-[#1E2A36] hover:bg-slate-50 dark:hover:bg-white/10 border border-slate-100 dark:border-white/10 transition-all w-24 group">
                             <Hash size={24} className="text-slate-400 dark:text-slate-500 group-hover:text-emerald-500 dark:group-hover:text-performance-green" />

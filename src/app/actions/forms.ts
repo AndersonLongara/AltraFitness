@@ -41,6 +41,7 @@ export async function getFormById(formId: string) {
 export async function createForm(data: {
     title: string;
     description: string;
+    welcomeTitle?: string;
     type: string;
     triggerType: string;
     questions: {
@@ -60,6 +61,7 @@ export async function createForm(data: {
         trainerId: userId,
         title: data.title,
         description: data.description,
+        welcomeTitle: data.welcomeTitle,
         type: data.type,
         triggerType: data.triggerType,
     }).returning();
