@@ -19,7 +19,7 @@ interface Food {
     category?: string | null;
 }
 
-const PAGE_SIZE = 50;
+const PAGE_SIZE = 10;
 
 export default function FoodLibraryList({ initialFoods }: { initialFoods: Food[] }) {
     const [activeTab, setActiveTab] = useState<'my_foods' | 'system'>('my_foods');
@@ -75,7 +75,7 @@ export default function FoodLibraryList({ initialFoods }: { initialFoods: Food[]
             </div>
 
             {/* Search Bar */}
-            <div className="bg-pure-white dark:bg-[#1E2A36] px-4 py-3 rounded-2xl soft-shadow border border-slate-100 dark:border-white/10 flex items-center">
+            <div className="bg-white dark:bg-[#1E2A36] px-4 py-3 rounded-2xl soft-shadow dark:shadow-none border border-slate-100 dark:border-white/10 flex items-center">
                 <MagnifyingGlass size={20} className="text-slate-400 dark:text-slate-500 mr-2" />
                 <input
                     type="text"

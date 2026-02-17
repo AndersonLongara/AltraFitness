@@ -22,7 +22,7 @@ export default async function QuestionnairesPage() {
                         </p>
                     </div>
                     <Link
-                        href="/dashboard/questionnaires/new"
+                        href="/dashboard/forms/new?type=lead_questionnaire"
                         className="px-6 py-3 bg-performance-green text-graphite-dark font-bold rounded-2xl hover:brightness-110 transition-all flex items-center gap-2 shadow-lg"
                     >
                         <Plus size={20} weight="bold" />
@@ -82,7 +82,7 @@ export default async function QuestionnairesPage() {
                             Crie seu primeiro questionário para começar a qualificar seus leads
                         </p>
                         <Link
-                            href="/dashboard/questionnaires/new"
+                            href="/dashboard/forms/new?type=lead_questionnaire"
                             className="inline-flex items-center gap-2 px-6 py-3 bg-performance-green text-graphite-dark font-bold rounded-2xl hover:brightness-110 transition-all"
                         >
                             <Plus size={20} weight="bold" />

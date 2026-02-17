@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createForm } from "@/app/actions/forms";
 import { Plus, Trash, TextT, ListNumbers, CheckSquare, CaretDown, CaretUp, Calendar, Hash, CheckCircle } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 
 export default function NewFormPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [isSaving, setIsSaving] = useState(false);
     const [formType, setFormType] = useState<'custom' | 'lead_questionnaire'>('custom');
     const [title, setTitle] = useState("");
@@ -16,6 +17,14 @@ export default function NewFormPage() {
     const [questions, setQuestions] = useState<any[]>([
         { id: crypto.randomUUID(), type: 'text', question: '', required: true, order: 0 }
     ]);
+
+    // Detect URL parameter to pre-select form type
+    useEffect(() => {
+        const typeParam = searchParams.get('type');
+        if (typeParam === 'lead_questionnaire') {
+            setFormType('lead_questionnaire');
+        }
+    }, [searchParams]);
 
     const addQuestion = (type: string) => {
         setQuestions([
@@ -57,7 +66,13 @@ export default function NewFormPage() {
                     order: index
                 }))
             });
-            router.push('/dashboard/forms');
+            
+            // Redirect based on form type
+            if (formType === 'lead_questionnaire') {
+                router.push('/dashboard/questionnaires');
+            } else {
+                router.push('/dashboard/forms');
+            }
         } catch (err) {
             console.error(err);
             alert("Erro ao salvar formulário");
@@ -72,13 +87,22 @@ export default function NewFormPage() {
 
             <main className="max-w-4xl mx-auto p-6 md:p-8">
                 <header className="flex items-center justify-between mb-8">
-                    <h1 className="text-3xl font-extrabold text-graphite-dark dark:text-white tracking-tight">Novo Formulário</h1>
+                    <div>
+                        <h1 className="text-3xl font-extrabold text-graphite-dark dark:text-white tracking-tight">
+                            {formType === 'lead_questionnaire' ? 'Novo Questionário' : 'Novo Formulário'}
+                        </h1>
+                        <p className="text-soft-gray dark:text-gray-400 mt-1">
+                            {formType === 'lead_questionnaire' 
+                                ? 'Crie um questionário para qualificar seus leads'
+                                : 'Crie um formulário para seus alunos'}
+                        </p>
+                    </div>
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
                         className="px-6 py-3 bg-performance-green text-graphite-dark font-bold rounded-2xl hover:brightness-110 disabled:opacity-50 transition-all"
                     >
-                        {isSaving ? 'Salvando...' : 'Publicar Formulário'}
+                        {isSaving ? 'Salvando...' : (formType === 'lead_questionnaire' ? 'Salvar Questionário' : 'Publicar Formulário')}
                     </button>
                 </header>
 

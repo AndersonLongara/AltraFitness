@@ -29,18 +29,18 @@ const stageLabels: Record<string, string> = {
 };
 
 const stageColors: Record<string, string> = {
-    new: "bg-blue-100 text-blue-700",
-    contacted: "bg-indigo-100 text-indigo-700",
-    scheduled: "bg-purple-100 text-purple-700",
-    negotiation: "bg-amber-100 text-amber-700",
-    won: "bg-emerald-100 text-emerald-700",
-    lost: "bg-slate-100 text-slate-500",
+    new: "bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400",
+    contacted: "bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400",
+    scheduled: "bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400",
+    negotiation: "bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400",
+    won: "bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400",
+    lost: "bg-slate-100 dark:bg-slate-500/20 text-slate-500 dark:text-slate-400",
 };
 
 export default function FunnelList({ leads, onLeadClick }: { leads: Lead[]; onLeadClick: (lead: Lead) => void }) {
     if (leads.length === 0) {
         return (
-            <div className="p-12 text-center text-slate-400 bg-pure-white rounded-[24px] border border-slate-50">
+            <div className="p-12 text-center text-slate-400 dark:text-slate-500 bg-white dark:bg-[#1E2A36] rounded-[24px] border border-slate-50 dark:border-white/10">
                 <Funnel size={48} weight="duotone" className="mx-auto mb-4 opacity-50" />
                 <p className="font-bold">Seu funil está vazio.</p>
                 <p className="text-sm mt-2">Adicione leads para começar a negociar.</p>
@@ -49,25 +49,25 @@ export default function FunnelList({ leads, onLeadClick }: { leads: Lead[]; onLe
     }
 
     return (
-        <div className="bg-pure-white rounded-[24px] border border-slate-50 overflow-hidden shadow-sm">
+        <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] border border-slate-50 dark:border-white/10 overflow-hidden shadow-sm dark:shadow-none">
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                    <thead className="bg-slate-50 border-b border-slate-100">
+                    <thead className="bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/10">
                         <tr>
-                            <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Lead</th>
-                            <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Estágio</th>
-                            <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Valor Est.</th>
-                            <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Temp.</th>
-                            <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest leading-none">Último Contato</th>
-                            <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest leading-none text-right">Ação</th>
+                            <th className="px-8 py-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Lead</th>
+                            <th className="px-8 py-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Estágio</th>
+                            <th className="px-8 py-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Valor Est.</th>
+                            <th className="px-8 py-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Temp.</th>
+                            <th className="px-8 py-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none">Último Contato</th>
+                            <th className="px-8 py-4 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-none text-right">Ação</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-50">
+                    <tbody className="divide-y divide-slate-50 dark:divide-white/10">
                         {leads.map((lead) => (
                             <tr
                                 key={lead.id}
                                 onClick={() => onLeadClick(lead)}
-                                className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                                className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
                             >
                                 <td className="px-8 py-4">
                                     <div className="flex items-center gap-3">
@@ -78,16 +78,16 @@ export default function FunnelList({ leads, onLeadClick }: { leads: Lead[]; onLe
                                                     alt={lead.name}
                                                     width={40}
                                                     height={40}
-                                                    className="rounded-full object-cover border border-slate-100"
+                                                    className="rounded-full object-cover border border-slate-100 dark:border-white/10"
                                                 />
                                             ) : (
-                                                <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center border border-slate-50">
+                                                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500 flex items-center justify-center border border-slate-50 dark:border-white/10">
                                                     <User size={20} weight="fill" />
                                                 </div>
                                             )}
 
                                             {lead.socialHandle && (
-                                                <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 shadow-sm border border-slate-50">
+                                                <div className="absolute -bottom-1 -right-1 bg-white dark:bg-[#1E2A36] rounded-full p-0.5 shadow-sm border border-slate-50 dark:border-white/10">
                                                     <div className="bg-gradient-to-tr from-yellow-400 via-red-500 to-purple-500 text-white rounded-full p-0.5">
                                                         <InstagramLogo size={10} weight="bold" />
                                                     </div>
@@ -95,8 +95,8 @@ export default function FunnelList({ leads, onLeadClick }: { leads: Lead[]; onLe
                                             )}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-slate-700 text-sm group-hover:text-graphite-dark transition-colors">{lead.name}</p>
-                                            <div className="flex items-center gap-1 text-slate-400 text-xs font-medium">
+                                            <p className="font-bold text-slate-700 dark:text-white text-sm group-hover:text-graphite-dark dark:group-hover:text-emerald-400 transition-colors">{lead.name}</p>
+                                            <div className="flex items-center gap-1 text-slate-400 dark:text-slate-500 text-xs font-medium">
                                                 <WhatsappLogo size={12} weight="fill" className="text-emerald-500" />
                                                 {lead.phone}
                                             </div>
@@ -109,8 +109,8 @@ export default function FunnelList({ leads, onLeadClick }: { leads: Lead[]; onLe
                                     </span>
                                 </td>
                                 <td className="px-8 py-4">
-                                    <div className="flex items-center gap-1 text-slate-600 font-bold text-sm">
-                                        <span className="text-xs text-slate-400">R$</span>
+                                    <div className="flex items-center gap-1 text-slate-600 dark:text-slate-300 font-bold text-sm">
+                                        <span className="text-xs text-slate-400 dark:text-slate-500">R$</span>
                                         {lead.estimatedValue?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}
                                     </div>
                                 </td>
@@ -121,7 +121,7 @@ export default function FunnelList({ leads, onLeadClick }: { leads: Lead[]; onLe
                                     {!lead.temperature && <span className="text-slate-300 font-bold text-xs">-</span>}
                                 </td>
                                 <td className="px-8 py-4">
-                                    <div className="flex items-center gap-1 text-slate-500 text-xs font-medium">
+                                    <div className="flex items-center gap-1 text-slate-500 dark:text-slate-400 text-xs font-medium">
                                         <Clock size={14} weight="duotone" />
                                         {lead.lastContactAt
                                             ? formatDistanceToNow(new Date(lead.lastContactAt), { addSuffix: true, locale: ptBR })
@@ -135,7 +135,7 @@ export default function FunnelList({ leads, onLeadClick }: { leads: Lead[]; onLe
                                             e.stopPropagation();
                                             window.open(`https://wa.me/55${lead.phone.replace(/\D/g, '')}?text=Olá ${lead.name}`, '_blank');
                                         }}
-                                        className="text-slate-400 hover:text-performance-green transition-colors p-2 rounded-lg hover:bg-emerald-50"
+                                        className="text-slate-400 dark:text-slate-500 hover:text-performance-green dark:hover:text-emerald-400 transition-colors p-2 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/20"
                                     >
                                         <WhatsappLogo size={20} weight="fill" />
                                     </button>
