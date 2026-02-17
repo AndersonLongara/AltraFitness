@@ -187,12 +187,12 @@ import { getInstagramProfile } from "@/services/instagram";
 // ... (existing code)
 
 export async function enrichInstagramProfile(handle: string) {
-    // Sanitize handle (remove @ if present)
-    const cleanHandle = handle.replace(/^@/, '').trim();
-
-    if (!cleanHandle) return null;
-
     try {
+        // Sanitize handle (remove @ if present)
+        const cleanHandle = handle.replace(/^@/, '').trim();
+
+        if (!cleanHandle) return null;
+
         const profile = await getInstagramProfile(cleanHandle);
         
         if (!profile) return null;
@@ -202,7 +202,15 @@ export async function enrichInstagramProfile(handle: string) {
         // Persist Instagram image as Base64 to avoid expiration/hotlinking
         if (profile.photoUrl && (profile.photoUrl.includes('cdninstagram') || profile.photoUrl.includes('fbcdn.net'))) {
             try {
-                const response = await fetch(profile.photoUrl);
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
+                
+                const response = await fetch(profile.photoUrl, {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeout);
+                
                 if (response.ok) {
                     const arrayBuffer = await response.arrayBuffer();
                     const buffer = Buffer.from(arrayBuffer);
@@ -210,8 +218,8 @@ export async function enrichInstagramProfile(handle: string) {
                     const contentType = response.headers.get('content-type') || 'image/jpeg';
                     finalPhotoUrl = `data:${contentType};base64,${base64}`;
                 }
-            } catch (error) {
-                console.error("Failed to download/persist Instagram image:", error);
+            } catch (imgError) {
+                console.error("Failed to download/persist Instagram image:", imgError);
                 // Fallback to original URL
             }
         }
@@ -221,7 +229,7 @@ export async function enrichInstagramProfile(handle: string) {
             photoUrl: finalPhotoUrl
         };
     } catch (error) {
-        console.error("Enrichment action failed", error);
+        console.error("Enrichment action failed:", error);
         return null;
     }
 }

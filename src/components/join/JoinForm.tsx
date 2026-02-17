@@ -83,6 +83,7 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
             }
         } catch (error) {
             console.error('Instagram enrichment failed:', error);
+            // Silently fail - don't show error to user
         } finally {
             setIsEnrichingInstagram(false);
         }
