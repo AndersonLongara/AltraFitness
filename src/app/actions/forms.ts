@@ -7,6 +7,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
 // --- Form Management (Trainer) ---
+// Updated: Added welcomeTitle support and fixed SQL syntax
 
 export async function getForms() {
     const { userId } = await auth();
