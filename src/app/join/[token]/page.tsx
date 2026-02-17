@@ -55,7 +55,6 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
                     token={token}
                     initialName={student.name}
                     initialPhone={student.phone}
-                    initialEmail={student.email}
                     planName={student.plan?.name || null}
                     planPrice={student.plan?.price || null}
                 />

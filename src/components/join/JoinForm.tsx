@@ -10,19 +10,17 @@ interface JoinFormProps {
     token: string;
     initialName: string;
     initialPhone: string | null;
-    initialEmail: string | null;
     planName: string | null;
     planPrice: number | null;
 }
 
-export default function JoinForm({ token, initialName, initialPhone, initialEmail, planName, planPrice }: JoinFormProps) {
+export default function JoinForm({ token, initialName, initialPhone, planName, planPrice }: JoinFormProps) {
     const router = useRouter();
     const { isSignedIn, user, isLoaded } = useUser();
     const { signOut } = useClerk();
     
     // Form states
     const [name, setName] = useState(initialName || '');
-    const [email, setEmail] = useState(initialEmail || '');
     const [instagram, setInstagram] = useState('');
     const [phone, setPhone] = useState(initialPhone || '');
     const [cpf, setCpf] = useState('');
@@ -66,13 +64,16 @@ export default function JoinForm({ token, initialName, initialPhone, initialEmai
     const handleSubmit = async () => {
         if (!isSignedIn) return;
 
+        // Get email from Clerk user
+        const userEmail = user.primaryEmailAddress?.emailAddress || user.emailAddresses?.[0]?.emailAddress;
+        if (!userEmail) {
+            setError('Não foi possível obter seu email. Tente fazer login novamente.');
+            return;
+        }
+
         // Basic validation
         if (!name.trim()) {
             setError('Por favor, preencha seu nome completo.');
-            return;
-        }
-        if (!email.trim() || !email.includes('@')) {
-            setError('Por favor, preencha um email válido.');
             return;
         }
         if (!phone.trim() || phone.replace(/\D/g, '').length < 10) {
@@ -100,7 +101,7 @@ export default function JoinForm({ token, initialName, initialPhone, initialEmai
 
             await acceptInvite(token, {
                 name: name.trim(),
-                email: email.trim(),
+                email: userEmail,
                 instagram: instagram.trim() ? instagram.trim() : null,
                 phone: phone.replace(/\D/g, ''),
                 cpf: cpf.replace(/\D/g, ''),
@@ -214,20 +215,6 @@ export default function JoinForm({ token, initialName, initialPhone, initialEmai
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Seu nome completo"
-                        className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600"
-                    />
-                </div>
-
-                {/* Email */}
-                <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                        Email <span className="text-rose-400">*</span>
-                    </label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="seu@email.com"
                         className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600"
                     />
                 </div>
