@@ -1,8 +1,8 @@
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import { db } from "@/db";
-import { students, plans } from "@/db/schema";
+import { students, plans, studentForms } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import StudentsPageContent from "@/components/students/StudentsPageContent";
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,7 @@ export default async function StudentsPage() {
     const { userId } = await auth();
     if (!userId) return null;
 
-    const [studentsList, plansList] = await Promise.all([
+    const [studentsList, plansList, allStudentForms] = await Promise.all([
         db.query.students.findMany({
             where: eq(students.trainerId, userId),
             with: {
@@ -31,6 +31,11 @@ export default async function StudentsPage() {
         db.query.plans.findMany({
             where: eq(plans.trainerId, userId),
         }),
+        db.query.studentForms.findMany({
+            where: (studentForms: any, { eq }: any) => {
+                return eq(studentForms.trainerId, userId);
+            },
+        }),
     ]);
 
     return (
@@ -41,6 +46,7 @@ export default async function StudentsPage() {
                 <StudentsPageContent
                     studentsList={studentsList as any}
                     plansList={plansList as any}
+                    studentForms={allStudentForms as any}
                 />
             </main>
         </div>

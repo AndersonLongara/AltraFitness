@@ -3,15 +3,17 @@
 import { useState } from "react";
 import { MagnifyingGlass, User, CaretRight, Plus, Lightning, Trophy, Fire } from "@phosphor-icons/react";
 import StudentFormTrigger from "@/components/students/StudentFormTrigger";
+import StudentsDashboard from "@/components/students/StudentsDashboard";
 import Link from "next/link";
 import { format } from "date-fns";
 
 interface StudentsPageContentProps {
     studentsList: any[];
     plansList?: any[];
+    studentForms?: any[];
 }
 
-export default function StudentsPageContent({ studentsList, plansList = [] }: StudentsPageContentProps) {
+export default function StudentsPageContent({ studentsList, plansList = [], studentForms = [] }: StudentsPageContentProps) {
     const [searchTerm, setSearchTerm] = useState("");
 
     const filteredStudents = studentsList.filter(s =>
@@ -65,6 +67,9 @@ export default function StudentsPageContent({ studentsList, plansList = [] }: St
 
                 <StudentFormTrigger plans={plansList} />
             </header>
+
+            {/* Dashboard Cards */}
+            <StudentsDashboard studentsList={studentsList} studentForms={studentForms} />
 
             {/* Filters & Search */}
             <div className="flex flex-col md:flex-row gap-4">
