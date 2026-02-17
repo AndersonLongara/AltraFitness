@@ -2,10 +2,11 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { MagnifyingGlass, Barbell, Anchor, PersonSimpleRun, Trophy, Baseball, Target, SquaresFour, CaretLeft, CaretRight, HandFist, Horse, Plus, ArrowsOutSimple } from "@phosphor-icons/react";
+import { MagnifyingGlass, Barbell, Anchor, PersonSimpleRun, Trophy, Baseball, Target, SquaresFour, CaretLeft, CaretRight, HandFist, Horse, Plus, ArrowsOutSimple, Heart } from "@phosphor-icons/react";
 import ExerciseCard from "@/components/workouts/ExerciseCard";
 import ExerciseModal from "@/components/workouts/ExerciseModal";
 import { normalizeMuscleGroup } from "@/lib/exercise-categories";
+import { toggleFavoriteExercise } from "@/app/actions/favorites";
 
 interface Exercise {
     id: string;
@@ -21,6 +22,7 @@ interface ExerciseLibraryListProps {
     initialExercises: Exercise[];
     categories: string[];       // From DB: ['Todos', 'Peito', 'Costas', ...]
     muscleGroups: string[];     // From DB: ['Peito', 'Costas', ...]
+    favoriteExerciseIds: string[];
 }
 
 const PAGE_SIZE = 10;
@@ -40,13 +42,36 @@ const CATEGORY_CONFIG: Record<string, { icon: React.ReactNode, accent: string, b
     'Outros': { icon: <SquaresFour size={18} weight="bold" />, accent: 'text-slate-600', bg: 'bg-slate-100', border: 'border-slate-200' },
 };
 
-export default function ExerciseLibraryList({ initialExercises, categories, muscleGroups }: ExerciseLibraryListProps) {
+export default function ExerciseLibraryList({ initialExercises, categories, muscleGroups, favoriteExerciseIds }: ExerciseLibraryListProps) {
     const router = useRouter();
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState("Todos");
+    const [showFavorites, setShowFavorites] = useState(false);
+    const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set(favoriteExerciseIds));
+    const [togglingId, setTogglingId] = useState<string | null>(null);
     const [page, setPage] = useState(1);
     const [modalOpen, setModalOpen] = useState(false);
     const [editingExercise, setEditingExercise] = useState<Exercise | null>(null);
+
+    const handleToggleFavorite = async (exerciseId: string) => {
+        setTogglingId(exerciseId);
+        try {
+            const result = await toggleFavoriteExercise(exerciseId);
+            setFavoriteIds(prev => {
+                const next = new Set(prev);
+                if (result.favorited) {
+                    next.add(exerciseId);
+                } else {
+                    next.delete(exerciseId);
+                }
+                return next;
+            });
+        } catch (e) {
+            console.error('Erro ao favoritar exercício:', e);
+        } finally {
+            setTogglingId(null);
+        }
+    };
 
     const filtered = useMemo(() => {
         return initialExercises.filter((ex) => {
@@ -55,9 +80,10 @@ export default function ExerciseLibraryList({ initialExercises, categories, musc
             if (!matchesCategory) {
                 matchesCategory = normalizeMuscleGroup(ex.muscleGroup) === normalizeMuscleGroup(category);
             }
-            return matchesSearch && matchesCategory;
+            const matchesFavorites = showFavorites ? favoriteIds.has(ex.id) : true;
+            return matchesSearch && matchesCategory && matchesFavorites;
         });
-    }, [initialExercises, search, category]);
+    }, [initialExercises, search, category, showFavorites, favoriteIds]);
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
     const currentPage = Math.min(page, totalPages);
@@ -71,6 +97,11 @@ export default function ExerciseLibraryList({ initialExercises, categories, musc
 
     const handleCategory = (cat: string) => {
         setCategory(cat);
+        setPage(1);
+    };
+
+    const handleToggleFavoritesFilter = () => {
+        setShowFavorites(prev => !prev);
         setPage(1);
     };
 
@@ -123,6 +154,21 @@ export default function ExerciseLibraryList({ initialExercises, categories, musc
 
             {/* Category chips - wrapping grid */}
             <div className="flex flex-wrap gap-2">
+                {/* Favorites filter button */}
+                <button
+                    onClick={handleToggleFavoritesFilter}
+                    className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 border ${
+                        showFavorites
+                            ? 'bg-rose-100 text-rose-600 border-rose-200 dark:bg-rose-500/20 dark:text-rose-400 dark:border-rose-500/30'
+                            : 'bg-white dark:bg-[#1E2A36] text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-white/10 border-slate-100 dark:border-white/10'
+                    }`}
+                >
+                    <Heart size={16} weight={showFavorites ? 'fill' : 'bold'} />
+                    Favoritos ({favoriteIds.size})
+                </button>
+
+                <div className="w-px h-8 bg-slate-200 dark:bg-white/10 self-center" />
+
                 {categories.map((tag) => {
                     const config = CATEGORY_CONFIG[tag] || CATEGORY_CONFIG['Todos'];
                     const isActive = category === tag;
@@ -152,18 +198,32 @@ export default function ExerciseLibraryList({ initialExercises, categories, musc
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
                 {paginatedExercises.map((ex) => {
                     const config = CATEGORY_CONFIG[ex.muscleGroup] || CATEGORY_CONFIG['Todos'];
+                    const isFav = favoriteIds.has(ex.id);
                     return (
-                        <ExerciseCard
-                            key={ex.id}
-                            name={ex.name}
-                            muscleGroup={ex.muscleGroup}
-                            videoUrl={ex.videoUrl}
-                            imageUrl={ex.imageUrl}
-                            icon={config.icon}
-                            accentColor={config.accent}
-                            bgColor={config.bg}
-                            onEdit={() => handleOpenEdit(ex)}
-                        />
+                        <div key={ex.id} className="relative group/fav">
+                            <ExerciseCard
+                                name={ex.name}
+                                muscleGroup={ex.muscleGroup}
+                                videoUrl={ex.videoUrl}
+                                imageUrl={ex.imageUrl}
+                                icon={config.icon}
+                                accentColor={config.accent}
+                                bgColor={config.bg}
+                                onEdit={() => handleOpenEdit(ex)}
+                            />
+                            <button
+                                onClick={() => handleToggleFavorite(ex.id)}
+                                disabled={togglingId === ex.id}
+                                className={`absolute top-3 right-3 z-10 p-1.5 rounded-lg transition-all ${
+                                    isFav
+                                        ? 'text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20'
+                                        : 'text-slate-300 dark:text-slate-600 hover:text-rose-400 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20 opacity-0 group-hover/fav:opacity-100'
+                                } ${togglingId === ex.id ? 'animate-pulse' : ''}`}
+                                title={isFav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                            >
+                                <Heart size={18} weight={isFav ? 'fill' : 'bold'} />
+                            </button>
+                        </div>
                     );
                 })}
 

@@ -56,6 +56,31 @@ export async function getLeads() {
 export async function updateLeadStage(id: string, stage: string) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
+    
+    // Get the lead to check if it's already converted
+    const lead = await db.query.leads.findFirst({
+        where: and(eq(leads.id, id), eq(leads.trainerId, userId)),
+    });
+    
+    if (!lead) throw new Error("Lead not found");
+    
+    // Prevent moving converted leads back to pipeline stages
+    if (lead.studentId) {
+        // Only allow moving between won/lost for converted leads
+        const allowedStages = ['won', 'lost'];
+        const currentStage = lead.pipelineStage || 'new';
+        
+        if (!allowedStages.includes(currentStage) || !allowedStages.includes(stage)) {
+            console.log('⚠️ Cannot move converted lead back to pipeline:', {
+                leadId: id,
+                currentStage,
+                attemptedStage: stage,
+                studentId: lead.studentId
+            });
+            throw new Error("Este lead já foi convertido em aluno e não pode retornar ao pipeline. Para ajustar, edite o aluno diretamente.");
+        }
+    }
+    
     await db.update(leads)
         .set({ pipelineStage: stage, status: stage, updatedAt: new Date() })
         .where(and(eq(leads.id, id), eq(leads.trainerId, userId)));
@@ -136,15 +161,37 @@ export async function convertLeadToStudent(leadId: string, planId: string, start
 
     if (!lead) throw new Error("Lead not found");
 
+    // Check if lead was already converted to prevent duplicates
+    if (lead.studentId) {
+        console.log('⚠️ Lead already converted to student:', lead.studentId);
+        
+        // Return the existing student instead of creating a duplicate
+        const existingStudent = await db.query.students.findFirst({
+            where: eq(students.id, lead.studentId),
+        });
+        
+        if (existingStudent) {
+            return { 
+                success: true, 
+                studentId: existingStudent.id, 
+                inviteToken: existingStudent.inviteToken,
+                alreadyConverted: true
+            };
+        }
+        
+        // If student doesn't exist anymore (edge case), allow re-conversion
+        console.log('⚠️ Student record not found, allowing re-conversion');
+    }
+
     // Use the planId from lead if available, otherwise use the provided one
     const finalPlanId = lead.planId || planId;
 
-    // Create Student linked to Plan
+    // Create Student linked to Plan with INACTIVE status (awaiting activation)
     const [newStudent] = await db.insert(students).values({
         trainerId: userId,
         name: lead.name,
         phone: lead.phone,
-        active: true,
+        active: false, // ⚠️ CHANGED: Student starts inactive, activates on first login
         inviteToken: crypto.randomUUID(),
         planId: finalPlanId,
         planEnd: new Date(new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)), // Default 1 month, should fetch plan duration ideally
@@ -183,9 +230,13 @@ export async function convertLeadToStudent(leadId: string, planId: string, start
         });
     }
 
-    // Update Lead to 'won'
+    // Update Lead to 'won' and link to student to prevent duplicate conversions
     await db.update(leads)
-        .set({ pipelineStage: 'won', status: 'converted' })
+        .set({ 
+            pipelineStage: 'won', 
+            status: 'converted',
+            studentId: newStudent.id // ⚠️ ADDED: Link lead to student
+        })
         .where(eq(leads.id, leadId));
 
     revalidatePath("/dashboard/sales");

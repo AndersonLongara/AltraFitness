@@ -21,6 +21,8 @@ interface Lead {
     socialHandle?: string | null;
     stageData?: Record<string, any> | null;
     createdAt?: Date | string | null;
+    status?: string | null;
+    studentId?: string | null;
 }
 
 const COLUMNS = [
@@ -104,6 +106,13 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
         console.log('🔄 Drag end:', { leadId, newStage, currentStage: currentLead?.pipelineStage });
 
         if (currentLead && currentLead.pipelineStage !== newStage) {
+            // Block moving converted leads back to pipeline stages
+            if (currentLead.studentId) {
+                console.log('⚠️ Cannot move converted lead back:', currentLead.name);
+                setActiveId(null);
+                return;
+            }
+
             // Optimistic Update
             setLeads((prev) => prev.map(l =>
                 l.id === leadId ? { ...l, pipelineStage: newStage } : l

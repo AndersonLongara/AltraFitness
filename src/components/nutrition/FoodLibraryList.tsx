@@ -2,8 +2,9 @@
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
-import { MagnifyingGlass, Plus, Trash, PencilSimple, CheckCircle, Warning, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { MagnifyingGlass, Plus, Trash, PencilSimple, CheckCircle, Warning, CaretLeft, CaretRight, Heart } from "@phosphor-icons/react";
 import { searchFoods } from "@/app/actions/dietUtils";
+import { toggleFavoriteFood } from "@/app/actions/favorites";
 import { useDebounce } from "@/hooks/useDebounce";
 
 interface Food {
@@ -19,10 +20,18 @@ interface Food {
     category?: string | null;
 }
 
+interface FoodLibraryListProps {
+    initialFoods: Food[];
+    favoriteFoodIds: string[];
+    favoriteFoods: Food[];
+}
+
 const ITEMS_PER_PAGE = 10;
 
-export default function FoodLibraryList({ initialFoods }: { initialFoods: Food[] }) {
-    const [activeTab, setActiveTab] = useState<'my_foods' | 'system'>('my_foods');
+export default function FoodLibraryList({ initialFoods, favoriteFoodIds, favoriteFoods }: FoodLibraryListProps) {
+    const [activeTab, setActiveTab] = useState<'my_foods' | 'favorites' | 'system'>('my_foods');
+    const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set(favoriteFoodIds));
+    const [togglingId, setTogglingId] = useState<string | null>(null);
     const [search, setSearch] = useState("");
     const [debouncedSearch] = useDebounce(search, 500);
     const [systemFoods, setSystemFoods] = useState<Food[]>([]);
@@ -39,6 +48,11 @@ export default function FoodLibraryList({ initialFoods }: { initialFoods: Food[]
         f.name.toLowerCase().includes(search.toLowerCase())
     );
 
+    // Client-side filter for Favorites
+    const filteredFavorites = favoriteFoods.filter(f =>
+        f.name.toLowerCase().includes(search.toLowerCase())
+    );
+
     // Server-side search for System Foods
     useEffect(() => {
         if (activeTab === 'system' && debouncedSearch.length >= 2) {
@@ -49,8 +63,28 @@ export default function FoodLibraryList({ initialFoods }: { initialFoods: Food[]
         }
     }, [activeTab, debouncedSearch]);
 
+    const handleToggleFavorite = async (foodId: string) => {
+        setTogglingId(foodId);
+        try {
+            const result = await toggleFavoriteFood(foodId);
+            setFavoriteIds(prev => {
+                const next = new Set(prev);
+                if (result.favorited) {
+                    next.add(foodId);
+                } else {
+                    next.delete(foodId);
+                }
+                return next;
+            });
+        } catch (e) {
+            console.error('Erro ao favoritar alimento:', e);
+        } finally {
+            setTogglingId(null);
+        }
+    };
+
     // Pagination logic
-    const currentFoods = activeTab === 'my_foods' ? filteredMyFoods : systemFoods;
+    const currentFoods = activeTab === 'my_foods' ? filteredMyFoods : activeTab === 'favorites' ? filteredFavorites : systemFoods;
     const totalPages = Math.ceil(currentFoods.length / ITEMS_PER_PAGE);
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -71,6 +105,13 @@ export default function FoodLibraryList({ initialFoods }: { initialFoods: Food[]
                     className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors ${activeTab === 'my_foods' ? 'border-graphite-dark dark:border-emerald-500 text-graphite-dark dark:text-white' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white'}`}
                 >
                     Meus Alimentos ({filteredMyFoods.length})
+                </button>
+                <button
+                    onClick={() => setActiveTab('favorites')}
+                    className={`px-4 py-3 text-sm font-bold border-b-2 transition-colors flex items-center gap-1.5 ${activeTab === 'favorites' ? 'border-rose-500 dark:border-rose-400 text-rose-600 dark:text-rose-400' : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white'}`}
+                >
+                    <Heart size={16} weight={activeTab === 'favorites' ? 'fill' : 'bold'} />
+                    Favoritos ({favoriteIds.size})
                 </button>
                 <button
                     onClick={() => setActiveTab('system')}
@@ -95,8 +136,22 @@ export default function FoodLibraryList({ initialFoods }: { initialFoods: Food[]
             {/* List */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {paginatedFoods.map((food) => (
-                    <div key={food.id} className="bg-white dark:bg-[#1E2A36] p-5 rounded-2xl border border-slate-100 dark:border-white/10 hover:border-emerald-200 dark:hover:border-emerald-500/50 hover:shadow-md dark:hover:shadow-none transition-all group">
-                        <div className="flex justify-between items-start mb-2">
+                    <div key={food.id} className="bg-white dark:bg-[#1E2A36] p-5 rounded-2xl border border-slate-100 dark:border-white/10 hover:border-emerald-200 dark:hover:border-emerald-500/50 hover:shadow-md dark:hover:shadow-none transition-all group relative">
+                        {/* Favorite button */}
+                        <button
+                            onClick={() => handleToggleFavorite(food.id)}
+                            disabled={togglingId === food.id}
+                            className={`absolute top-3 right-3 p-1.5 rounded-lg transition-all ${
+                                favoriteIds.has(food.id)
+                                    ? 'text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20'
+                                    : 'text-slate-300 dark:text-slate-600 hover:text-rose-400 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/20 opacity-0 group-hover:opacity-100'
+                            } ${togglingId === food.id ? 'animate-pulse' : ''}`}
+                            title={favoriteIds.has(food.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                        >
+                            <Heart size={18} weight={favoriteIds.has(food.id) ? 'fill' : 'bold'} />
+                        </button>
+
+                        <div className="flex justify-between items-start mb-2 pr-8">
                             <h4 className="font-bold text-slate-700 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors line-clamp-2">
                                 {food.name}
                             </h4>
@@ -152,6 +207,13 @@ export default function FoodLibraryList({ initialFoods }: { initialFoods: Food[]
                 {activeTab === 'my_foods' && filteredMyFoods.length === 0 && (
                     <div className="col-span-full py-12 text-center text-slate-400 dark:text-slate-500">
                         {search ? "Nenhum alimento encontrado." : "Você ainda não criou alimentos personalizados."}
+                    </div>
+                )}
+
+                {activeTab === 'favorites' && filteredFavorites.length === 0 && (
+                    <div className="col-span-full py-12 text-center text-slate-400 dark:text-slate-500">
+                        <Heart size={32} weight="bold" className="mx-auto mb-2 text-slate-300 dark:text-slate-600" />
+                        {search ? "Nenhum favorito encontrado." : "Nenhum alimento favoritado ainda. Clique no ❤️ para salvar."}
                     </div>
                 )}
             </div>

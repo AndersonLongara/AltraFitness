@@ -3,9 +3,9 @@ import { ArrowLeft, Plus } from "@phosphor-icons/react/dist/ssr";
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import Link from "next/link";
 import { db } from "@/db";
-import { foods } from "@/db/schema";
+import { foods, favoriteFoods } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
-import { eq, desc, isNull, or } from "drizzle-orm";
+import { eq, desc, isNull, or, inArray } from "drizzle-orm";
 import FoodLibraryList from "@/components/nutrition/FoodLibraryList";
 
 export const dynamic = 'force-dynamic';
@@ -14,10 +14,22 @@ export default async function FoodLibraryPage() {
     const { userId } = await auth();
     if (!userId) return null;
 
-    // Fetch only trainer's custom foods initially
-    const myFoods = await db.select().from(foods).where(
-        eq(foods.trainerId, userId)
-    ).orderBy(desc(foods.createdAt));
+    // Fetch trainer's custom foods + favorite food IDs in parallel
+    const [myFoods, favRows] = await Promise.all([
+        db.select().from(foods).where(
+            eq(foods.trainerId, userId)
+        ).orderBy(desc(foods.createdAt)),
+        db.select({ foodId: favoriteFoods.foodId })
+            .from(favoriteFoods)
+            .where(eq(favoriteFoods.trainerId, userId)),
+    ]);
+
+    const favoriteFoodIds = favRows.map(r => r.foodId);
+
+    // Fetch full favorite foods data
+    const favFoods = favoriteFoodIds.length > 0
+        ? await db.select().from(foods).where(inArray(foods.id, favoriteFoodIds))
+        : [];
 
     return (
         <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
@@ -45,7 +57,11 @@ export default async function FoodLibraryPage() {
                     </button>
                 </header>
 
-                <FoodLibraryList initialFoods={myFoods as any[]} />
+                <FoodLibraryList
+                    initialFoods={myFoods as any[]}
+                    favoriteFoodIds={favoriteFoodIds}
+                    favoriteFoods={favFoods as any[]}
+                />
             </main>
         </div>
     );

@@ -110,6 +110,7 @@ export const leads = sqliteTable('leads', {
     stageData: text('stage_data', { mode: 'json' }).$type<Record<string, any>>(), // Dynamic fields per stage
     lastContactAt: integer('last_contact_at', { mode: 'timestamp' }),
     planId: text('plan_id').references(() => plans.id), // The service plan that will be offered to the lead
+    studentId: text('student_id').references(() => students.id), // Link to student if converted (prevents duplicate conversion)
 
     status: text('status').default('new'), // Deprecated/Legacy, kept for backward compatibility if needed, or alias to stage
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
@@ -350,6 +351,10 @@ export const leadsRelations = relations(leads, ({ one, many }) => ({
     plan: one(plans, {
         fields: [leads.planId],
         references: [plans.id],
+    }),
+    student: one(students, {
+        fields: [leads.studentId],
+        references: [students.id],
     }),
     formAssignments: many(leadForms),
 }));
@@ -829,6 +834,46 @@ export const pipelineConfigsRelations = relations(pipelineConfigs, ({ one }) => 
     }),
 }));
 
+// --- Favorites Module ---
+
+// Favorite Foods (trainer saves foods from TACO/TBCA or custom as favorites)
+export const favoriteFoods = sqliteTable('favorite_foods', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    trainerId: text('trainer_id').notNull().references(() => trainers.id, { onDelete: 'cascade' }),
+    foodId: text('food_id').notNull().references(() => foods.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
+// Favorite Exercises (trainer saves exercises as favorites)
+export const favoriteExercises = sqliteTable('favorite_exercises', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    trainerId: text('trainer_id').notNull().references(() => trainers.id, { onDelete: 'cascade' }),
+    exerciseId: text('exercise_id').notNull().references(() => exercises.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
+export const favoriteFoodsRelations = relations(favoriteFoods, ({ one }) => ({
+    trainer: one(trainers, {
+        fields: [favoriteFoods.trainerId],
+        references: [trainers.id],
+    }),
+    food: one(foods, {
+        fields: [favoriteFoods.foodId],
+        references: [foods.id],
+    }),
+}));
+
+export const favoriteExercisesRelations = relations(favoriteExercises, ({ one }) => ({
+    trainer: one(trainers, {
+        fields: [favoriteExercises.trainerId],
+        references: [trainers.id],
+    }),
+    exercise: one(exercises, {
+        fields: [favoriteExercises.exerciseId],
+        references: [exercises.id],
+    }),
+}));
+
 // Students relations: definido após studentForms para evitar referencedTable undefined (TDZ)
 export const studentsRelations = relations(students, ({ one, many }) => ({
     trainer: one(trainers, {
@@ -919,4 +964,8 @@ export const schema = {
     leadFormAnswersRelations,
     pipelineConfigs,
     pipelineConfigsRelations,
+    favoriteFoods,
+    favoriteExercises,
+    favoriteFoodsRelations,
+    favoriteExercisesRelations,
 };

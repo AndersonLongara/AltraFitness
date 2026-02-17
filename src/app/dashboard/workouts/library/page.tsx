@@ -2,7 +2,7 @@ import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 import Link from "next/link";
 import { db } from "@/db";
-import { exercises } from "@/db/schema";
+import { exercises, favoriteExercises } from "@/db/schema";
 import { auth } from "@clerk/nextjs/server";
 import { eq, or, isNull } from "drizzle-orm";
 import ExerciseLibraryList from "@/components/workouts/ExerciseLibraryList";
@@ -14,7 +14,7 @@ export default async function ExerciseLibraryPage() {
     const { userId } = await auth();
     if (!userId) return null;
 
-    const [dbExercises, filterCategories, muscleGroups] = await Promise.all([
+    const [dbExercises, filterCategories, muscleGroups, favRows] = await Promise.all([
         db.select({
             id: exercises.id,
             trainerId: exercises.trainerId,
@@ -31,7 +31,12 @@ export default async function ExerciseLibraryPage() {
         ),
         getFilterCategories(),
         getExerciseCategories(),
+        db.select({ exerciseId: favoriteExercises.exerciseId })
+            .from(favoriteExercises)
+            .where(eq(favoriteExercises.trainerId, userId)),
     ]);
+
+    const favoriteExerciseIds = favRows.map(r => r.exerciseId);
 
     return (
         <div className="min-h-screen bg-ice-white dark:bg-[#131B23] pl-0 md:pl-24 pb-24">
@@ -58,6 +63,7 @@ export default async function ExerciseLibraryPage() {
                     initialExercises={dbExercises}
                     categories={filterCategories}
                     muscleGroups={muscleGroups}
+                    favoriteExerciseIds={favoriteExerciseIds}
                 />
             </main>
         </div>

@@ -130,8 +130,14 @@ export default function StudentProfileTabs({
                         <div>
                             <h2 className="text-3xl font-extrabold text-graphite-dark dark:text-white">{student.name}</h2>
                             <div className="flex items-center gap-2 mt-2">
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${student.active ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-400'}`}>
-                                    {student.active ? 'Ativo' : 'Inativo'}
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-bold ${
+                                    student.active 
+                                        ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-400' 
+                                        : student.inviteToken 
+                                            ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-400'
+                                            : 'bg-rose-100 dark:bg-rose-500/20 text-rose-800 dark:text-rose-400'
+                                }`}>
+                                    {student.active ? 'Ativo' : student.inviteToken ? 'Aguardando Ativação' : 'Inativo'}
                                 </span>
                                 <span className="text-slate-400 dark:text-slate-500 text-sm">• {student.email || 'Sem e-mail'}</span>
                                 {student.plan && (

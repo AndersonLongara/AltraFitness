@@ -95,8 +95,14 @@ export default function StudentsPageContent({ studentsList, plansList = [], stud
                         <div key={student.id} className="bg-white dark:bg-[#1E2A36] p-6 rounded-3xl soft-shadow border border-slate-100 dark:border-white/10 hover:border-emerald-100 dark:hover:border-emerald-500/30 transition-all group relative overflow-hidden">
                             {/* Status Badge */}
                             <div className="absolute top-6 right-6">
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${student.active ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400'}`}>
-                                    {student.active ? 'Ativo' : 'Inativo'}
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide ${
+                                    student.active 
+                                        ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+                                        : student.inviteToken 
+                                            ? 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400'
+                                            : 'bg-rose-100 dark:bg-rose-500/20 text-rose-600 dark:text-rose-400'
+                                }`}>
+                                    {student.active ? 'Ativo' : student.inviteToken ? 'Aguardando Ativação' : 'Inativo'}
                                 </span>
                             </div>
 
