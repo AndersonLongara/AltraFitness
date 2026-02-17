@@ -32,6 +32,7 @@ const STAGE_FIELDS: Record<string, { key: string; label: string; type: 'text' | 
         { key: 'sourceDetail', label: 'Detalhe da Origem', type: 'text' }
     ],
     'contacted': [
+        { key: 'clientWhatsApp', label: 'WhatsApp do Cliente', type: 'tel', required: true },
         { key: 'contactAttempts', label: 'Tentativas de Contato', type: 'number' },
         { key: 'bestTime', label: 'Melhor Horário', type: 'text' },
         { key: 'responseSummary', label: 'Resumo da Resposta', type: 'textarea' }
