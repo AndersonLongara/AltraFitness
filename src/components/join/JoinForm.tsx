@@ -23,11 +23,6 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
     const [error, setError] = useState<string | null>(null);
 
     // Set invite token cookie on mount (for OAuth redirect detection)
-    // Set it immediately and in useEffect to ensure it's always present
-    if (typeof window !== 'undefined') {
-        document.cookie = `invite_token=${token}; path=/; max-age=3600; samesite=lax`;
-    }
-    
     useEffect(() => {
         document.cookie = `invite_token=${token}; path=/; max-age=3600; samesite=lax`;
         console.log('[JoinForm] Set invite_token cookie:', token);

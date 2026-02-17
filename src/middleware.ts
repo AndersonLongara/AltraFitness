@@ -32,17 +32,9 @@ export default clerkMiddleware(async (auth, req) => {
         return NextResponse.next();
     }
 
-    // Special handling for /auth-redirect and /onboarding to preserve invite_token
+    // Auth-only routes pass through without protection
     if (isAuthOnlyRoute(req)) {
-        const url = req.nextUrl.clone();
-        const inviteTokenParam = url.searchParams.get('invite_token');
-        const inviteTokenCookie = req.cookies.get('invite_token')?.value;
-        
-        // If there's a cookie but no query param, add it to the URL
-        if (!inviteTokenParam && inviteTokenCookie) {
-            url.searchParams.set('invite_token', inviteTokenCookie);
-            return NextResponse.rewrite(url);
-        }
+        return NextResponse.next();
     }
 
     // Protect all other routes
