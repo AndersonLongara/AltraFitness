@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { leadForms, leadFormAnswers, forms, formQuestions, leads } from "@/db/schema";
+import { leadForms, leadFormAnswers, forms, formQuestions, leads, pipelineConfigs } from "@/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getCurrentTrainer } from "@/lib/auth-helpers";
 
@@ -179,36 +179,48 @@ export async function getLeadQuestionnaireTemplates() {
 }
 
 /**
- * Auto-assign forms when a lead moves to a specific stage
+ * Auto-assign forms when a lead moves to a specific stage (based on pipeline configs)
  */
 export async function assignFormToLeadOnStageChange(leadId: string, newStage: string) {
-    const trainer = await getCurrentTrainer();
+    // Get the lead to find the trainer
+    const lead = await db.query.leads.findFirst({
+        where: eq(leads.id, leadId)
+    });
     
-    // Only auto-assign for "scheduled" stage
-    if (newStage !== 'scheduled') return;
+    if (!lead) return;
     
-    // Find forms with trigger type "on_scheduled"
-    const autoForms = await db.query.forms.findMany({
+    // Check if there's a pipeline config for this stage
+    const config = await db.query.pipelineConfigs.findFirst({
         where: and(
-            eq(forms.trainerId, trainer.id),
-            eq(forms.type, 'lead_questionnaire'),
-            eq(forms.triggerType, 'on_scheduled'),
-            eq(forms.isActive, true)
+            eq(pipelineConfigs.trainerId, lead.trainerId),
+            eq(pipelineConfigs.pipelineStage, newStage),
+            eq(pipelineConfigs.isActive, true)
+        ),
+        with: {
+            form: true
+        }
+    });
+    
+    // If no config or no form assigned, return
+    if (!config || !config.formId) return;
+    
+    // Check if already assigned
+    const existing = await db.query.leadForms.findFirst({
+        where: and(
+            eq(leadForms.leadId, leadId),
+            eq(leadForms.formId, config.formId)
         )
     });
     
-    // Assign all auto-trigger forms
-    for (const form of autoForms) {
-        // Check if already assigned
-        const existing = await db.query.leadForms.findFirst({
-            where: and(
-                eq(leadForms.leadId, leadId),
-                eq(leadForms.formId, form.id)
-            )
-        });
-        
-        if (!existing) {
-            await assignFormToLead(form.id, leadId);
-        }
-    }
+    if (existing) return;
+    
+    // Assign the form
+    await db.insert(leadForms).values({
+        leadId,
+        formId: config.formId,
+        token: crypto.randomUUID(),
+        status: 'pending',
+        assignedAt: new Date(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days
+    });
 }

@@ -735,6 +735,17 @@ export const leadFormAnswers = sqliteTable('lead_form_answers', {
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
+// Pipeline Configurations - Define which questionnaire to use for each pipeline stage
+export const pipelineConfigs = sqliteTable('pipeline_configs', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    trainerId: text('trainer_id').notNull().references(() => trainers.id, { onDelete: 'cascade' }),
+    pipelineStage: text('pipeline_stage').notNull(), // 'new', 'contacted', 'scheduled', 'negotiation', 'won', 'lost'
+    formId: text('form_id').references(() => forms.id, { onDelete: 'set null' }), // null = no auto-assign
+    isActive: integer('is_active', { mode: 'boolean' }).default(true),
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+    updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
 // Relations for Forms
 export const formsRelations = relations(forms, ({ one, many }) => ({
     trainer: one(trainers, {
@@ -796,6 +807,17 @@ export const leadFormAnswersRelations = relations(leadFormAnswers, ({ one }) => 
     question: one(formQuestions, {
         fields: [leadFormAnswers.questionId],
         references: [formQuestions.id],
+    }),
+}));
+
+export const pipelineConfigsRelations = relations(pipelineConfigs, ({ one }) => ({
+    trainer: one(trainers, {
+        fields: [pipelineConfigs.trainerId],
+        references: [trainers.id],
+    }),
+    form: one(forms, {
+        fields: [pipelineConfigs.formId],
+        references: [forms.id],
     }),
 }));
 
@@ -887,4 +909,6 @@ export const schema = {
     leadFormAnswers,
     leadFormsRelations,
     leadFormAnswersRelations,
+    pipelineConfigs,
+    pipelineConfigsRelations,
 };

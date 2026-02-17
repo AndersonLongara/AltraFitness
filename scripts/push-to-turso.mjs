@@ -476,9 +476,22 @@ const statements = [
     FOREIGN KEY (\`question_id\`) REFERENCES \`form_questions\`(\`id\`) ON UPDATE no action ON DELETE no action
   )`,
 
+  // 30. pipeline_configs
+  `CREATE TABLE IF NOT EXISTS \`pipeline_configs\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`trainer_id\` text NOT NULL,
+    \`pipeline_stage\` text NOT NULL,
+    \`form_id\` text,
+    \`is_active\` integer DEFAULT 1,
+    \`created_at\` integer DEFAULT (strftime('%s', 'now')),
+    \`updated_at\` integer DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (\`trainer_id\`) REFERENCES \`trainers\`(\`id\`) ON UPDATE no action ON DELETE cascade,
+    FOREIGN KEY (\`form_id\`) REFERENCES \`forms\`(\`id\`) ON UPDATE no action ON DELETE set null
+  )`,
+
   // ===== Tables added in migrations 0003-0011 =====
 
-  // 28. user_roles
+  // 31. user_roles
   `CREATE TABLE IF NOT EXISTS \`user_roles\` (
     \`user_id\` text PRIMARY KEY NOT NULL,
     \`role\` text NOT NULL,
