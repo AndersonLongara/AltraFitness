@@ -89,6 +89,11 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                 fetchQuestionnaires();
                 fetchLeadForms();
             }
+            
+            // Fetch lead forms responses for negotiation stage
+            if (lead.pipelineStage === 'negotiation') {
+                fetchLeadForms();
+            }
         }
     }, [lead]);
     
@@ -618,6 +623,74 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                         </div>
                                     </>
                                 )}
+                            </>
+                        )}
+
+                        {/* Questionnaire Responses Section for Negotiation Stage */}
+                        {currentStage === 'negotiation' && leadForms.length > 0 && (
+                            <>
+                                <hr className="border-slate-100 dark:border-white/10" />
+                                
+                                {/* Info Banner */}
+                                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-2xl p-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-blue-100 dark:bg-blue-500/20 rounded-lg">
+                                            <ChatCenteredText size={24} weight="fill" className="text-blue-600 dark:text-blue-400" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="text-sm font-bold text-blue-900 dark:text-blue-100 mb-1">Informações do Cliente</h4>
+                                            <p className="text-xs text-blue-700 dark:text-blue-300">
+                                                Consulte abaixo as respostas dos questionários do cliente para personalizar sua negociação.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4">
+                                        Respostas dos Questionários
+                                    </h3>
+                                    <div className="space-y-2">
+                                        {leadForms.map((lf) => (
+                                            <details key={lf.id} className="bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl overflow-hidden" open={lf.status === 'completed'}>
+                                                <summary className="p-4 cursor-pointer flex items-center justify-between hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        {lf.status === 'completed' ? (
+                                                            <CheckCircle size={20} weight="fill" className="text-emerald-500" />
+                                                        ) : (
+                                                            <Clock size={20} weight="bold" className="text-amber-500" />
+                                                        )}
+                                                        <div>
+                                                            <p className="font-bold text-graphite-dark dark:text-white">{lf.form.title}</p>
+                                                            <p className="text-xs text-slate-400 dark:text-slate-500">
+                                                                {lf.status === 'completed' 
+                                                                    ? `Respondido em ${new Date(lf.completedAt).toLocaleDateString('pt-BR')}`
+                                                                    : 'Aguardando resposta'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                                        lf.status === 'completed' 
+                                                            ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'
+                                                            : 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400'
+                                                    }`}>
+                                                        {lf.status === 'completed' ? 'Completo' : 'Pendente'}
+                                                    </span>
+                                                </summary>
+                                                {lf.status === 'completed' && (
+                                                    <div className="p-4 border-t border-slate-200 dark:border-white/10 space-y-4 bg-white dark:bg-[#1E2A36]">
+                                                        {lf.answers.map((answer: any) => (
+                                                            <div key={answer.id} className="p-3 bg-slate-50 dark:bg-white/5 rounded-lg">
+                                                                <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">{answer.question.question}</p>
+                                                                <p className="text-sm text-graphite-dark dark:text-white font-medium">{answer.answer}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </details>
+                                        ))}
+                                    </div>
+                                </div>
                             </>
                         )}
 
