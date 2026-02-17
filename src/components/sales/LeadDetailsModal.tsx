@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp } from "@phosphor-icons/react";
+import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp, ChatCenteredText, PaperPlaneRight, CheckCircle, Clock } from "@phosphor-icons/react";
 import Image from "next/image";
 import { updateLeadStageData, updateLeadMetadata } from "@/app/actions/leads";
+import { getLeadQuestionnaireTemplates, getLeadFormResponses, assignFormToLead } from "@/app/actions/lead-forms";
 
 interface Lead {
     id: string;
@@ -58,14 +59,66 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
     const [estimatedValue, setEstimatedValue] = useState<string>("");
     const [temperature, setTemperature] = useState<string>("warm");
     const [isSaving, setIsSaving] = useState(false);
+    
+    // Lead questionnaire state
+    const [questionnaires, setQuestionnaires] = useState<any[]>([]);
+    const [selectedQuestionnaireId, setSelectedQuestionnaireId] = useState<string>("");
+    const [leadForms, setLeadForms] = useState<any[]>([]);
+    const [isSendingForm, setIsSendingForm] = useState(false);
 
     useEffect(() => {
         if (lead) {
             setFormData(lead.stageData || {});
             setEstimatedValue(lead.estimatedValue?.toString() || "");
             setTemperature(lead.temperature || "warm");
+            
+            // Fetch questionnaires and lead forms
+            if (lead.pipelineStage === 'scheduled') {
+                fetchQuestionnaires();
+                fetchLeadForms();
+            }
         }
     }, [lead]);
+    
+    const fetchQuestionnaires = async () => {
+        try {
+            const templates = await getLeadQuestionnaireTemplates();
+            setQuestionnaires(templates);
+            if (templates.length > 0) {
+                setSelectedQuestionnaireId(templates[0].id);
+            }
+        } catch (error) {
+            console.error("Failed to fetch questionnaires", error);
+        }
+    };
+    
+    const fetchLeadForms = async () => {
+        if (!lead) return;
+        try {
+            const forms = await getLeadFormResponses(lead.id);
+            setLeadForms(forms);
+        } catch (error) {
+            console.error("Failed to fetch lead forms", error);
+        }
+    };
+    
+    const handleSendQuestionnaire = async () => {
+        if (!lead || !selectedQuestionnaireId) return;
+        setIsSendingForm(true);
+        try {
+            const { token } = await assignFormToLead(selectedQuestionnaireId, lead.id);
+            const link = `${window.location.origin}/f/${token}`;
+            const message = `Olá ${lead.name}! Para melhor prepararmos nosso atendimento, por favor preencha este breve questionário: ${link}`;
+            const whatsappUrl = `https://wa.me/55${lead.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+            await fetchLeadForms(); // Refresh the list
+        } catch (error) {
+            console.error("Failed to send questionnaire", error);
+            alert("Erro ao enviar questionário");
+        } finally {
+            setIsSendingForm(false);
+        }
+    };
 
     if (!lead) return null;
 
@@ -211,6 +264,91 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                 )}
                             </div>
                         </div>
+
+                        {/* Lead Questionnaire Section (only for scheduled stage) */}
+                        {currentStage === 'scheduled' && (
+                            <>
+                                <hr className="border-slate-100" />
+                                <div>
+                                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                        <ChatCenteredText size={16} /> Questionário Pré-Reunião
+                                    </h3>
+
+                                    {questionnaires.length > 0 ? (
+                                        <div className="space-y-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
+                                                <select
+                                                    value={selectedQuestionnaireId}
+                                                    onChange={(e) => setSelectedQuestionnaireId(e.target.value)}
+                                                    className="px-4 py-3 bg-slate-50 rounded-xl font-medium text-graphite-dark outline-none focus:ring-2 focus:ring-emerald-100"
+                                                >
+                                                    {questionnaires.map(q => (
+                                                        <option key={q.id} value={q.id}>{q.title}</option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={handleSendQuestionnaire}
+                                                    disabled={isSendingForm || !lead.phone}
+                                                    className="px-6 py-3 bg-emerald-500 text-white font-bold rounded-xl hover:bg-emerald-600 disabled:opacity-50 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                                                >
+                                                    <PaperPlaneRight size={20} weight="bold" />
+                                                    Enviar via WhatsApp
+                                                </button>
+                                            </div>
+
+                                            {/* List of Sent Forms */}
+                                            {leadForms.length > 0 && (
+                                                <div className="space-y-2">
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Formulários Enviados</p>
+                                                    {leadForms.map((lf) => (
+                                                        <details key={lf.id} className="bg-slate-50 rounded-xl overflow-hidden">
+                                                            <summary className="p-4 cursor-pointer flex items-center justify-between hover:bg-slate-100 transition-colors">
+                                                                <div className="flex items-center gap-3">
+                                                                    {lf.status === 'completed' ? (
+                                                                        <CheckCircle size={20} weight="fill" className="text-emerald-500" />
+                                                                    ) : (
+                                                                        <Clock size={20} weight="bold" className="text-amber-500" />
+                                                                    )}
+                                                                    <div>
+                                                                        <p className="font-bold text-graphite-dark">{lf.form.title}</p>
+                                                                        <p className="text-xs text-slate-400">
+                                                                            {lf.status === 'completed' 
+                                                                                ? `Respondido em ${new Date(lf.completedAt).toLocaleDateString('pt-BR')}`
+                                                                                : 'Aguardando resposta'}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                                                    lf.status === 'completed' 
+                                                                        ? 'bg-emerald-100 text-emerald-700'
+                                                                        : 'bg-amber-100 text-amber-700'
+                                                                }`}>
+                                                                    {lf.status === 'completed' ? 'Completo' : 'Pendente'}
+                                                                </span>
+                                                            </summary>
+                                                            {lf.status === 'completed' && (
+                                                                <div className="p-4 border-t border-slate-200 space-y-3 bg-white">
+                                                                    {lf.answers.map((answer: any) => (
+                                                                        <div key={answer.id}>
+                                                                            <p className="text-xs font-bold text-slate-500">{answer.question.question}</p>
+                                                                            <p className="text-sm text-graphite-dark mt-1">{answer.answer}</p>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </details>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-slate-400 italic text-sm">
+                                            Nenhum questionário disponível. <a href="/dashboard/forms/new" className="text-emerald-600 hover:underline font-bold">Criar questionário</a>
+                                        </p>
+                                    )}
+                                </div>
+                            </>
+                        )}
 
                         {/* Actions */}
                         <div className="flex justify-end pt-2">

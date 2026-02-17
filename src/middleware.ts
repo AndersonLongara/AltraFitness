@@ -8,6 +8,7 @@ const isPublicRoute = createRouteMatcher([
     "/sign-up(.*)",
     "/api/webhooks(.*)",
     "/join(.*)",
+    "/f(.*)", // Lead questionnaire forms
 ]);
 
 // Routes that require auth but no specific role

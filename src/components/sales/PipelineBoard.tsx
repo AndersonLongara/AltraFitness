@@ -5,6 +5,7 @@ import { DndContext, DragOverlay, useSensor, useSensors, PointerSensor, DragStar
 import PipelineColumn from "./PipelineColumn";
 import LeadCard from "./LeadCard";
 import { updateLeadStage, convertLead } from "@/app/actions/leads";
+import { assignFormToLeadOnStageChange } from "@/app/actions/lead-forms";
 
 interface Lead {
     id: string;
@@ -74,6 +75,9 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
             // Server Action
             try {
                 await updateLeadStage(leadId, newStage);
+                
+                // Auto-assign questionnaires when moving to scheduled
+                await assignFormToLeadOnStageChange(leadId, newStage);
 
                 // Trigger conversion if dropped in 'won'
                 if (newStage === 'won') {

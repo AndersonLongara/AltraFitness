@@ -451,6 +451,31 @@ const statements = [
     FOREIGN KEY (\`question_id\`) REFERENCES \`form_questions\`(\`id\`) ON UPDATE no action ON DELETE no action
   )`,
 
+  // 28. lead_forms
+  `CREATE TABLE IF NOT EXISTS \`lead_forms\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`lead_id\` text NOT NULL,
+    \`form_id\` text NOT NULL,
+    \`token\` text NOT NULL UNIQUE,
+    \`status\` text DEFAULT 'pending',
+    \`assigned_at\` integer DEFAULT (strftime('%s', 'now')),
+    \`completed_at\` integer,
+    \`expires_at\` integer,
+    FOREIGN KEY (\`lead_id\`) REFERENCES \`leads\`(\`id\`) ON UPDATE no action ON DELETE cascade,
+    FOREIGN KEY (\`form_id\`) REFERENCES \`forms\`(\`id\`) ON UPDATE no action ON DELETE cascade
+  )`,
+
+  // 29. lead_form_answers
+  `CREATE TABLE IF NOT EXISTS \`lead_form_answers\` (
+    \`id\` text PRIMARY KEY NOT NULL,
+    \`response_id\` text NOT NULL,
+    \`question_id\` text NOT NULL,
+    \`answer\` text,
+    \`created_at\` integer DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (\`response_id\`) REFERENCES \`lead_forms\`(\`id\`) ON UPDATE no action ON DELETE cascade,
+    FOREIGN KEY (\`question_id\`) REFERENCES \`form_questions\`(\`id\`) ON UPDATE no action ON DELETE no action
+  )`,
+
   // ===== Tables added in migrations 0003-0011 =====
 
   // 28. user_roles

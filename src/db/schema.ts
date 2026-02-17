@@ -340,11 +340,12 @@ export const trainersRelations = relations(trainers, ({ many }) => ({
     leads: many(leads),
 }));
 
-export const leadsRelations = relations(leads, ({ one }) => ({
+export const leadsRelations = relations(leads, ({ one, many }) => ({
     trainer: one(trainers, {
         fields: [leads.trainerId],
         references: [trainers.id],
     }),
+    formAssignments: many(leadForms),
 }));
 
 export const plansRelations = relations(plans, ({ one, many }) => ({
@@ -714,6 +715,26 @@ export const formAnswers = sqliteTable('form_answers', {
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
+// Lead Forms (Questionnaires for sales pipeline)
+export const leadForms = sqliteTable('lead_forms', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    leadId: text('lead_id').notNull().references(() => leads.id, { onDelete: 'cascade' }),
+    formId: text('form_id').notNull().references(() => forms.id, { onDelete: 'cascade' }),
+    token: text('token').notNull().unique(), // Public access token for /f/[token]
+    status: text('status').default('pending'), // 'pending', 'viewed', 'completed'
+    assignedAt: integer('assigned_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+    completedAt: integer('completed_at', { mode: 'timestamp' }),
+    expiresAt: integer('expires_at', { mode: 'timestamp' }), // Optional expiration
+});
+
+export const leadFormAnswers = sqliteTable('lead_form_answers', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    responseId: text('response_id').notNull().references(() => leadForms.id, { onDelete: 'cascade' }),
+    questionId: text('question_id').notNull().references(() => formQuestions.id),
+    answer: text('answer'), // Stored as string, parse based on question type
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
 // Relations for Forms
 export const formsRelations = relations(forms, ({ one, many }) => ({
     trainer: one(trainers, {
@@ -722,6 +743,7 @@ export const formsRelations = relations(forms, ({ one, many }) => ({
     }),
     questions: many(formQuestions),
     assignments: many(studentForms),
+    leadAssignments: many(leadForms),
 }));
 
 export const formQuestionsRelations = relations(formQuestions, ({ one }) => ({
@@ -750,6 +772,29 @@ export const formAnswersRelations = relations(formAnswers, ({ one }) => ({
     }),
     question: one(formQuestions, {
         fields: [formAnswers.questionId],
+        references: [formQuestions.id],
+    }),
+}));
+
+export const leadFormsRelations = relations(leadForms, ({ one, many }) => ({
+    lead: one(leads, {
+        fields: [leadForms.leadId],
+        references: [leads.id],
+    }),
+    form: one(forms, {
+        fields: [leadForms.formId],
+        references: [forms.id],
+    }),
+    answers: many(leadFormAnswers),
+}));
+
+export const leadFormAnswersRelations = relations(leadFormAnswers, ({ one }) => ({
+    response: one(leadForms, {
+        fields: [leadFormAnswers.responseId],
+        references: [leadForms.id],
+    }),
+    question: one(formQuestions, {
+        fields: [leadFormAnswers.questionId],
         references: [formQuestions.id],
     }),
 }));
@@ -838,4 +883,8 @@ export const schema = {
     formQuestionsRelations,
     studentFormsRelations,
     formAnswersRelations,
+    leadForms,
+    leadFormAnswers,
+    leadFormsRelations,
+    leadFormAnswersRelations,
 };
