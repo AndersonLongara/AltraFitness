@@ -61,6 +61,7 @@ const statements = [
     \`email\` text,
     \`cpf\` text,
     \`phone\` text,
+    \`instagram\` text,
     \`photo_url\` text,
     \`plan_id\` text REFERENCES plans(id),
     \`active\` integer DEFAULT true,
