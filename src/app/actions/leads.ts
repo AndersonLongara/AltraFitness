@@ -206,7 +206,7 @@ export async function convertLeadToStudent(leadId: string, planId: string, start
     revalidatePath('/dashboard/leads');
     revalidatePath('/dashboard/students');
 
-    return { success: true, studentId: newStudent.id };
+    return { success: true, studentId: newStudent.id, inviteToken: newStudent.inviteToken };
 }
 
 import { getInstagramProfile } from "@/services/instagram";
@@ -270,4 +270,20 @@ export async function getTrainerPlans() {
         where: and(eq(plans.trainerId, userId), eq(plans.active, true)),
         orderBy: [desc(plans.createdAt)],
     });
+}
+
+// Get student created from a converted lead
+export async function getStudentByLeadName(leadName: string) {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const student = await db.query.students.findFirst({
+        where: and(
+            eq(students.trainerId, userId),
+            eq(students.name, leadName)
+        ),
+        orderBy: [desc(students.createdAt)], // Get most recent
+    });
+
+    return student;
 }

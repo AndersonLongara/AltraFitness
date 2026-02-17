@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
 import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp, ChatCenteredText, PaperPlaneRight, CheckCircle, Clock, ListNumbers, NotePencil, CaretLeft, CaretRight, Link, Copy, Tag } from "@phosphor-icons/react";
 import Image from "next/image";
-import { updateLeadStageData, updateLeadMetadata, getTrainerPlans } from "@/app/actions/leads";
+import { updateLeadStageData, updateLeadMetadata, getTrainerPlans, getStudentByLeadName } from "@/app/actions/leads";
 import { getLeadQuestionnaireTemplates, getLeadFormResponses, assignFormToLead } from "@/app/actions/lead-forms";
 import { getForms } from "@/app/actions/forms";
 import { useRouter } from "next/navigation";
@@ -80,6 +80,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
     const [availablePlans, setAvailablePlans] = useState<any[]>([]);
     const [selectedPlanId, setSelectedPlanId] = useState<string>("");
     const [copiedSignupLink, setCopiedSignupLink] = useState(false);
+    const [convertedStudent, setConvertedStudent] = useState<any | null>(null);
     
     // Pagination state
     const [formsPage, setFormsPage] = useState(1);
@@ -110,6 +111,11 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                 console.log('📋 Setting selectedPlanId to:', lead.planId || "");
                 setSelectedPlanId(lead.planId || "");
                 
+                // If lead is won, try to fetch the converted student
+                if (lead.pipelineStage === 'won') {
+                    await fetchConvertedStudent();
+                }
+                
                 // Fetch forms, questionnaires and lead forms
                 if (lead.pipelineStage === 'scheduled') {
                     fetchForms();
@@ -133,6 +139,17 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             setAvailablePlans(plans);
         } catch (error) {
             console.error("Failed to fetch plans", error);
+        }
+    };
+    
+    const fetchConvertedStudent = async () => {
+        if (!lead) return;
+        try {
+            const student = await getStudentByLeadName(lead.name);
+            setConvertedStudent(student);
+            console.log('👤 Converted student found:', student);
+        } catch (error) {
+            console.error("Failed to fetch converted student", error);
         }
     };
     
@@ -216,8 +233,13 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             return;
         }
         
+        if (!convertedStudent || !convertedStudent.inviteToken) {
+            alert("Lead ainda não foi convertido em aluno. Aguarde a conversão ser processada.");
+            return;
+        }
+        
         try {
-            const link = `${window.location.origin}/join?lead=${lead.id}&plan=${selectedPlanId}`;
+            const link = `${window.location.origin}/join/${convertedStudent.inviteToken}`;
             await navigator.clipboard.writeText(link);
             setCopiedSignupLink(true);
             setTimeout(() => setCopiedSignupLink(false), 2000);
@@ -233,6 +255,11 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             return;
         }
         
+        if (!convertedStudent || !convertedStudent.inviteToken) {
+            alert("Lead ainda não foi convertido em aluno. Aguarde a conversão ser processada.");
+            return;
+        }
+        
         const whatsappNumber = formData.clientWhatsApp || lead.phone;
         
         if (!whatsappNumber) {
@@ -241,7 +268,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
         }
         
         const selectedPlan = availablePlans.find(p => p.id === selectedPlanId);
-        const link = `${window.location.origin}/join?lead=${lead.id}&plan=${selectedPlanId}`;
+        const link = `${window.location.origin}/join/${convertedStudent.inviteToken}`;
         const planName = selectedPlan?.name || 'nosso plano';
         const message = `Olá ${lead.name}! Estamos animados em começar sua jornada conosco! 🎯\n\nFaça seu cadastro através do link: ${link}\n\nPlano: ${planName}`;
         const cleanPhone = whatsappNumber.replace(/\D/g, '');
