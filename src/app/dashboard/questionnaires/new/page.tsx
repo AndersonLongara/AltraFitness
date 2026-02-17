@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { createForm } from "@/app/actions/forms";
-import { Plus, Trash, TextT, ListNumbers, CheckSquare, Hash, Calendar, CheckCircle } from "@phosphor-icons/react";
+import { Plus, Trash, TextT, ListNumbers, CheckSquare, Hash, Calendar, CheckCircle, DotsSixVertical } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import LayoutSidebar from "@/components/layout/LayoutSidebar";
 
@@ -14,6 +14,8 @@ export default function NewQuestionnairePage() {
     const [questions, setQuestions] = useState<any[]>([
         { id: crypto.randomUUID(), type: 'text', question: '', required: true, order: 0 }
     ]);
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
     const addQuestion = (type: string) => {
         setQuestions([
@@ -35,6 +37,37 @@ export default function NewQuestionnairePage() {
 
     const updateQuestion = (id: string, field: string, value: any) => {
         setQuestions(questions.map(q => q.id === id ? { ...q, [field]: value } : q));
+    };
+
+    const handleDragStart = (index: number) => {
+        setDraggedIndex(index);
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+        setDragOverIndex(index);
+    };
+
+    const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === dropIndex) {
+            setDraggedIndex(null);
+            setDragOverIndex(null);
+            return;
+        }
+
+        const newQuestions = [...questions];
+        const [draggedItem] = newQuestions.splice(draggedIndex, 1);
+        newQuestions.splice(dropIndex, 0, draggedItem);
+        
+        setQuestions(newQuestions);
+        setDraggedIndex(null);
+        setDragOverIndex(null);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
+        setDragOverIndex(null);
     };
 
     const handleSave = async () => {
@@ -112,7 +145,21 @@ export default function NewQuestionnairePage() {
                     {/* Questions Builder */}
                     <div className="space-y-4">
                         {questions.map((q, index) => (
-                            <div key={q.id} className="bg-white dark:bg-[#1E2A36] p-6 rounded-3xl soft-shadow border border-slate-100 dark:border-white/10 relative group">
+                            <div 
+                                key={q.id} 
+                                draggable
+                                onDragStart={() => handleDragStart(index)}
+                                onDragOver={(e) => handleDragOver(e, index)}
+                                onDrop={(e) => handleDrop(e, index)}
+                                onDragEnd={handleDragEnd}
+                                className={`bg-white dark:bg-[#1E2A36] p-6 rounded-3xl soft-shadow border relative group transition-all cursor-move ${
+                                    draggedIndex === index 
+                                        ? 'opacity-50 border-emerald-400 dark:border-emerald-500' 
+                                        : dragOverIndex === index 
+                                            ? 'border-emerald-300 dark:border-emerald-500/50 scale-[1.02]' 
+                                            : 'border-slate-100 dark:border-white/10'
+                                }`}
+                            >
                                 <div className="absolute top-4 right-4 flex gap-2">
                                     <button type="button" onClick={() => removeQuestion(q.id)} className="text-slate-300 dark:text-slate-500 hover:text-rose-500 p-2 transition-colors">
                                         <Trash size={20} />
@@ -120,9 +167,14 @@ export default function NewQuestionnairePage() {
                                 </div>
 
                                 <div className="flex items-start gap-4">
-                                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 font-bold flex items-center justify-center text-sm">
-                                        {index + 1}
-                                    </span>
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="text-slate-300 dark:text-slate-600 hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors cursor-grab active:cursor-grabbing">
+                                            <DotsSixVertical size={20} weight="bold" />
+                                        </div>
+                                        <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 font-bold flex items-center justify-center text-sm">
+                                            {index + 1}
+                                        </span>
+                                    </div>
                                     <div className="flex-1 space-y-4">
                                         <div className="flex gap-4">
                                             <input
