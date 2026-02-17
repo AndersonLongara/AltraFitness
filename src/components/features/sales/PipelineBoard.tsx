@@ -68,14 +68,7 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
         const currentLead = leads.find(l => l.id === leadId);
 
         if (currentLead && currentLead.pipelineStage !== newStage) {
-            // Block moving converted leads back to pipeline stages
-            if (currentLead.studentId) {
-                console.log('⚠️ Cannot move converted lead back:', currentLead.name);
-                setActiveId(null);
-                return;
-            }
-
-            // Optimistic Update
+            // Optimistic Update (backend validates if converted leads can move)
             setLeads((prev) => prev.map(l =>
                 l.id === leadId ? { ...l, pipelineStage: newStage } : l
             ));

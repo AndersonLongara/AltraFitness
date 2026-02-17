@@ -64,20 +64,32 @@ export async function updateLeadStage(id: string, stage: string) {
     
     if (!lead) throw new Error("Lead not found");
     
-    // Prevent moving converted leads back to pipeline stages
+    // If lead references a student, check if that student still exists
     if (lead.studentId) {
-        // Only allow moving between won/lost for converted leads
-        const allowedStages = ['won', 'lost'];
-        const currentStage = lead.pipelineStage || 'new';
-        
-        if (!allowedStages.includes(currentStage) || !allowedStages.includes(stage)) {
-            console.log('⚠️ Cannot move converted lead back to pipeline:', {
-                leadId: id,
-                currentStage,
-                attemptedStage: stage,
-                studentId: lead.studentId
-            });
-            throw new Error("Este lead já foi convertido em aluno e não pode retornar ao pipeline. Para ajustar, edite o aluno diretamente.");
+        const linkedStudent = await db.query.students.findFirst({
+            where: eq(students.id, lead.studentId),
+        });
+
+        if (linkedStudent) {
+            // Student exists — only allow moving between won/lost
+            const allowedStages = ['won', 'lost'];
+            const currentStage = lead.pipelineStage || 'new';
+            
+            if (!allowedStages.includes(currentStage) || !allowedStages.includes(stage)) {
+                console.log('⚠️ Cannot move converted lead back to pipeline:', {
+                    leadId: id,
+                    currentStage,
+                    attemptedStage: stage,
+                    studentId: lead.studentId
+                });
+                throw new Error("Este lead já foi convertido em aluno e não pode retornar ao pipeline. Para ajustar, edite o aluno diretamente.");
+            }
+        } else {
+            // Student was deleted — clear the reference so lead is free again
+            console.log('🔓 Clearing orphan studentId from lead:', { leadId: id, deletedStudentId: lead.studentId });
+            await db.update(leads)
+                .set({ studentId: null })
+                .where(eq(leads.id, id));
         }
     }
     

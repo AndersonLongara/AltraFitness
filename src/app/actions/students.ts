@@ -1,7 +1,7 @@
 "use server";
 
 import { db, client } from "@/db";
-import { students, payments, workouts, nutritionalPlans, studentBadges, plans } from "@/db/schema";
+import { students, payments, workouts, nutritionalPlans, studentBadges, plans, leads } from "@/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { getCurrentTrainer } from "@/lib/auth-helpers";
@@ -150,7 +150,14 @@ export async function deleteStudent(id: string) {
     await db.delete(students)
         .where(and(eq(students.id, id), eq(students.trainerId, trainer.id)));
 
+    // Clear studentId on any lead that was linked to this student
+    // so the lead can be moved freely in the pipeline again
+    await db.update(leads)
+        .set({ studentId: null })
+        .where(and(eq(leads.studentId, id), eq(leads.trainerId, trainer.id)));
+
     revalidatePath("/dashboard/students");
+    revalidatePath("/dashboard/sales");
 }
 
 export async function acceptInvite(token: string, data: {
