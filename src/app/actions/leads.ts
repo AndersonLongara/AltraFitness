@@ -62,7 +62,7 @@ export async function updateLeadStage(id: string, stage: string) {
     revalidatePath("/dashboard/sales");
 }
 
-export async function updateLeadMetadata(id: string, data: { temperature?: string; estimatedValue?: number }) {
+export async function updateLeadMetadata(id: string, data: { temperature?: string; estimatedValue?: number; planId?: string | null }) {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
     await db.update(leads)
@@ -116,6 +116,9 @@ export async function convertLeadToStudent(leadId: string, planId: string, start
 
     if (!lead) throw new Error("Lead not found");
 
+    // Use the planId from lead if available, otherwise use the provided one
+    const finalPlanId = lead.planId || planId;
+
     // Create Student linked to Plan
     const [newStudent] = await db.insert(students).values({
         trainerId: userId,
@@ -123,16 +126,16 @@ export async function convertLeadToStudent(leadId: string, planId: string, start
         phone: lead.phone,
         active: true,
         inviteToken: crypto.randomUUID(),
-        planId: planId,
+        planId: finalPlanId,
         planEnd: new Date(new Date(startDate).setMonth(new Date(startDate).getMonth() + 1)), // Default 1 month, should fetch plan duration ideally
         accessTypes: accessTypes || ['workout', 'nutrition'], // Default access
         photoUrl: lead.photoUrl,
         createdAt: new Date(),
     }).returning();
 
-    // Fetch Plan to calculate end date correcty
+    // Fetch Plan to calculate end date correctly
     const plan = await db.query.plans.findFirst({
-        where: eq(plans.id, planId),
+        where: eq(plans.id, finalPlanId),
     });
 
     if (plan) {
@@ -143,15 +146,20 @@ export async function convertLeadToStudent(leadId: string, planId: string, start
             .set({ planEnd: endDate })
             .where(eq(students.id, newStudent.id));
 
-        // Generate Initial Payment Record (Pending)
+        // Get the proposed value from stageData (negotiation) or use plan price
+        const proposedValue = lead.stageData?.proposalValue 
+            ? parseFloat(String(lead.stageData.proposalValue)) * 100 // Convert R$ to cents
+            : plan.price;
+
+        // Generate Initial Payment Record (Pending) with the negotiated/proposed value
         await db.insert(payments).values({
             trainerId: userId,
             studentId: newStudent.id,
-            planId: planId,
-            amount: plan.price,
+            planId: finalPlanId,
+            amount: Math.round(proposedValue),
             dueDate: new Date(startDate),
             status: 'pending',
-            notes: `Mensalidade inicial - Migração de Lead (${lead.name})`
+            notes: `Mensalidade inicial - Migração de Lead (${lead.name})${lead.stageData?.proposalValue ? ` - Valor negociado` : ''}`
         });
     }
 
@@ -232,4 +240,15 @@ export async function enrichInstagramProfile(handle: string) {
         console.error("Enrichment action failed:", error);
         return null;
     }
+}
+
+// Get active trainer plans for lead selection
+export async function getTrainerPlans() {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    return await db.query.plans.findMany({
+        where: and(eq(plans.trainerId, userId), eq(plans.active, true)),
+        orderBy: [desc(plans.createdAt)],
+    });
 }

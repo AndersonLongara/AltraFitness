@@ -108,6 +108,7 @@ export const leads = sqliteTable('leads', {
     temperature: text('temperature').default('warm'), // cold, warm, hot
     stageData: text('stage_data', { mode: 'json' }).$type<Record<string, any>>(), // Dynamic fields per stage
     lastContactAt: integer('last_contact_at', { mode: 'timestamp' }),
+    planId: text('plan_id').references(() => plans.id), // The service plan that will be offered to the lead
 
     status: text('status').default('new'), // Deprecated/Legacy, kept for backward compatibility if needed, or alias to stage
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
@@ -345,6 +346,10 @@ export const leadsRelations = relations(leads, ({ one, many }) => ({
         fields: [leads.trainerId],
         references: [trainers.id],
     }),
+    plan: one(plans, {
+        fields: [leads.planId],
+        references: [plans.id],
+    }),
     formAssignments: many(leadForms),
 }));
 
@@ -355,6 +360,7 @@ export const plansRelations = relations(plans, ({ one, many }) => ({
     }),
     students: many(students),
     payments: many(payments),
+    leads: many(leads),
 }));
 
 export const paymentsRelations = relations(payments, ({ one }) => ({

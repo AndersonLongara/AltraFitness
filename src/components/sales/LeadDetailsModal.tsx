@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp, ChatCenteredText, PaperPlaneRight, CheckCircle, Clock, ListNumbers, NotePencil, CaretLeft, CaretRight, Link, Copy } from "@phosphor-icons/react";
+import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp, ChatCenteredText, PaperPlaneRight, CheckCircle, Clock, ListNumbers, NotePencil, CaretLeft, CaretRight, Link, Copy, Tag } from "@phosphor-icons/react";
 import Image from "next/image";
-import { updateLeadStageData, updateLeadMetadata } from "@/app/actions/leads";
+import { updateLeadStageData, updateLeadMetadata, getTrainerPlans } from "@/app/actions/leads";
 import { getLeadQuestionnaireTemplates, getLeadFormResponses, assignFormToLead } from "@/app/actions/lead-forms";
 import { getForms } from "@/app/actions/forms";
+
 
 interface Lead {
     id: string;
@@ -18,6 +19,7 @@ interface Lead {
     estimatedValue: number | null;
     temperature: string | null;
     stageData?: Record<string, any> | null;
+    planId?: string | null;
 }
 
 interface LeadDetailsModalProps {
@@ -72,6 +74,11 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
     const [isSendingForm, setIsSendingForm] = useState(false);
     const [copiedFormId, setCopiedFormId] = useState<string | null>(null);
     
+    // Plans state
+    const [availablePlans, setAvailablePlans] = useState<any[]>([]);
+    const [selectedPlanId, setSelectedPlanId] = useState<string>("");
+    const [copiedSignupLink, setCopiedSignupLink] = useState(false);
+    
     // Pagination state
     const [formsPage, setFormsPage] = useState(1);
     const [questionnairesPage, setQuestionnairesPage] = useState(1);
@@ -82,6 +89,12 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             setFormData(lead.stageData || {});
             setEstimatedValue(lead.estimatedValue?.toString() || "");
             setTemperature(lead.temperature || "warm");
+            setSelectedPlanId(lead.planId || "");
+            
+            // Fetch plans for contacted, scheduled and negotiation stages
+            if (['contacted', 'scheduled', 'negotiation'].includes(lead.pipelineStage || '')) {
+                fetchPlans();
+            }
             
             // Fetch forms, questionnaires and lead forms
             if (lead.pipelineStage === 'scheduled') {
@@ -96,6 +109,15 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             }
         }
     }, [lead]);
+    
+    const fetchPlans = async () => {
+        try {
+            const plans = await getTrainerPlans();
+            setAvailablePlans(plans);
+        } catch (error) {
+            console.error("Failed to fetch plans", error);
+        }
+    };
     
     const fetchForms = async () => {
         try {
@@ -170,11 +192,57 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             alert("Erro ao copiar link");
         }
     };
+    
+    const handleCopySignupLink = async () => {
+        if (!lead || !selectedPlanId) {
+            alert("Selecione um plano primeiro.");
+            return;
+        }
+        
+        try {
+            const link = `${window.location.origin}/join?lead=${lead.id}&plan=${selectedPlanId}`;
+            await navigator.clipboard.writeText(link);
+            setCopiedSignupLink(true);
+            setTimeout(() => setCopiedSignupLink(false), 2000);
+        } catch (error) {
+            console.error("Failed to copy signup link", error);
+            alert("Erro ao copiar link");
+        }
+    };
+    
+    const handleSendSignupLink = async () => {
+        if (!lead || !selectedPlanId) {
+            alert("Selecione um plano primeiro.");
+            return;
+        }
+        
+        const whatsappNumber = formData.clientWhatsApp || lead.phone;
+        
+        if (!whatsappNumber) {
+            alert("Adicione o número de WhatsApp do cliente para enviar o link.");
+            return;
+        }
+        
+        const selectedPlan = availablePlans.find(p => p.id === selectedPlanId);
+        const link = `${window.location.origin}/join?lead=${lead.id}&plan=${selectedPlanId}`;
+        const planName = selectedPlan?.name || 'nosso plano';
+        const message = `Olá ${lead.name}! Estamos animados em começar sua jornada conosco! 🎯\n\nFaça seu cadastro através do link: ${link}\n\nPlano: ${planName}`;
+        const cleanPhone = whatsappNumber.replace(/\D/g, '');
+        const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+    };
 
     if (!lead) return null;
 
     const currentStage = lead.pipelineStage || 'new';
     const fields = STAGE_FIELDS[currentStage] || [];
+    
+    // Calculate discount if plan is selected and proposal value exists
+    const selectedPlan = availablePlans.find(p => p.id === selectedPlanId);
+    const proposalValue = formData.proposalValue ? parseFloat(formData.proposalValue) : 0;
+    const planPrice = selectedPlan ? selectedPlan.price / 100 : 0;
+    const discount = selectedPlan && proposalValue > 0 ? planPrice - proposalValue : 0;
+    const discountPercentage = planPrice > 0 && discount > 0 ? ((discount / planPrice) * 100).toFixed(0) : 0;
 
     const handleSave = async () => {
         // Validate required fields
@@ -191,11 +259,12 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             // Save Stage Data
             await updateLeadStageData(lead.id, formData);
 
-            // Save Metadata (Value & Temperature) by updating lead directly
+            // Save Metadata (Value, Temperature & PlanId) by updating lead directly
             const value = parseFloat(estimatedValue.replace(',', '.'));
             await updateLeadMetadata(lead.id, {
                 estimatedValue: isNaN(value) ? 0 : value,
-                temperature
+                temperature,
+                planId: selectedPlanId || null
             });
 
             onClose();
@@ -288,6 +357,85 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                         </select>
                                     </div>
                                 </div>
+                                
+                                {/* Plan Selection (for contacted, scheduled, negotiation) */}
+                                {['contacted', 'scheduled', 'negotiation', 'won'].includes(currentStage) && (
+                                    <div className="mt-4">
+                                        <div className="bg-slate-50 dark:bg-white/5 p-3 rounded-xl border border-transparent dark:border-white/10">
+                                            <label className="text-[10px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 flex items-center gap-1 mb-1">
+                                                <Tag size={14} /> Plano Oferecido
+                                            </label>
+                                            <select
+                                                value={selectedPlanId}
+                                                onChange={(e) => setSelectedPlanId(e.target.value)}
+                                                disabled={currentStage === 'won'}
+                                                className="bg-transparent font-bold text-graphite-dark dark:text-white w-full outline-none appearance-none disabled:opacity-50"
+                                            >
+                                                <option value="">Nenhum plano selecionado</option>
+                                                {availablePlans.map((plan) => (
+                                                    <option key={plan.id} value={plan.id}>
+                                                        {plan.name} - R$ {(plan.price / 100).toFixed(2).replace('.', ',')} ({plan.durationMonths} {plan.durationMonths === 1 ? 'mês' : 'meses'})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        
+                                        {/* Discount Display (for negotiation stage when proposal value exists) */}
+                                        {currentStage === 'negotiation' && selectedPlan && proposalValue > 0 && discount > 0 && (
+                                            <div className="mt-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 rounded-xl p-3">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300">
+                                                        💰 Desconto Aplicado
+                                                    </span>
+                                                    <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                                        R$ {discount.toFixed(2).replace('.', ',')} ({discountPercentage}%)
+                                                    </span>
+                                                </div>
+                                                <div className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">
+                                                    Valor do plano: R$ {planPrice.toFixed(2).replace('.', ',')} → Valor proposto: R$ {proposalValue.toFixed(2).replace('.', ',')}
+                                                </div>
+                                            </div>
+                                        )}
+                                        
+                                        {/* Signup Link Actions (for won stage) */}
+                                        {currentStage === 'won' && selectedPlanId && (
+                                            <div className="mt-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-xl p-3">
+                                                <p className="text-xs font-bold text-blue-700 dark:text-blue-300 mb-2">
+                                                    🎉 Lead Convertido! Envie o link de cadastro:
+                                                </p>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={handleCopySignupLink}
+                                                        className={`flex-1 px-3 py-2 rounded-lg transition-all text-xs font-bold flex items-center justify-center gap-2 ${
+                                                            copiedSignupLink 
+                                                                ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                                                : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20'
+                                                        }`}
+                                                    >
+                                                        {copiedSignupLink ? (
+                                                            <>
+                                                                <CheckCircle size={16} weight="fill" />
+                                                                Copiado!
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <Copy size={16} weight="bold" />
+                                                                Copiar Link
+                                                            </>
+                                                        )}
+                                                    </button>
+                                                    <button
+                                                        onClick={handleSendSignupLink}
+                                                        className="flex-1 px-3 py-2 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-500/30 transition-all text-xs font-bold flex items-center justify-center gap-2"
+                                                    >
+                                                        <WhatsappLogo size={16} weight="fill" />
+                                                        Enviar WhatsApp
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                         </div>
 

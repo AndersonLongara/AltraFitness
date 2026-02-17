@@ -6,6 +6,8 @@ import PipelineColumn from "./PipelineColumn";
 import LeadCard from "./LeadCard";
 import { updateLeadStage, convertLead } from "@/app/actions/leads";
 import { assignFormToLeadOnStageChange } from "@/app/actions/lead-forms";
+import confetti from "canvas-confetti";
+import { CheckCircle, X } from "@phosphor-icons/react";
 
 interface Lead {
     id: string;
@@ -39,11 +41,42 @@ interface PipelineBoardProps {
 export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadClick, showFinalized = true }: PipelineBoardProps) {
     const [leads, setLeads] = useState<Lead[]>(initialLeads);
     const [activeId, setActiveId] = useState<string | null>(null);
+    const [showCelebration, setShowCelebration] = useState(false);
+    const [celebratedLeadName, setCelebratedLeadName] = useState("");
 
     // Sync state with props when filters change
     useEffect(() => {
         setLeads(initialLeads);
     }, [initialLeads]);
+    
+    const triggerConfetti = () => {
+        const duration = 3000;
+        const animationEnd = Date.now() + duration;
+        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+
+        const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
+
+        const interval = window.setInterval(() => {
+            const timeLeft = animationEnd - Date.now();
+
+            if (timeLeft <= 0) {
+                return clearInterval(interval);
+            }
+
+            const particleCount = 50 * (timeLeft / duration);
+
+            confetti({
+                ...defaults,
+                particleCount,
+                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+            });
+            confetti({
+                ...defaults,
+                particleCount,
+                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+            });
+        }, 250);
+    };
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -81,6 +114,11 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
 
                 // Trigger conversion if dropped in 'won'
                 if (newStage === 'won') {
+                    // Celebration animation!
+                    triggerConfetti();
+                    setCelebratedLeadName(currentLead.name);
+                    setShowCelebration(true);
+                    setTimeout(() => setShowCelebration(false), 5000);
                     onConvert(leadId);
                 }
             } catch (error) {
@@ -136,6 +174,31 @@ export default function PipelineBoard({ leads: initialLeads, onConvert, onLeadCl
             <DragOverlay>
                 {activeLead ? <LeadCard lead={activeLead} /> : null}
             </DragOverlay>
+            
+            {/* Celebration Toast */}
+            {showCelebration && (
+                <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[10000] animate-in slide-in-from-top duration-500">
+                    <div className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-4 rounded-2xl shadow-2xl border-2 border-emerald-300 flex items-center gap-4 max-w-md">
+                        <div className="flex-shrink-0">
+                            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center animate-bounce">
+                                <CheckCircle size={32} weight="fill" />
+                            </div>
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="text-xl font-bold mb-1">🎉 Parabéns!</h3>
+                            <p className="text-sm font-medium opacity-90">
+                                Você fechou mais um aluno: <span className="font-bold">{celebratedLeadName}</span>!
+                            </p>
+                        </div>
+                        <button
+                            onClick={() => setShowCelebration(false)}
+                            className="flex-shrink-0 p-1 hover:bg-white/20 rounded-lg transition-colors"
+                        >
+                            <X size={20} weight="bold" />
+                        </button>
+                    </div>
+                </div>
+            )}
         </DndContext>
     );
 }
