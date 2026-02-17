@@ -12,17 +12,22 @@ export default async function AuthRedirectPage({ searchParams }: { searchParams:
     const params = await searchParams;
     const inviteTokenParam = params.invite_token;
 
+    console.log('[auth-redirect] inviteTokenParam:', inviteTokenParam);
+
     // 0) Check URL parameter first (most reliable for OAuth flows)
     if (inviteTokenParam) {
         try {
+            console.log('[auth-redirect] Checking URL param token in DB...');
             // Validate the token still exists in DB
             const studentByToken = await db.query.students.findFirst({
                 where: eq(students.inviteToken, inviteTokenParam),
                 columns: { id: true },
             });
             if (studentByToken) {
+                console.log('[auth-redirect] Token valid, redirecting to /join/', inviteTokenParam);
                 redirect(`/join/${inviteTokenParam}`);
             }
+            console.log('[auth-redirect] Token not found in DB');
         } catch (err) {
             console.error('[auth-redirect] URL param check failed:', err);
             // Continue to next check
@@ -32,16 +37,21 @@ export default async function AuthRedirectPage({ searchParams }: { searchParams:
     // 1) Check cookie (fallback for direct navigation)
     const cookieStore = await cookies();
     const inviteTokenCookie = cookieStore.get('invite_token')?.value;
+    console.log('[auth-redirect] inviteTokenCookie:', inviteTokenCookie);
+    
     if (inviteTokenCookie) {
         try {
+            console.log('[auth-redirect] Checking cookie token in DB...');
             // Validate the token still exists in DB
             const studentByToken = await db.query.students.findFirst({
                 where: eq(students.inviteToken, inviteTokenCookie),
                 columns: { id: true },
             });
             if (studentByToken) {
+                console.log('[auth-redirect] Cookie token valid, redirecting to /join/', inviteTokenCookie);
                 redirect(`/join/${inviteTokenCookie}`);
             }
+            console.log('[auth-redirect] Cookie token not found in DB');
             // Token consumed or invalid - cookie will be cleared client-side
         } catch (err) {
             console.error('[auth-redirect] Cookie check failed:', err);
