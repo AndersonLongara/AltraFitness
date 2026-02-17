@@ -10,17 +10,51 @@ interface JoinFormProps {
     token: string;
     initialName: string;
     initialPhone: string | null;
+    initialEmail: string | null;
     planName: string | null;
     planPrice: number | null;
 }
 
-export default function JoinForm({ token, initialName, initialPhone, planName, planPrice }: JoinFormProps) {
+export default function JoinForm({ token, initialName, initialPhone, initialEmail, planName, planPrice }: JoinFormProps) {
     const router = useRouter();
     const { isSignedIn, user, isLoaded } = useUser();
     const { signOut } = useClerk();
+    
+    // Form states
+    const [name, setName] = useState(initialName || '');
+    const [email, setEmail] = useState(initialEmail || '');
+    const [instagram, setInstagram] = useState('');
     const [phone, setPhone] = useState(initialPhone || '');
+    const [cpf, setCpf] = useState('');
+    const [birthDay, setBirthDay] = useState('');
+    const [birthMonth, setBirthMonth] = useState('');
+    const [birthYear, setBirthYear] = useState('');
+    
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Format CPF: 000.000.000-00
+    const formatCpf = (value: string) => {
+        const numbers = value.replace(/\D/g, '');
+        if (numbers.length <= 11) {
+            return numbers
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d)/, '$1.$2')
+                .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        }
+        return cpf;
+    };
+
+    // Format Phone: (00) 00000-0000
+    const formatPhone = (value: string) => {
+        const numbers = value.replace(/\D/g, '');
+        if (numbers.length <= 11) {
+            return numbers
+                .replace(/(\d{2})(\d)/, '($1) $2')
+                .replace(/(\d{5})(\d)/, '$1-$2');
+        }
+        return phone;
+    };
 
     // Set invite token cookie on mount (for OAuth redirect detection)
     useEffect(() => {
@@ -30,12 +64,49 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
     }, [token]);
 
     const handleSubmit = async () => {
-        if (!isSignedIn) return; // Should not happen due to UI state
+        if (!isSignedIn) return;
+
+        // Basic validation
+        if (!name.trim()) {
+            setError('Por favor, preencha seu nome completo.');
+            return;
+        }
+        if (!email.trim() || !email.includes('@')) {
+            setError('Por favor, preencha um email válido.');
+            return;
+        }
+        if (!phone.trim() || phone.replace(/\D/g, '').length < 10) {
+            setError('Por favor, preencha um telefone válido.');
+            return;
+        }
+        if (!cpf.trim() || cpf.replace(/\D/g, '').length !== 11) {
+            setError('Por favor, preencha um CPF válido.');
+            return;
+        }
+        if (!birthDay || !birthMonth || !birthYear) {
+            setError('Por favor, preencha sua data de nascimento completa.');
+            return;
+        }
 
         setLoading(true);
         setError(null);
         try {
-            await acceptInvite(token, phone);
+            // Create birthDate timestamp from day, month, year
+            const birthDate = new Date(
+                parseInt(birthYear),
+                parseInt(birthMonth) - 1, // JS months are 0-indexed
+                parseInt(birthDay)
+            );
+
+            await acceptInvite(token, {
+                name: name.trim(),
+                email: email.trim(),
+                instagram: instagram.trim() ? instagram.trim() : null,
+                phone: phone.replace(/\D/g, ''),
+                cpf: cpf.replace(/\D/g, ''),
+                birthDate: birthDate.getTime(),
+            });
+            
             // Clear the invite cookie
             document.cookie = 'invite_token=; path=/; max-age=0';
             // Force a hard reload to ensure clean state and auth redirect
@@ -133,24 +204,131 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
             )}
 
             <div className="space-y-4">
+                {/* Nome Completo */}
                 <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Seu Nome</label>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        Nome Completo <span className="text-rose-400">*</span>
+                    </label>
                     <input
                         type="text"
-                        defaultValue={initialName}
-                        disabled
-                        className="w-full p-4 bg-white/5 border border-white/10 rounded-xl font-bold text-slate-500 outline-none cursor-not-allowed"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Seu nome completo"
+                        className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600"
                     />
                 </div>
+
+                {/* Email */}
                 <div>
-                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">WhatsApp</label>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        Email <span className="text-rose-400">*</span>
+                    </label>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="seu@email.com"
+                        className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600"
+                    />
+                </div>
+
+                {/* Instagram */}
+                <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        Instagram
+                    </label>
+                    <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">@</span>
+                        <input
+                            type="text"
+                            value={instagram}
+                            onChange={(e) => setInstagram(e.target.value.replace('@', ''))}
+                            placeholder="seuusuario"
+                            className="w-full p-4 pl-8 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600"
+                        />
+                    </div>
+                </div>
+
+                {/* WhatsApp */}
+                <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        WhatsApp <span className="text-rose-400">*</span>
+                    </label>
                     <input
                         type="tel"
                         value={phone}
-                        onChange={(e) => setPhone(e.target.value)}
+                        onChange={(e) => setPhone(formatPhone(e.target.value))}
                         placeholder="(00) 00000-0000"
+                        maxLength={15}
                         className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600"
                     />
+                </div>
+
+                {/* CPF */}
+                <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        CPF <span className="text-rose-400">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        value={cpf}
+                        onChange={(e) => setCpf(formatCpf(e.target.value))}
+                        placeholder="000.000.000-00"
+                        maxLength={14}
+                        className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600"
+                    />
+                </div>
+
+                {/* Data de Nascimento */}
+                <div>
+                    <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
+                        Data de Nascimento <span className="text-rose-400">*</span>
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                        <input
+                            type="number"
+                            value={birthDay}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === '' || (parseInt(val) >= 1 && parseInt(val) <= 31)) {
+                                    setBirthDay(val);
+                                }
+                            }}
+                            placeholder="Dia"
+                            min="1"
+                            max="31"
+                            className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600 text-center"
+                        />
+                        <input
+                            type="number"
+                            value={birthMonth}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === '' || (parseInt(val) >= 1 && parseInt(val) <= 12)) {
+                                    setBirthMonth(val);
+                                }
+                            }}
+                            placeholder="Mês"
+                            min="1"
+                            max="12"
+                            className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600 text-center"
+                        />
+                        <input
+                            type="number"
+                            value={birthYear}
+                            onChange={(e) => {
+                                const val = e.target.value;
+                                const currentYear = new Date().getFullYear();
+                                if (val === '' || (parseInt(val) >= 1900 && parseInt(val) <= currentYear)) {
+                                    setBirthYear(val);
+                                }
+                            }}
+                            placeholder="Ano"
+                            min="1900"
+                            max={new Date().getFullYear()}
+                            className="w-full p-4 bg-white/5 border border-white/10 focus:border-[#2ECC71] focus:bg-white/10 rounded-xl font-bold text-white outline-none transition-colors placeholder:text-slate-600 text-center"
+                        />
+                    </div>
                 </div>
             </div>
 

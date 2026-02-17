@@ -153,14 +153,18 @@ export async function deleteStudent(id: string) {
     revalidatePath("/dashboard/students");
 }
 
-export async function acceptInvite(token: string, phone: string) {
+export async function acceptInvite(token: string, data: {
+    name: string;
+    email: string;
+    instagram: string | null;
+    phone: string;
+    cpf: string;
+    birthDate: number; // timestamp
+}) {
     const { userId } = await auth();
     const user = await currentUser();
 
     if (!userId || !user) throw new Error("Você precisa estar logado para aceitar o convite.");
-
-    const email = user.emailAddresses[0]?.emailAddress;
-    if (!email) throw new Error("Seu usuário não possui um e-mail válido.");
 
     const student = await db.query.students.findFirst({
         where: eq(students.inviteToken, token)
@@ -170,8 +174,12 @@ export async function acceptInvite(token: string, phone: string) {
 
     await db.update(students)
         .set({
-            phone,
-            email, // Sync email from Clerk
+            name: data.name,
+            email: data.email,
+            instagram: data.instagram,
+            phone: data.phone,
+            cpf: data.cpf,
+            birthDate: new Date(data.birthDate),
             active: true,
             inviteToken: null,
             updatedAt: new Date()

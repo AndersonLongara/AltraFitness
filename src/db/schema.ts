@@ -68,6 +68,7 @@ export const students = sqliteTable('students', {
     email: text('email'),
     cpf: text('cpf'),
     phone: text('phone'),
+    instagram: text('instagram'),
     photoUrl: text('photo_url'),
     planId: text('plan_id').references(() => plans.id),
     planEnd: integer('plan_end', { mode: 'timestamp' }),
