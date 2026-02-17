@@ -12,6 +12,8 @@ import CalendarStrip from "@/components/student/dashboard/CalendarStrip";
 import { getTodaysHydration } from "@/app/actions/gamification";
 import { getStudentPendingForms } from "@/app/actions/forms";
 import PendingFormsList from "@/components/student/dashboard/PendingFormsList";
+import { checkStudentProfileComplete } from "@/app/actions/profile";
+import ProfileCompletionCard from "@/components/student/dashboard/ProfileCompletionCard";
 
 export const dynamic = 'force-dynamic';
 
@@ -33,6 +35,10 @@ export default async function StudentDashboardPage(props: {
     });
 
     if (!student) return redirect("/onboarding");
+
+    // Check if student profile is complete
+    const profileStatus = await checkStudentProfileComplete();
+    const isProfileIncomplete = !profileStatus.complete;
 
     // PARALLEL DATA FETCHING
     const requestedDate = searchParams.date ? parseISO(searchParams.date) : new Date();
@@ -113,6 +119,17 @@ export default async function StudentDashboardPage(props: {
                 userImage={user.imageUrl}
                 currentStreak={student.currentStreak || 0}
             />
+
+            {/* Profile Completion Card - Pulsing, blocks everything until filled */}
+            {isProfileIncomplete && profileStatus.student && (
+                <ProfileCompletionCard
+                    missing={profileStatus.missing}
+                    studentData={profileStatus.student}
+                />
+            )}
+
+            {/* Dashboard content - dimmed and non-interactive when profile is incomplete */}
+            <div className={isProfileIncomplete ? 'opacity-30 pointer-events-none select-none blur-[2px]' : ''}>
 
             {/* Hero Card - Real Weekly Progress */}
             <div className="mb-8 relative group">
@@ -251,6 +268,8 @@ export default async function StudentDashboardPage(props: {
                 )}
 
             </div>
+
+            </div>{/* end of dimmed wrapper */}
 
         </div>
     );
