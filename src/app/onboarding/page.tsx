@@ -9,8 +9,27 @@ import { eq, and, isNotNull } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-export default async function OnboardingPage() {
-    // 1) Check cookie first
+export default async function OnboardingPage({ searchParams }: { searchParams: Promise<{ invite_token?: string }> }) {
+    const params = await searchParams;
+    const inviteTokenParam = params.invite_token;
+
+    // 0) Check URL parameter first (from OAuth redirect)
+    if (inviteTokenParam) {
+        try {
+            const studentByToken = await db.query.students.findFirst({
+                where: eq(students.inviteToken, inviteTokenParam),
+                columns: { id: true },
+            });
+            if (studentByToken) {
+                redirect(`/join/${inviteTokenParam}`);
+            }
+        } catch (err) {
+            console.error('[onboarding] URL param check failed:', err);
+            // Continue to next check
+        }
+    }
+
+    // 1) Check cookie (fallback)
     const cookieStore = await cookies();
     const inviteTokenCookie = cookieStore.get('invite_token')?.value;
     if (inviteTokenCookie) {

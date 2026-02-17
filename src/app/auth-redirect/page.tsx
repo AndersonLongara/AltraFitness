@@ -8,8 +8,28 @@ import { eq, and, isNotNull } from "drizzle-orm";
 
 export const dynamic = "force-dynamic";
 
-export default async function AuthRedirectPage() {
-    // 1) Check cookie first (most reliable — set when user visits /join/[token])
+export default async function AuthRedirectPage({ searchParams }: { searchParams: Promise<{ invite_token?: string }> }) {
+    const params = await searchParams;
+    const inviteTokenParam = params.invite_token;
+
+    // 0) Check URL parameter first (most reliable for OAuth flows)
+    if (inviteTokenParam) {
+        try {
+            // Validate the token still exists in DB
+            const studentByToken = await db.query.students.findFirst({
+                where: eq(students.inviteToken, inviteTokenParam),
+                columns: { id: true },
+            });
+            if (studentByToken) {
+                redirect(`/join/${inviteTokenParam}`);
+            }
+        } catch (err) {
+            console.error('[auth-redirect] URL param check failed:', err);
+            // Continue to next check
+        }
+    }
+
+    // 1) Check cookie (fallback for direct navigation)
     const cookieStore = await cookies();
     const inviteTokenCookie = cookieStore.get('invite_token')?.value;
     if (inviteTokenCookie) {
