@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp, ChatCenteredText, PaperPlaneRight, CheckCircle, Clock, ListNumbers, NotePencil, CaretLeft, CaretRight } from "@phosphor-icons/react";
+import { X, FloppyDisk, User, InstagramLogo, WhatsappLogo, Calendar, CurrencyDollar, TrendUp, ChatCenteredText, PaperPlaneRight, CheckCircle, Clock, ListNumbers, NotePencil, CaretLeft, CaretRight, Link, Copy } from "@phosphor-icons/react";
 import Image from "next/image";
 import { updateLeadStageData, updateLeadMetadata } from "@/app/actions/leads";
 import { getLeadQuestionnaireTemplates, getLeadFormResponses, assignFormToLead } from "@/app/actions/lead-forms";
@@ -70,6 +70,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
     const [allQuestionnaires, setAllQuestionnaires] = useState<any[]>([]);
     const [leadForms, setLeadForms] = useState<any[]>([]);
     const [isSendingForm, setIsSendingForm] = useState(false);
+    const [copiedFormId, setCopiedFormId] = useState<string | null>(null);
     
     // Pagination state
     const [formsPage, setFormsPage] = useState(1);
@@ -123,12 +124,22 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
     
     const handleSendQuestionnaire = async (formId: string) => {
         if (!lead || !formId) return;
+        
+        // Get WhatsApp from stageData or lead.phone
+        const whatsappNumber = formData.clientWhatsApp || lead.phone;
+        
+        if (!whatsappNumber) {
+            alert("Adicione o número de WhatsApp do cliente para enviar o questionário.");
+            return;
+        }
+        
         setIsSendingForm(true);
         try {
             const { token } = await assignFormToLead(formId, lead.id);
             const link = `${window.location.origin}/f/${token}`;
             const message = `Olá ${lead.name}! Para melhor prepararmos nosso atendimento, por favor preencha este breve questionário: ${link}`;
-            const whatsappUrl = `https://wa.me/55${lead.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
+            const cleanPhone = whatsappNumber.replace(/\D/g, '');
+            const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(message)}`;
             window.open(whatsappUrl, '_blank');
             await fetchLeadForms(); // Refresh the list
         } catch (error) {
@@ -136,6 +147,22 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
             alert("Erro ao enviar questionário");
         } finally {
             setIsSendingForm(false);
+        }
+    };
+    
+    const handleCopyLink = async (formId: string) => {
+        if (!lead || !formId) return;
+        
+        try {
+            const { token } = await assignFormToLead(formId, lead.id);
+            const link = `${window.location.origin}/f/${token}`;
+            await navigator.clipboard.writeText(link);
+            setCopiedFormId(formId);
+            setTimeout(() => setCopiedFormId(null), 2000); // Reset after 2 seconds
+            await fetchLeadForms(); // Refresh the list
+        } catch (error) {
+            console.error("Failed to copy link", error);
+            alert("Erro ao copiar link");
         }
     };
 
@@ -336,7 +363,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                         <div className="flex-1">
                                             <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-100 mb-1">Envio Manual de Questionário</h4>
                                             <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-3">
-                                                Selecione abaixo qual formulário ou questionário deseja enviar manualmente via WhatsApp.
+                                                Selecione abaixo qual formulário ou questionário deseja enviar. Você pode copiar o link ou enviar diretamente via WhatsApp.
                                             </p>
                                         </div>
                                     </div>
@@ -366,14 +393,32 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                                             }`}>
                                                                 {form.isActive ? 'Ativo' : 'Rascunho'}
                                                             </span>
-                                                            <button
-                                                                onClick={() => handleSendQuestionnaire(form.id)}
-                                                                disabled={isSendingForm || !lead.phone}
-                                                                className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-500/30 disabled:opacity-50 transition-all"
-                                                                title="Enviar via WhatsApp"
-                                                            >
-                                                                <PaperPlaneRight size={16} weight="bold" />
-                                                            </button>
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={() => handleCopyLink(form.id)}
+                                                                    disabled={isSendingForm}
+                                                                    className={`p-1.5 rounded-lg transition-all ${
+                                                                        copiedFormId === form.id 
+                                                                            ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                                                            : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20'
+                                                                    } disabled:opacity-50`}
+                                                                    title={copiedFormId === form.id ? "Link copiado!" : "Copiar link"}
+                                                                >
+                                                                    {copiedFormId === form.id ? (
+                                                                        <CheckCircle size={16} weight="fill" />
+                                                                    ) : (
+                                                                        <Copy size={16} weight="bold" />
+                                                                    )}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleSendQuestionnaire(form.id)}
+                                                                    disabled={isSendingForm}
+                                                                    className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-500/30 disabled:opacity-50 transition-all"
+                                                                    title="Enviar via WhatsApp"
+                                                                >
+                                                                    <PaperPlaneRight size={16} weight="bold" />
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                         
                                                         <h4 className="text-base font-bold text-graphite-dark dark:text-white mb-1 line-clamp-1">{form.title}</h4>
@@ -451,14 +496,32 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <button
-                                                                onClick={() => handleSendQuestionnaire(questionnaire.id)}
-                                                                disabled={isSendingForm || !lead.phone}
-                                                                className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-500/30 disabled:opacity-50 transition-all"
-                                                                title="Enviar via WhatsApp"
-                                                            >
-                                                                <PaperPlaneRight size={16} weight="bold" />
-                                                            </button>
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={() => handleCopyLink(questionnaire.id)}
+                                                                    disabled={isSendingForm}
+                                                                    className={`p-1.5 rounded-lg transition-all ${
+                                                                        copiedFormId === questionnaire.id 
+                                                                            ? 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400'
+                                                                            : 'bg-slate-100 dark:bg-white/10 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20'
+                                                                    } disabled:opacity-50`}
+                                                                    title={copiedFormId === questionnaire.id ? "Link copiado!" : "Copiar link"}
+                                                                >
+                                                                    {copiedFormId === questionnaire.id ? (
+                                                                        <CheckCircle size={16} weight="fill" />
+                                                                    ) : (
+                                                                        <Copy size={16} weight="bold" />
+                                                                    )}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleSendQuestionnaire(questionnaire.id)}
+                                                                    disabled={isSendingForm}
+                                                                    className="p-1.5 bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 dark:hover:bg-emerald-500/30 disabled:opacity-50 transition-all"
+                                                                    title="Enviar via WhatsApp"
+                                                                >
+                                                                    <PaperPlaneRight size={16} weight="bold" />
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                         
                                                         <h4 className="text-base font-bold text-graphite-dark dark:text-white mb-1 line-clamp-1">{questionnaire.title}</h4>
