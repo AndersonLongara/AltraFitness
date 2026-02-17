@@ -41,12 +41,56 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
     const [answers, setAnswers] = useState<Record<string, any>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCompleted, setIsCompleted] = useState(false);
+    const [validationError, setValidationError] = useState<string | null>(null);
 
     const currentQuestion = form.questions[currentStep];
     const isLastQuestion = currentStep === form.questions.length - 1;
 
+    // Validation functions
+    const validateEmail = (email: string): boolean => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const validatePhone = (phone: string): boolean => {
+        const digitsOnly = phone.replace(/\D/g, '');
+        return digitsOnly.length >= 10; // Minimum 10 digits for valid BR phone
+    };
+
+    const validateCurrentAnswer = (): boolean => {
+        const answer = answers[currentQuestion.id];
+        
+        // Check if required field is empty
+        if (Boolean(currentQuestion.required) && !answer) {
+            setValidationError('Este campo é obrigatório');
+            return false;
+        }
+
+        // Skip validation if not required and empty
+        if (!answer) {
+            setValidationError(null);
+            return true;
+        }
+
+        // Validate email format
+        if (currentQuestion.type === 'email' && !validateEmail(answer)) {
+            setValidationError('Por favor, insira um email válido');
+            return false;
+        }
+
+        // Validate phone format
+        if (currentQuestion.type === 'phone' && !validatePhone(answer)) {
+            setValidationError('Por favor, insira um telefone válido (min. 10 dígitos)');
+            return false;
+        }
+
+        setValidationError(null);
+        return true;
+    };
+
     const handleAnswer = (value: any) => {
         setAnswers({ ...answers, [currentQuestion.id]: value });
+        setValidationError(null); // Clear error when user types
     };
 
     const handleMultiSelectToggle = (option: string) => {
@@ -55,10 +99,11 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
             ? current.filter((o: string) => o !== option)
             : [...current, option];
         setAnswers({ ...answers, [currentQuestion.id]: updated });
+        setValidationError(null); // Clear error when user selects
     };
 
     const handleNext = async () => {
-        if (Boolean(currentQuestion.required) && !answers[currentQuestion.id]) {
+        if (!validateCurrentAnswer()) {
             return;
         }
 
@@ -66,11 +111,15 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
             await handleSubmit();
         } else {
             setCurrentStep(currentStep + 1);
+            setValidationError(null);
         }
     };
 
     const handlePrevious = () => {
-        if (currentStep > 0) setCurrentStep(currentStep - 1);
+        if (currentStep > 0) {
+            setCurrentStep(currentStep - 1);
+            setValidationError(null); // Clear error when going back
+        }
     };
 
     const handleSubmit = async () => {
@@ -211,77 +260,106 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
                 {/* Input Area */}
                 <div className="mb-10">
                     {currentQuestion.type === 'text' && (
-                        <input
-                            type="text"
-                            value={answers[currentQuestion.id] || ''}
-                            onChange={(e) => handleAnswer(e.target.value)}
-                            placeholder="Digite sua resposta..."
-                            className="w-full text-xl md:text-2xl font-medium border-b-2 border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400 outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors"
-                            autoFocus
-                            onKeyDown={(e) => e.key === 'Enter' && handleNext()}
-                        />
+                        <>
+                            <input
+                                type="text"
+                                value={answers[currentQuestion.id] || ''}
+                                onChange={(e) => handleAnswer(e.target.value)}
+                                placeholder="Digite sua resposta..."
+                                className={`w-full text-xl md:text-2xl font-medium border-b-2 ${validationError ? 'border-rose-500' : 'border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400'} outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors`}
+                                autoFocus
+                                onKeyDown={(e) => e.key === 'Enter' && handleNext()}
+                            />
+                            {validationError && (
+                                <p className="text-rose-500 text-sm mt-2 animate-in fade-in duration-200">{validationError}</p>
+                            )}
+                        </>
                     )}
 
                     {currentQuestion.type === 'long_text' && (
-                        <textarea
-                            value={answers[currentQuestion.id] || ''}
-                            onChange={(e) => handleAnswer(e.target.value)}
-                            placeholder="Digite sua resposta..."
-                            className="w-full text-lg border-2 border-slate-100 dark:border-gray-700 rounded-xl p-4 focus:border-emerald-500 dark:focus:border-emerald-400 outline-none bg-slate-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-750 text-deep-teal dark:text-ice-white transition-all h-32 resize-none"
-                            autoFocus
-                        />
+                        <>
+                            <textarea
+                                value={answers[currentQuestion.id] || ''}
+                                onChange={(e) => handleAnswer(e.target.value)}
+                                placeholder="Digite sua resposta..."
+                                className={`w-full text-lg border-2 ${validationError ? 'border-rose-500' : 'border-slate-100 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400'} rounded-xl p-4 outline-none bg-slate-50 dark:bg-gray-800 focus:bg-white dark:focus:bg-gray-750 text-deep-teal dark:text-ice-white transition-all h-32 resize-none`}
+                                autoFocus
+                            />
+                            {validationError && (
+                                <p className="text-rose-500 text-sm mt-2 animate-in fade-in duration-200">{validationError}</p>
+                            )}
+                        </>
                     )}
 
                     {currentQuestion.type === 'number' && (
-                        <input
-                            type="number"
-                            value={answers[currentQuestion.id] || ''}
-                            onChange={(e) => handleAnswer(e.target.value)}
-                            placeholder="Digite um número..."
-                            className="w-full text-xl md:text-2xl font-medium border-b-2 border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400 outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors"
-                            autoFocus
-                            onKeyDown={(e) => e.key === 'Enter' && handleNext()}
-                        />
+                        <>
+                            <input
+                                type="number"
+                                value={answers[currentQuestion.id] || ''}
+                                onChange={(e) => handleAnswer(e.target.value)}
+                                placeholder="Digite um número..."
+                                className={`w-full text-xl md:text-2xl font-medium border-b-2 ${validationError ? 'border-rose-500' : 'border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400'} outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors`}
+                                autoFocus
+                                onKeyDown={(e) => e.key === 'Enter' && handleNext()}
+                            />
+                            {validationError && (
+                                <p className="text-rose-500 text-sm mt-2 animate-in fade-in duration-200">{validationError}</p>
+                            )}
+                        </>
                     )}
 
                     {currentQuestion.type === 'email' && (
-                        <input
-                            type="email"
-                            value={answers[currentQuestion.id] || ''}
-                            onChange={(e) => handleAnswer(e.target.value)}
-                            placeholder="exemplo@email.com"
-                            className="w-full text-xl md:text-2xl font-medium border-b-2 border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400 outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors"
-                            autoFocus
-                            onKeyDown={(e) => e.key === 'Enter' && handleNext()}
-                        />
+                        <>
+                            <input
+                                type="email"
+                                value={answers[currentQuestion.id] || ''}
+                                onChange={(e) => handleAnswer(e.target.value)}
+                                placeholder="exemplo@email.com"
+                                className={`w-full text-xl md:text-2xl font-medium border-b-2 ${validationError ? 'border-rose-500' : 'border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400'} outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors`}
+                                autoFocus
+                                onKeyDown={(e) => e.key === 'Enter' && handleNext()}
+                            />
+                            {validationError && (
+                                <p className="text-rose-500 text-sm mt-2 flex items-center gap-1 animate-in fade-in duration-200">
+                                    <span className="text-base">⚠️</span> {validationError}
+                                </p>
+                            )}
+                        </>
                     )}
 
                     {currentQuestion.type === 'phone' && (
-                        <input
-                            type="tel"
-                            value={answers[currentQuestion.id] || ''}
-                            onChange={(e) => {
-                                // Phone mask: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
-                                let value = e.target.value.replace(/\D/g, '');
-                                if (value.length > 11) value = value.slice(0, 11);
-                                
-                                if (value.length > 10) {
-                                    value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
-                                } else if (value.length > 6) {
-                                    value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
-                                } else if (value.length > 2) {
-                                    value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
-                                } else if (value.length > 0) {
-                                    value = value.replace(/^(\d*)/, '($1');
-                                }
-                                
-                                handleAnswer(value);
-                            }}
-                            placeholder="(11) 98765-4321"
-                            className="w-full text-xl md:text-2xl font-medium border-b-2 border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400 outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors"
-                            autoFocus
-                            onKeyDown={(e) => e.key === 'Enter' && handleNext()}
-                        />
+                        <>
+                            <input
+                                type="tel"
+                                value={answers[currentQuestion.id] || ''}
+                                onChange={(e) => {
+                                    // Phone mask: (XX) XXXXX-XXXX or (XX) XXXX-XXXX
+                                    let value = e.target.value.replace(/\D/g, '');
+                                    if (value.length > 11) value = value.slice(0, 11);
+                                    
+                                    if (value.length > 10) {
+                                        value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+                                    } else if (value.length > 6) {
+                                        value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+                                    } else if (value.length > 2) {
+                                        value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+                                    } else if (value.length > 0) {
+                                        value = value.replace(/^(\d*)/, '($1');
+                                    }
+                                    
+                                    handleAnswer(value);
+                                }}
+                                placeholder="(11) 98765-4321"
+                                className={`w-full text-xl md:text-2xl font-medium border-b-2 ${validationError ? 'border-rose-500' : 'border-slate-200 dark:border-gray-700 focus:border-emerald-500 dark:focus:border-emerald-400'} outline-none py-2 bg-transparent placeholder:text-slate-300 dark:placeholder:text-gray-600 text-deep-teal dark:text-ice-white transition-colors`}
+                                autoFocus
+                                onKeyDown={(e) => e.key === 'Enter' && handleNext()}
+                            />
+                            {validationError && (
+                                <p className="text-rose-500 text-sm mt-2 flex items-center gap-1 animate-in fade-in duration-200">
+                                    <span className="text-base">⚠️</span> {validationError}
+                                </p>
+                            )}
+                        </>
                     )}
 
                     {currentQuestion.type === 'date' && (
@@ -379,7 +457,7 @@ export function LeadFormRenderer({ token, form, trainer, lead }: LeadFormRendere
                 <div className="flex items-center gap-4">
                     <button
                         onClick={handleNext}
-                        disabled={isSubmitting || (Boolean(currentQuestion.required) && !answers[currentQuestion.id])}
+                        disabled={isSubmitting || (Boolean(currentQuestion.required) && !answers[currentQuestion.id]) || validationError !== null}
                         className="flex-1 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg flex items-center justify-center gap-2"
                     >
                         {isSubmitting ? 'Enviando...' : isLastQuestion ? 'Finalizar' : 'Próxima'}
