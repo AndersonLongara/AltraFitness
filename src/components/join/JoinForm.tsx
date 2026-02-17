@@ -29,6 +29,8 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
         setError(null);
         try {
             await acceptInvite(token, phone);
+            // Clear the invite cookie
+            document.cookie = 'invite_token=; path=/; max-age=0';
             // Force a hard reload to ensure clean state and auth redirect
             window.location.href = '/student';
         } catch (err: any) {

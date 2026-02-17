@@ -2,6 +2,7 @@ import { db } from "@/db";
 import { students, trainers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { Check, ShieldCheck } from "@phosphor-icons/react/dist/ssr";
 import JoinForm from "@/components/join/JoinForm";
 
@@ -17,6 +18,10 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
     });
 
     if (!student) {
+        // Clear cookie if token is invalid
+        const cookieStore = await cookies();
+        cookieStore.delete('invite_token');
+
         return (
             <div className="min-h-screen bg-ice-white flex items-center justify-center p-6">
                 <div className="bg-white p-8 rounded-3xl soft-shadow text-center max-w-sm w-full">
@@ -29,6 +34,15 @@ export default async function JoinPage({ params }: { params: Promise<{ token: st
             </div>
         );
     }
+
+    // Save invite token in cookie so auth-redirect can find it after OAuth
+    const cookieStore = await cookies();
+    cookieStore.set('invite_token', token, {
+        path: '/',
+        maxAge: 60 * 60, // 1 hour
+        httpOnly: true,
+        sameSite: 'lax',
+    });
 
     return (
         <div className="min-h-screen bg-ice-white flex flex-col items-center justify-center p-6 font-primary">
