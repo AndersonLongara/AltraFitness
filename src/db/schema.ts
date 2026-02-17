@@ -736,7 +736,7 @@ export const leadFormAnswers = sqliteTable('lead_form_answers', {
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
-// Pipeline Configurations - Define which questionnaire to use for each pipeline stage
+// Pipeline Configurations
 export const pipelineConfigs = sqliteTable('pipeline_configs', {
     id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     trainerId: text('trainer_id').notNull().references(() => trainers.id, { onDelete: 'cascade' }),
