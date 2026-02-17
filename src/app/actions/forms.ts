@@ -2,7 +2,7 @@
 
 import { db } from '@/db';
 import { forms, formQuestions, studentForms, formAnswers, students, trainers } from '@/db/schema';
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc, inArray, sql } from 'drizzle-orm';
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { revalidatePath } from 'next/cache';
 
@@ -130,17 +130,15 @@ export async function updateForm(formId: string, data: {
         where: eq(formQuestions.formId, formId),
     });
 
-    const incomingIds = data.questions.filter(q => q.id).map(q => q.id);
+    const incomingIds = data.questions.filter(q => q.id).map(q => q.id as string);
     const toDelete = existingQuestions.filter(q => !incomingIds.includes(q.id));
 
     // Delete removed questions
     if (toDelete.length > 0) {
-        // Warning: This cascades deletion of answers for these questions usually
+        const toDeleteIds = toDelete.map(q => q.id);
         await db.delete(formQuestions).where(
-            and(eq(formQuestions.formId, formId),
-                // @ts-ignore - 'inArray' should work but simple OR for list
-                sql`${formQuestions.id} IN ${toDelete.map(q => q.id)}`
-            ));
+            inArray(formQuestions.id, toDeleteIds)
+        );
     }
 
     // Upsert
