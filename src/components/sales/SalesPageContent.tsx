@@ -25,11 +25,9 @@ export default function SalesPageContent({ leadsList, plansList }: SalesPageCont
     const [selectedLead, setSelectedLead] = useState<any | null>(null);
 
     // Conversion Modal State
-    const [conversionModal, setConversionModal] = useState<{ isOpen: boolean; leadId: string; token: string | null; name: string }>({
+    const [conversionModal, setConversionModal] = useState<{ isOpen: boolean; lead: any | null }>({
         isOpen: false,
-        leadId: "",
-        token: null,
-        name: ""
+        lead: null
     });
 
     const [activeFilter, setActiveFilter] = useState<'all' | 'hot' | 'warm' | 'cold'>('all');
@@ -59,9 +57,7 @@ export default function SalesPageContent({ leadsList, plansList }: SalesPageCont
 
         setConversionModal({
             isOpen: true,
-            leadId: leadId,
-            token: null, // No token yet
-            name: lead.name
+            lead: lead
         });
     };
 
@@ -179,7 +175,7 @@ export default function SalesPageContent({ leadsList, plansList }: SalesPageCont
             <LeadConversionModal
                 isOpen={conversionModal.isOpen}
                 onClose={() => setConversionModal(prev => ({ ...prev, isOpen: false }))}
-                lead={conversionModal.leadId ? { id: conversionModal.leadId, name: conversionModal.name } : null}
+                lead={conversionModal.lead}
                 plans={plansList}
             />
 

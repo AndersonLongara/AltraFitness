@@ -314,7 +314,7 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
                 <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 animate-fade-in" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white dark:bg-[#1E2A36] rounded-[32px] p-2 shadow-2xl dark:shadow-none border border-slate-200 dark:border-white/10 z-50 animate-scale-in outline-none max-h-[90vh] overflow-y-auto">
+                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white dark:bg-[#1E2A36] rounded-[32px] p-2 shadow-2xl dark:shadow-none border border-slate-200 dark:border-white/10 z-50 animate-scale-in outline-none max-h-[90vh] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                     <Dialog.Title className="sr-only">Detalhes do Lead</Dialog.Title>
 
                     <div className="bg-white dark:bg-[#1E2A36] rounded-[24px] p-6 md:p-8 space-y-6">

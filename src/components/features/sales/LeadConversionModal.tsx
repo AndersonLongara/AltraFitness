@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as Dialog from "@radix-ui/react-dialog";
-import { X, Check, ArrowRight, Wallet, Calendar } from "@phosphor-icons/react";
+import { X, Check, ArrowRight, Wallet, Calendar, Percent } from "@phosphor-icons/react";
 import { convertLeadToStudent } from "@/app/actions/leads";
 
 interface Plan {
@@ -12,10 +12,21 @@ interface Plan {
     durationMonths: number;
 }
 
+interface Lead {
+    id: string;
+    name: string;
+    planId?: string | null;
+    estimatedValue?: number;
+    stageData?: {
+        proposalValue?: number;
+        [key: string]: any;
+    };
+}
+
 interface LeadConversionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    lead: { id: string; name: string } | null;
+    lead: Lead | null;
     plans: Plan[];
 }
 
@@ -23,6 +34,13 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
     const [selectedPlanId, setSelectedPlanId] = useState<string>("");
     const [startDate, setStartDate] = useState<string>(new Date().toISOString().split('T')[0]);
     const [isConverting, setIsConverting] = useState(false);
+
+    // Pre-select plan if lead already has one
+    useEffect(() => {
+        if (lead?.planId && plans.some(p => p.id === lead.planId)) {
+            setSelectedPlanId(lead.planId);
+        }
+    }, [lead?.planId, plans]);
 
     if (!lead) return null;
 
@@ -43,21 +61,27 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
     };
 
     const selectedPlan = plans.find(p => p.id === selectedPlanId);
+    const proposalValue = lead.stageData?.proposalValue || lead.estimatedValue;
+    const hasDiscount = selectedPlan && proposalValue && proposalValue < selectedPlan.price;
+    const discountPercent = hasDiscount 
+        ? Math.round(((selectedPlan!.price - proposalValue) / selectedPlan!.price) * 100)
+        : 0;
+    const finalValue = hasDiscount ? proposalValue : selectedPlan?.price;
 
     return (
         <Dialog.Root open={isOpen} onOpenChange={onClose}>
             <Dialog.Portal>
-                <Dialog.Overlay className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 animate-fade-in" />
-                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-ice-white rounded-[32px] p-2 shadow-2xl z-50 animate-scale-in outline-none">
+                <Dialog.Overlay className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm z-50 animate-fade-in" />
+                <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-ice-white dark:bg-[#1a2332] rounded-[32px] p-2 shadow-2xl z-50 animate-scale-in outline-none">
                     <Dialog.Title className="sr-only">Converter Lead em Aluno</Dialog.Title>
 
-                    <div className="bg-pure-white rounded-[24px] p-6 md:p-8">
+                    <div className="bg-pure-white dark:bg-[#1E2A36] rounded-[24px] p-6 md:p-8">
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h2 className="text-2xl font-bold text-graphite-dark tracking-tight">Novo Aluno</h2>
-                                <p className="text-slate-400 font-medium text-sm">Defina o plano para {lead.name}</p>
+                                <h2 className="text-2xl font-bold text-graphite-dark dark:text-white tracking-tight">Novo Aluno</h2>
+                                <p className="text-slate-400 dark:text-slate-500 font-medium text-sm">Defina o plano para {lead.name}</p>
                             </div>
-                            <button onClick={onClose} className="p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-full transition-colors">
+                            <button onClick={onClose} className="p-2 text-slate-300 dark:text-slate-600 hover:text-slate-500 dark:hover:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-full transition-colors">
                                 <X size={24} weight="bold" />
                             </button>
                         </div>
@@ -65,10 +89,10 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
                         <div className="space-y-6">
                             {/* Plan Selection */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Plano Contratado</label>
+                                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Plano Contratado</label>
                                 <div className="grid gap-2">
                                     {plans.length === 0 ? (
-                                        <div className="p-4 bg-amber-50 rounded-xl text-amber-600 text-sm font-medium border border-amber-100">
+                                        <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-amber-600 dark:text-amber-400 text-sm font-medium border border-amber-100 dark:border-amber-800/50">
                                             Nenhum plano cadastrado.
                                         </div>
                                     ) : (
@@ -77,8 +101,8 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
                                                 key={plan.id}
                                                 className={`p-4 rounded-xl border cursor-pointer transition-all flex justify-between items-center group
                                                     ${selectedPlanId === plan.id
-                                                        ? 'bg-emerald-50 border-performance-green/50 ring-1 ring-performance-green'
-                                                        : 'bg-slate-50 border-transparent hover:border-slate-200'
+                                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 border-performance-green/50 dark:border-emerald-600/50 ring-1 ring-performance-green dark:ring-emerald-600'
+                                                        : 'bg-slate-50 dark:bg-slate-800/50 border-transparent hover:border-slate-200 dark:hover:border-slate-700'
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-3">
@@ -91,13 +115,13 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
                                                         className="hidden"
                                                     />
                                                     <div>
-                                                        <div className="font-bold text-graphite-dark">{plan.name}</div>
-                                                        <div className="text-xs text-slate-500 font-medium mt-0.5">
+                                                        <div className="font-bold text-graphite-dark dark:text-white">{plan.name}</div>
+                                                        <div className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                                                             {plan.durationMonths} {plan.durationMonths === 1 ? 'mês' : 'meses'}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="font-bold text-emerald-600">
+                                                <div className="font-bold text-emerald-600 dark:text-emerald-400">
                                                     {(plan.price / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                                                 </div>
                                             </label>
@@ -108,26 +132,52 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
 
                             {/* Start Date */}
                             <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Início da Vigência</label>
+                                <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Início da Vigência</label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500">
                                         <Calendar size={24} weight="duotone" />
                                     </span>
                                     <input
                                         type="date"
                                         value={startDate}
                                         onChange={(e) => setStartDate(e.target.value)}
-                                        className="w-full p-4 pl-12 bg-slate-50 rounded-[12px] font-bold text-graphite-dark outline-none focus:ring-2 focus:ring-emerald-100 transition-all border border-transparent focus:border-emerald-200"
+                                        className="w-full p-4 pl-12 bg-slate-50 dark:bg-slate-800/50 rounded-[12px] font-bold text-graphite-dark dark:text-white outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-900/50 transition-all border border-transparent focus:border-emerald-200 dark:focus:border-emerald-800"
                                     />
                                 </div>
                             </div>
 
+                            {/* Discount Badge */}
+                            {hasDiscount && selectedPlan && (
+                                <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 p-4 rounded-2xl border border-emerald-200 dark:border-emerald-800/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className="bg-emerald-100 dark:bg-emerald-900/40 p-2 rounded-lg">
+                                            <Percent size={20} weight="bold" className="text-emerald-600 dark:text-emerald-400" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
+                                                Desconto Aplicado
+                                            </div>
+                                            <div className="text-sm font-medium text-emerald-600 dark:text-emerald-300 mt-0.5">
+                                                {discountPercent}% de desconto - Economize {((selectedPlan.price - proposalValue!) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* Estimated Total */}
                             {selectedPlan && (
-                                <div className="bg-slate-50 p-4 rounded-2xl flex justify-between items-center border border-slate-100">
-                                    <div className="text-xs font-bold text-slate-400 uppercase">Valor Total</div>
-                                    <div className="text-xl font-extrabold text-graphite-dark">
-                                        {(selectedPlan.price / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl flex justify-between items-center border border-slate-100 dark:border-slate-700/50">
+                                    <div className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase">Valor Total</div>
+                                    <div className="flex flex-col items-end gap-1">
+                                        {hasDiscount && (
+                                            <div className="text-sm font-bold text-slate-400 dark:text-slate-500 line-through">
+                                                {(selectedPlan.price / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                            </div>
+                                        )}
+                                        <div className="text-xl font-extrabold text-graphite-dark dark:text-white">
+                                            {((finalValue || 0) / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -135,14 +185,14 @@ export default function LeadConversionModal({ isOpen, onClose, lead, plans }: Le
                             <div className="flex gap-3 pt-2">
                                 <button
                                     onClick={onClose}
-                                    className="px-6 py-4 text-slate-500 font-bold hover:bg-slate-50 rounded-2xl transition-colors"
+                                    className="px-6 py-4 text-slate-500 dark:text-slate-400 font-bold hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-2xl transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={handleConfirm}
                                     disabled={!selectedPlanId || isConverting}
-                                    className="flex-1 py-4 bg-performance-green text-graphite-dark font-bold rounded-2xl shadow-lg shadow-emerald-200 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                                    className="flex-1 py-4 bg-performance-green dark:bg-emerald-600 text-graphite-dark dark:text-white font-bold rounded-2xl shadow-lg shadow-emerald-200 dark:shadow-emerald-900/50 hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
                                 >
                                     {isConverting ? (
                                         <>Processando...</>
