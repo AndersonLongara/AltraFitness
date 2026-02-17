@@ -26,7 +26,7 @@ interface LeadDetailsModalProps {
     lead: Lead | null;
 }
 
-const STAGE_FIELDS: Record<string, { key: string; label: string; type: 'text' | 'number' | 'date' | 'textarea' }[]> = {
+const STAGE_FIELDS: Record<string, { key: string; label: string; type: 'text' | 'number' | 'date' | 'textarea' | 'time' | 'tel'; required?: boolean }[]> = {
     'new': [
         { key: 'initialNotes', label: 'Notas Iniciais', type: 'textarea' },
         { key: 'sourceDetail', label: 'Detalhe da Origem', type: 'text' }
@@ -37,7 +37,9 @@ const STAGE_FIELDS: Record<string, { key: string; label: string; type: 'text' | 
         { key: 'responseSummary', label: 'Resumo da Resposta', type: 'textarea' }
     ],
     'scheduled': [
-        { key: 'visitDate', label: 'Data da Visita', type: 'date' },
+        { key: 'scheduledDate', label: 'Data do Agendamento', type: 'date' },
+        { key: 'scheduledTime', label: 'Horário do Agendamento', type: 'time' },
+        { key: 'callLink', label: 'Link da Call (Meet, Zoom, etc)', type: 'text' },
         { key: 'visitType', label: 'Tipo de Visita (Presencial/Online)', type: 'text' },
     ],
     'negotiation': [
@@ -46,6 +48,7 @@ const STAGE_FIELDS: Record<string, { key: string; label: string; type: 'text' | 
         { key: 'deadline', label: 'Prazo para Decisão', type: 'date' }
     ],
     'won': [
+        { key: 'clientWhatsApp', label: 'WhatsApp do Cliente', type: 'tel', required: true },
         { key: 'closedAt', label: 'Data de Fechamento', type: 'date' },
         { key: 'contractDuration', label: 'Duração do Contrato (Meses)', type: 'number' }
     ],
@@ -141,6 +144,15 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
     const fields = STAGE_FIELDS[currentStage] || [];
 
     const handleSave = async () => {
+        // Validate required fields
+        const requiredFields = fields.filter(f => f.required);
+        const missingFields = requiredFields.filter(f => !formData[f.key]);
+        
+        if (missingFields.length > 0) {
+            alert(`Campos obrigatórios não preenchidos: ${missingFields.map(f => f.label).join(', ')}`);
+            return;
+        }
+
         setIsSaving(true);
         try {
             // Save Stage Data
@@ -257,19 +269,48 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                             <div className="grid gap-4">
                                 {fields.length > 0 ? fields.map((field) => (
                                     <div key={field.key}>
-                                        <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 mb-1.5">{field.label}</label>
+                                        <label className="block text-xs font-bold text-slate-400 dark:text-slate-500 mb-1.5">
+                                            {field.label}
+                                            {field.required && <span className="text-red-500 ml-1">*</span>}
+                                        </label>
                                         {field.type === 'textarea' ? (
                                             <textarea
                                                 value={formData[field.key] || ''}
                                                 onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                                                required={field.required}
                                                 className="w-full p-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-medium text-graphite-dark dark:text-white outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30 min-h-[100px] resize-none"
                                                 placeholder={`Digite ${field.label.toLowerCase()}...`}
+                                            />
+                                        ) : field.type === 'tel' ? (
+                                            <input
+                                                type="tel"
+                                                value={formData[field.key] || ''}
+                                                onChange={(e) => {
+                                                    let value = e.target.value.replace(/\D/g, '');
+                                                    if (value.length > 11) value = value.slice(0, 11);
+                                                    
+                                                    if (value.length > 10) {
+                                                        value = value.replace(/^(\d{2})(\d{5})(\d{4}).*/, '($1) $2-$3');
+                                                    } else if (value.length > 6) {
+                                                        value = value.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+                                                    } else if (value.length > 2) {
+                                                        value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+                                                    } else if (value.length > 0) {
+                                                        value = value.replace(/^(\d*)/, '($1');
+                                                    }
+                                                    
+                                                    setFormData({ ...formData, [field.key]: value });
+                                                }}
+                                                required={field.required}
+                                                placeholder="(11) 98765-4321"
+                                                className="w-full p-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-medium text-graphite-dark dark:text-white outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30"
                                             />
                                         ) : (
                                             <input
                                                 type={field.type}
                                                 value={formData[field.key] || ''}
                                                 onChange={(e) => setFormData({ ...formData, [field.key]: e.target.value })}
+                                                required={field.required}
                                                 className="w-full p-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl font-medium text-graphite-dark dark:text-white outline-none focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-500/30"
                                             />
                                         )}
@@ -284,6 +325,21 @@ export default function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsM
                         {currentStage === 'scheduled' && (
                             <>
                                 <hr className="border-slate-100 dark:border-white/10" />
+                                
+                                {/* Manual Questionnaire Send via WhatsApp */}
+                                <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl p-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="p-2 bg-emerald-100 dark:bg-emerald-500/20 rounded-lg">
+                                            <WhatsappLogo size={24} weight="fill" className="text-emerald-600 dark:text-emerald-400" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-100 mb-1">Envio Manual de Questionário</h4>
+                                            <p className="text-xs text-emerald-700 dark:text-emerald-300 mb-3">
+                                                Selecione abaixo qual formulário ou questionário deseja enviar manualmente via WhatsApp.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                                 
                                 {/* Formulários Section */}
                                 <div>
