@@ -288,12 +288,19 @@ export default function JoinForm({ token, initialName, initialPhone, planName, p
                     </div>
                     {instagramData && (
                         <div className="mt-3 p-3 bg-[#2ECC71]/10 border border-[#2ECC71]/20 rounded-xl flex items-center gap-3">
-                            {instagramData.photoUrl && (
+                            {instagramData.photoUrl ? (
                                 <img 
                                     src={instagramData.photoUrl} 
                                     alt="Instagram Profile" 
+                                    onError={(e) => {
+                                        e.currentTarget.style.display = 'none';
+                                    }}
                                     className="w-12 h-12 rounded-full object-cover border-2 border-[#2ECC71]"
                                 />
+                            ) : (
+                                <div className="w-12 h-12 rounded-full bg-[#2ECC71]/20 border-2 border-[#2ECC71] flex items-center justify-center">
+                                    <InstagramLogo size={24} className="text-[#2ECC71]" weight="duotone" />
+                                </div>
                             )}
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs font-bold text-[#2ECC71] uppercase tracking-wide">Perfil Encontrado</p>

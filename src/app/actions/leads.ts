@@ -194,7 +194,32 @@ export async function enrichInstagramProfile(handle: string) {
 
     try {
         const profile = await getInstagramProfile(cleanHandle);
-        return profile;
+        
+        if (!profile) return null;
+
+        let finalPhotoUrl = profile.photoUrl;
+
+        // Persist Instagram image as Base64 to avoid expiration/hotlinking
+        if (profile.photoUrl && (profile.photoUrl.includes('cdninstagram') || profile.photoUrl.includes('fbcdn.net'))) {
+            try {
+                const response = await fetch(profile.photoUrl);
+                if (response.ok) {
+                    const arrayBuffer = await response.arrayBuffer();
+                    const buffer = Buffer.from(arrayBuffer);
+                    const base64 = buffer.toString('base64');
+                    const contentType = response.headers.get('content-type') || 'image/jpeg';
+                    finalPhotoUrl = `data:${contentType};base64,${base64}`;
+                }
+            } catch (error) {
+                console.error("Failed to download/persist Instagram image:", error);
+                // Fallback to original URL
+            }
+        }
+
+        return {
+            ...profile,
+            photoUrl: finalPhotoUrl
+        };
     } catch (error) {
         console.error("Enrichment action failed", error);
         return null;
