@@ -55,6 +55,7 @@ export async function createWorkoutPlan(data: CreatePlanData) {
             id: trainerId,
             name: `${user.firstName} ${user.lastName}`.trim(),
             email: user.emailAddresses[0].emailAddress,
+            theme: 'system',
         });
     }
 

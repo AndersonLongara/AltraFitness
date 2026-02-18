@@ -154,6 +154,7 @@ export async function getCurrentTrainer(): Promise<TrainerData> {
             id: userId,
             email: email || "",
             name,
+            theme: 'system',
         }).onConflictDoNothing();
 
         return {

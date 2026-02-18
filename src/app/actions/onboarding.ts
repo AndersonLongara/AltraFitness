@@ -186,6 +186,7 @@ export async function setUserRole(
             subscriptionStatus,
             trialEndsAt,
             teamCode,
+            theme: 'system',
         }).onConflictDoUpdate({
             target: trainers.id,
             set: {

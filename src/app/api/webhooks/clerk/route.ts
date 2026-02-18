@@ -106,6 +106,7 @@ async function handleUserEvent(evt: WebhookEvent) {
                 id: userId,
                 name,
                 email,
+                theme: 'system',
             })
             .onConflictDoUpdate({
                 target: trainers.id,

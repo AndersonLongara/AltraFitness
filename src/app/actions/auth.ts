@@ -25,6 +25,7 @@ export async function syncTrainer() {
             id: userId,
             name,
             email,
+            theme: 'system',
         })
         .onConflictDoUpdate({
             target: trainers.id,

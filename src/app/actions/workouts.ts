@@ -40,6 +40,7 @@ export async function createWorkout(data: CreateWorkoutData) {
                 id: user.id,
                 name,
                 email,
+                theme: 'system',
             });
         } else {
             // Fallback or error if we can't get user details to create trainer

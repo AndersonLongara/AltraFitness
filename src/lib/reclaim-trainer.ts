@@ -83,6 +83,7 @@ export async function reassignOrphanedTrainer(input: ReassignTrainerInput): Prom
     subscriptionStatus: newTrainerData.subscriptionStatus,
     trialEndsAt: newTrainerData.trialEndsAt ?? null,
     asaasCustomerId: oldTrainer.asaasCustomerId,
+    theme: 'system',
   });
 
   // 3. Atualizar referências em todas as tabelas
