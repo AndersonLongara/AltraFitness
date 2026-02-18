@@ -101,21 +101,32 @@ async function handleUserEvent(evt: WebhookEvent) {
         console.log(`[Webhook] Assigning role 'trainer' to ${email} (not in students table)`)
 
         // Sync trainer record to database
-        await db.insert(trainers)
-            .values({
-                id: userId,
-                name,
-                email,
-                theme: 'system',
-            })
-            .onConflictDoUpdate({
-                target: trainers.id,
-                set: {
+        // Check if trainer exists with same email but different Clerk ID
+        const existingByEmail = await db.query.trainers.findFirst({
+            where: eq(trainers.email, email),
+            columns: { id: true },
+        })
+        if (existingByEmail && existingByEmail.id !== userId) {
+            await db.update(trainers)
+                .set({ id: userId, name, updatedAt: new Date() })
+                .where(eq(trainers.id, existingByEmail.id))
+        } else {
+            await db.insert(trainers)
+                .values({
+                    id: userId,
                     name,
                     email,
-                    updatedAt: new Date(),
-                }
-            })
+                    theme: 'system',
+                })
+                .onConflictDoUpdate({
+                    target: trainers.id,
+                    set: {
+                        name,
+                        email,
+                        updatedAt: new Date(),
+                    }
+                })
+        }
     }
 
     // Update Clerk user metadata with role

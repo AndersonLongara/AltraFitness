@@ -150,12 +150,23 @@ export async function getCurrentTrainer(): Promise<TrainerData> {
             ? `${user.firstName} ${user.lastName}` 
             : user.firstName || email || "Trainer";
 
-        await db.insert(trainers).values({
-            id: userId,
-            email: email || "",
-            name,
-            theme: 'system',
-        }).onConflictDoNothing();
+        // Check if trainer exists with same email but different Clerk ID
+        const existingByEmail = email ? await db.query.trainers.findFirst({
+            where: eq(trainers.email, email),
+            columns: { id: true },
+        }) : null;
+        if (existingByEmail && existingByEmail.id !== userId) {
+            await db.update(trainers)
+                .set({ id: userId, name, updatedAt: new Date() })
+                .where(eq(trainers.id, existingByEmail.id));
+        } else {
+            await db.insert(trainers).values({
+                id: userId,
+                email: email || "",
+                name,
+                theme: 'system',
+            }).onConflictDoNothing();
+        }
 
         return {
             id: userId,

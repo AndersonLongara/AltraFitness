@@ -173,7 +173,33 @@ export async function setUserRole(
             teamCode = generateTeamCode();
         }
 
-        await db.insert(trainers).values({
+        // Check if a trainer already exists with this email but a different Clerk ID
+        // (e.g. user re-created their Clerk account)
+        const email = user.emailAddresses[0].emailAddress;
+        const existingByEmail = await db.query.trainers.findFirst({
+            where: eq(trainers.email, email),
+            columns: { id: true, teamCode: true },
+        });
+        if (existingByEmail && existingByEmail.id !== user.id) {
+            // Update the old record to the new Clerk user ID
+            await db.update(trainers)
+                .set({
+                    id: user.id,
+                    cpf: trainerData.cpf || null,
+                    phone: trainerData.phone || null,
+                    birthDate: trainerData.birthDate ? new Date(trainerData.birthDate) : null,
+                    presentialStudents: trainerData.presentialStudents || 0,
+                    onlineStudents: trainerData.onlineStudents || 0,
+                    subscriptionPlan,
+                    subscriptionStatus,
+                    trialEndsAt,
+                    teamCode: existingByEmail.teamCode || teamCode,
+                    theme: 'system',
+                    updatedAt: new Date(),
+                })
+                .where(eq(trainers.id, existingByEmail.id));
+        } else {
+            await db.insert(trainers).values({
             id: user.id,
             name: user.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : user.username || "Trainer",
             email: user.emailAddresses[0].emailAddress,
@@ -202,6 +228,7 @@ export async function setUserRole(
                 updatedAt: new Date(),
             }
         });
+        } // end else
 
         // Create service plans (plans the trainer offers to students)
         if (trainerData.servicePlans && trainerData.servicePlans.length > 0) {
