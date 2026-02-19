@@ -41,6 +41,7 @@ import { createCustomer, createPayment } from "@/lib/asaas";
 import type { BillingType } from "@/lib/asaas";
 import { getPlatformAsaasConfig } from "@/lib/platform-asaas-config";
 import { clerkClient } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 
 const DEFAULT_SUPERADMIN_STATS = {
   totalTrainers: 0,
@@ -822,38 +823,52 @@ export async function deleteUserByUserId(
 ): Promise<{ ok: true } | { error: string }> {
   await requireSuperAdmin();
 
+  console.log('[deleteUserByUserId] Iniciando exclusão do usuário:', userId);
+
   const roleRow = await db.query.userRoles.findFirst({
     where: eq(userRoles.userId, userId),
     columns: { role: true },
   });
+  
   if (!roleRow) {
+    console.log('[deleteUserByUserId] Usuário sem role encontrada, removendo do Clerk');
     await db.delete(userRoles).where(eq(userRoles.userId, userId));
     try {
       const client = await clerkClient();
       await client.users.deleteUser(userId);
-    } catch {
-      // Pode já não existir no Clerk
+      console.log('[deleteUserByUserId] Usuário removido do Clerk com sucesso');
+    } catch (e) {
+      console.log('[deleteUserByUserId] Erro ao remover do Clerk (pode já não existir):', e);
     }
+    revalidatePath('/superadmin/users');
     return { ok: true };
   }
 
   const role = roleRow.role as "superadmin" | "trainer" | "student";
+  console.log('[deleteUserByUserId] Role do usuário:', role);
+  
   if (role === "superadmin") {
     return { error: "Não é permitido excluir um superadmin por aqui." };
   }
 
   if (role === "trainer") {
-    return deleteTrainerUser(userId);
+    console.log('[deleteUserByUserId] Delegando exclusão para deleteTrainerUser');
+    const result = await deleteTrainerUser(userId);
+    revalidatePath('/superadmin/users');
+    revalidatePath('/superadmin/trainers');
+    return result;
   }
 
   // student: encontrar student por email (Clerk user) e excluir dados do aluno + user_roles + Clerk
+  console.log('[deleteUserByUserId] Processando exclusão de estudante');
   let email: string | null = null;
   try {
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
     email = user.emailAddresses[0]?.emailAddress ?? null;
-  } catch {
-    // Usuário pode já ter sido removido do Clerk
+    console.log('[deleteUserByUserId] Email do estudante:', email);
+  } catch (e) {
+    console.log('[deleteUserByUserId] Erro ao obter usuário do Clerk:', e);
   }
 
   if (email) {
@@ -862,18 +877,27 @@ export async function deleteUserByUserId(
       columns: { id: true },
     });
     if (student) {
+      console.log('[deleteUserByUserId] Estudante encontrado, ID:', student.id);
       const out = await deleteStudentByStudentId(student.id);
       if ("error" in out) return out;
+    } else {
+      console.log('[deleteUserByUserId] Estudante não encontrado no banco');
     }
   }
 
+  console.log('[deleteUserByUserId] Removendo user_roles e conta Clerk');
   await db.delete(userRoles).where(eq(userRoles.userId, userId));
   try {
     const client = await clerkClient();
     await client.users.deleteUser(userId);
-  } catch {
-    // Pode já não existir
+    console.log('[deleteUserByUserId] Usuário removido do Clerk com sucesso');
+  } catch (e) {
+    console.log('[deleteUserByUserId] Erro ao remover do Clerk:', e);
   }
+  
+  revalidatePath('/superadmin/users');
+  revalidatePath('/superadmin/students');
+  console.log('[deleteUserByUserId] Exclusão concluída com sucesso');
   return { ok: true };
 }
 
@@ -959,6 +983,9 @@ export async function deleteTrainerUser(
   } catch (e) {
     return { error: "Conta removida do sistema, mas falha ao remover no Clerk: " + String(e) };
   }
+  
+  revalidatePath('/superadmin/trainers');
+  revalidatePath('/superadmin/users');
   return { ok: true };
 }
 
@@ -1030,6 +1057,8 @@ export async function deleteStudentByStudentId(
   
   await db.delete(students).where(eq(students.id, studentId));
 
+  revalidatePath('/superadmin/students');
+  revalidatePath('/superadmin/users');
   return { ok: true };
 }
 
