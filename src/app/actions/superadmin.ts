@@ -971,10 +971,11 @@ export async function deleteTrainerUser(
     await deleteStudentByStudentId(id);
   }
 
+  // leads.planId references plans.id — must delete leads BEFORE plans
+  await db.delete(leads).where(eq(leads.trainerId, trainerId));
   await db.delete(payments).where(eq(payments.trainerId, trainerId));
   await db.delete(plans).where(eq(plans.trainerId, trainerId));
   await db.delete(platformCharges).where(eq(platformCharges.trainerId, trainerId));
-  await db.delete(leads).where(eq(leads.trainerId, trainerId));
   await db.delete(exercises).where(eq(exercises.trainerId, trainerId));
 
   const planIds = await db
