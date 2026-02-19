@@ -836,7 +836,46 @@ export async function deleteUserByUserId(
   });
   
   if (!roleRow) {
-    console.log('[deleteUserByUserId] Usuário sem role encontrada, removendo do Clerk');
+    console.log('[deleteUserByUserId] Usuário sem role encontrada — verificando tabela trainers');
+    
+    // Pode ser um trainer sem entrada em userRoles: deletar via deleteTrainerUser
+    const trainerRow = await db.query.trainers.findFirst({
+      where: eq(trainers.id, userId),
+      columns: { id: true },
+    });
+    
+    if (trainerRow) {
+      console.log('[deleteUserByUserId] Encontrado na tabela trainers, executando deleteTrainerUser');
+      const result = await deleteTrainerUser(userId);
+      revalidatePath('/superadmin/users');
+      revalidatePath('/superadmin/trainers');
+      revalidateTag('superadmin-users');
+      revalidateTag('superadmin-trainers');
+      return result;
+    }
+
+    // Pode ser aluno sem role: buscar por email
+    let email: string | null = null;
+    try {
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      email = user.emailAddresses[0]?.emailAddress ?? null;
+    } catch {
+      // usuário pode já não existir no Clerk
+    }
+
+    if (email) {
+      const student = await db.query.students.findFirst({
+        where: eq(students.email, email),
+        columns: { id: true },
+      });
+      if (student) {
+        console.log('[deleteUserByUserId] Encontrado na tabela students, executando deleteStudentByStudentId');
+        const out = await deleteStudentByStudentId(student.id);
+        if ("error" in out) return out;
+      }
+    }
+
     await db.delete(userRoles).where(eq(userRoles.userId, userId));
     try {
       const client = await clerkClient();
