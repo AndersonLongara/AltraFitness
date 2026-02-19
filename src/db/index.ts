@@ -16,5 +16,12 @@ export const client = createClient({
     authToken,
 });
 
+// Enable foreign key constraints for SQLite/Turso
+// This is critical for ON DELETE CASCADE to work properly
+client.execute('PRAGMA foreign_keys = ON').catch(() => {
+    // Turso may not support PRAGMA or it may be already enabled
+    // Silently ignore the error
+});
+
 export const db = drizzle(client, { schema });
 export type DbType = typeof db;

@@ -31,6 +31,9 @@ import {
   studentBadges,
   forms,
   foods,
+  pipelineConfigs,
+  favoriteExercises,
+  favoriteFoods,
 } from "@/db/schema";
 import { eq, desc, asc, sql, and, gte, lte, inArray } from "drizzle-orm";
 import { requireSuperAdmin } from "@/lib/auth-helpers";
@@ -943,6 +946,9 @@ export async function deleteTrainerUser(
   await db.delete(assessments).where(eq(assessments.trainerId, trainerId));
   await db.delete(forms).where(eq(forms.trainerId, trainerId));
   await db.delete(foods).where(eq(foods.trainerId, trainerId));
+  await db.delete(pipelineConfigs).where(eq(pipelineConfigs.trainerId, trainerId));
+  await db.delete(favoriteExercises).where(eq(favoriteExercises.trainerId, trainerId));
+  await db.delete(favoriteFoods).where(eq(favoriteFoods.trainerId, trainerId));
 
   await db.delete(trainers).where(eq(trainers.id, trainerId));
   await db.delete(userRoles).where(eq(userRoles.userId, trainerId));
@@ -1016,6 +1022,12 @@ export async function deleteStudentByStudentId(
     await db.delete(formAnswers).where(eq(formAnswers.responseId, r.id));
   }
   await db.delete(studentForms).where(eq(studentForms.studentId, studentId));
+  
+  // Clear studentId on any lead that was linked to this student
+  await db.update(leads)
+    .set({ studentId: null })
+    .where(eq(leads.studentId, studentId));
+  
   await db.delete(students).where(eq(students.id, studentId));
 
   return { ok: true };
