@@ -1030,8 +1030,14 @@ export async function deleteTrainerUser(
   try {
     const client = await clerkClient();
     await client.users.deleteUser(trainerId);
-  } catch (e) {
-    return { error: "Conta removida do sistema, mas falha ao remover no Clerk: " + String(e) };
+  } catch (e: any) {
+    // 404 = usuário já não existe no Clerk, considerar como sucesso
+    const status = e?.status ?? e?.errors?.[0]?.status;
+    const isNotFound = status === 404 || String(e).includes("404") || String(e).includes("resource_not_found") || String(e).includes("Not Found");
+    if (!isNotFound) {
+      return { error: "Conta removida do sistema, mas falha ao remover no Clerk: " + String(e) };
+    }
+    console.log('[deleteTrainerUser] Usuário já não existe no Clerk (404), prosseguindo normalmente');
   }
   
   revalidatePath('/superadmin/trainers');
