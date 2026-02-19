@@ -48,10 +48,16 @@ const WEEK_DAYS = [
     { id: 'Sábado', label: 'Sábado' },
     { id: 'Domingo', label: 'Domingo' },
 ];
+// Dia da semana sugerido por treino (0=Segunda .. 6=Domingo)
+const SUGGESTED_DAY_OPTIONS = [
+    { value: 0, label: 'Segunda' }, { value: 1, label: 'Terça' }, { value: 2, label: 'Quarta' },
+    { value: 3, label: 'Quinta' }, { value: 4, label: 'Sexta' }, { value: 5, label: 'Sábado' }, { value: 6, label: 'Domingo' },
+];
 
 interface SplitWorkout {
     id: string; // temp id
     title: string;
+    suggestedDayOfWeek: number | null; // dia sugerido para este treino
     items: ExerciseItem[];
 }
 
@@ -70,6 +76,7 @@ interface WorkoutSheetBuilderProps {
         workouts: {
             id: string;
             title: string;
+            suggestedDayOfWeek?: number | null;
             items: {
                 id: string;
                 exerciseId: string;
@@ -113,6 +120,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
     const [splits, setSplits] = useState<SplitWorkout[]>(initialData?.workouts?.map(w => ({
         id: w.id,
         title: w.title,
+        suggestedDayOfWeek: w.suggestedDayOfWeek ?? null,
         items: w.items.map((item: any) => ({
             ...item,
             warmupSets: item.warmupSets || 0,
@@ -192,6 +200,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
         const newSplit: SplitWorkout = {
             id: crypto.randomUUID(),
             title: `Treino ${String.fromCharCode(65 + splits.length)}`, // A, B, C...
+            suggestedDayOfWeek: null,
             items: []
         };
         setSplits([...splits, newSplit]);
@@ -215,6 +224,10 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
         }
         setSplits(prev => prev.map(s => s.id === id ? { ...s, title: trimmed } : s));
         setEditingSplitId(null);
+    };
+
+    const setSplitSuggestedDay = (splitId: string, value: number | null) => {
+        setSplits(prev => prev.map(s => s.id === splitId ? { ...s, suggestedDayOfWeek: value } : s));
     };
 
     const handleAddExercises = (newExercises: { id: string, name: string }[]) => {
@@ -393,6 +406,7 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
                 workouts: splits.map(split => ({
                     id: initialData ? split.id : undefined, // Keep IDs if editing
                     title: split.title,
+                    suggestedDayOfWeek: split.suggestedDayOfWeek,
                     items: split.items.map(item => ({
                         ...item,
                         advancedTechniques: JSON.stringify(item.advancedTechniques)
@@ -605,6 +619,21 @@ export default function WorkoutSheetBuilder({ students, exercises, trainerId, in
 
                             {activeSplitId ? (
                                 <div className="animate-fade-in space-y-4">
+                                    {/* Dia da semana sugerido para este treino */}
+                                    <div className="flex flex-wrap items-center gap-3 mb-4 p-3 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/10">
+                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-400">Dia da semana sugerido:</span>
+                                        <select
+                                            value={splits.find(s => s.id === activeSplitId)?.suggestedDayOfWeek ?? ''}
+                                            onChange={(e) => setSplitSuggestedDay(activeSplitId!, e.target.value === '' ? null : Number(e.target.value))}
+                                            className="px-4 py-2 rounded-xl border border-slate-200 dark:border-white/20 bg-white dark:bg-white/10 text-graphite-dark dark:text-white font-medium text-sm focus:ring-2 focus:ring-performance-green dark:focus:ring-emerald-500 focus:border-transparent"
+                                        >
+                                            <option value="">Nenhum</option>
+                                            {SUGGESTED_DAY_OPTIONS.map(d => (
+                                                <option key={d.value} value={d.value}>{d.label}</option>
+                                            ))}
+                                        </select>
+                                        <span className="text-xs text-slate-500 dark:text-slate-400">(o aluno vê este treino nesse dia e pode substituir)</span>
+                                    </div>
                                     {/* Selection Toggle */}
                                     <div className="flex justify-between items-center mb-2">
                                         <div className="flex items-center gap-2">

@@ -93,11 +93,9 @@ export async function finishWorkout(logId: string) {
         })
         .where(eq(workoutLogs.id, logId));
 
-    // Award XP
-    // Strategy: Base 100 XP + maybe bonus per set?
-    // Let's keep it simple: 150 XP for a workout.
-    await addXp(log.studentId, 150, 'workout_complete');
+    const xpEarned = 150;
+    await addXp(log.studentId, xpEarned, 'workout_complete');
 
     revalidatePath('/student');
-    return { success: true };
+    return { success: true, xpEarned };
 }

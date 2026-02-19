@@ -9,7 +9,7 @@ import NutritionHeader from "@/components/student/nutrition/NutritionHeader";
 import MealList from "@/components/student/nutrition/MealList";
 import AdHocMealButton from "@/components/student/nutrition/AdHocMealButton";
 import AdHocMealList from "@/components/student/nutrition/AdHocMealList";
-import { ArrowLeft, ForkKnife, Trash } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft, ForkKnife, CheckCircle } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import CalendarStrip from "@/components/student/dashboard/CalendarStrip";
 
@@ -119,6 +119,38 @@ export default async function NutritionPage(props: {
             <div className="mb-8">
                 <CalendarStrip />
             </div>
+
+            {/* Progresso de refeições do dia */}
+            {plan.meals.length > 0 && (
+                <div className="mb-6">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
+                            Refeições registradas
+                        </span>
+                        <span className="text-sm font-black text-white tabular-nums">
+                            {loggedMealIds.length} / {plan.meals.length}
+                        </span>
+                    </div>
+                    <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
+                        <div
+                            className="h-full rounded-full bg-acid-lime transition-all duration-500"
+                            style={{ width: `${Math.min(100, (loggedMealIds.length / plan.meals.length) * 100)}%` }}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {loggedMealIds.length >= plan.meals.length && plan.meals.length > 0 && (
+                <div className="mb-6 rounded-2xl p-4 bg-gradient-to-r from-acid-lime/20 to-emerald-500/20 border border-acid-lime/30 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-acid-lime/30 flex items-center justify-center">
+                        <CheckCircle size={24} weight="fill" className="text-acid-lime" />
+                    </div>
+                    <div>
+                        <p className="font-black text-white">Dieta completa!</p>
+                        <p className="text-xs text-zinc-400">Todas as refeições de hoje registradas.</p>
+                    </div>
+                </div>
+            )}
 
             <NutritionHeader
                 dailyKcal={plan.dailyKcal}

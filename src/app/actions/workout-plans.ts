@@ -24,6 +24,7 @@ interface WorkoutItemInput {
 interface WorkoutInput {
     id?: string; // Optional for updates
     title: string;
+    suggestedDayOfWeek?: number | null; // 0=Segunda .. 6=Domingo
     items: WorkoutItemInput[];
 }
 
@@ -83,6 +84,7 @@ export async function createWorkoutPlan(data: CreatePlanData) {
                     planId: newPlan.id,
                     title: workout.title,
                     status: 'pending',
+                    suggestedDayOfWeek: workout.suggestedDayOfWeek ?? null,
                 }).returning();
 
                 if (workout.items.length > 0) {
@@ -152,7 +154,10 @@ export async function updateWorkoutPlan(planId: string, data: CreatePlanData) {
                 if (workoutId && existingWorkouts.find((w: any) => w.id === workoutId)) {
                     // Update existing workout
                     await tx.update(workouts)
-                        .set({ title: workout.title })
+                        .set({
+                            title: workout.title,
+                            suggestedDayOfWeek: workout.suggestedDayOfWeek ?? null,
+                        })
                         .where(eq(workouts.id, workoutId));
 
                     // Replace items (easier than diffing items)
@@ -165,6 +170,7 @@ export async function updateWorkoutPlan(planId: string, data: CreatePlanData) {
                         planId: planId,
                         title: workout.title,
                         status: 'pending',
+                        suggestedDayOfWeek: workout.suggestedDayOfWeek ?? null,
                     }).returning();
                     workoutId = newW.id;
                 }
@@ -238,6 +244,7 @@ export async function applyWorkoutPlanTemplate(templateId: string, studentId: st
                     planId: newPlan.id,
                     title: tWorkout.title,
                     status: 'pending',
+                    suggestedDayOfWeek: tWorkout.suggestedDayOfWeek ?? null,
                 }).returning();
 
                 // 5. Fetch Template Items

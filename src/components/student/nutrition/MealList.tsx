@@ -1,9 +1,11 @@
 'use client';
 
-import { useState } from 'react';
-import { Check, Clock, X, CaretDown, CaretUp } from "@phosphor-icons/react";
+import { useState, useCallback } from 'react';
+import { Check } from "@phosphor-icons/react";
 import { logMeal, undoLogMeal } from "@/app/actions/nutrition";
 import { useRouter } from 'next/navigation';
+
+const MEAL_XP = 25;
 
 interface Meal {
     id: string;
@@ -32,16 +34,19 @@ export default function MealList({ meals, loggedMealIds }: MealListProps) {
     const router = useRouter();
     const [openMealId, setOpenMealId] = useState<string | null>(null);
     const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
+    const [celebratingMealId, setCelebratingMealId] = useState<string | null>(null);
 
-    const handleLog = async (mealId: string) => {
+    const handleLog = useCallback(async (mealId: string) => {
         setLoadingMap(prev => ({ ...prev, [mealId]: true }));
         try {
             await logMeal(mealId);
+            setCelebratingMealId(mealId);
+            setTimeout(() => setCelebratingMealId(null), 2000);
+            router.refresh();
         } finally {
             setLoadingMap(prev => ({ ...prev, [mealId]: false }));
-            router.refresh();
         }
-    };
+    }, [router]);
 
     const handleUndo = async (mealId: string) => {
         if (!confirm("Desfazer check-in desta refeição?")) return;
@@ -55,6 +60,14 @@ export default function MealList({ meals, loggedMealIds }: MealListProps) {
     };
 
     return (
+        <>
+            <style>{`
+                @keyframes meal-xp-float {
+                    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    100% { opacity: 0; transform: translate(-50%, -120%) scale(1.2); }
+                }
+                .animate-meal-xp { animation: meal-xp-float 1.5s ease-out forwards; }
+            `}</style>
         <div className="space-y-4">
             {meals.map((meal) => {
                 const isLogged = loggedMealIds.includes(meal.id);
@@ -64,13 +77,25 @@ export default function MealList({ meals, loggedMealIds }: MealListProps) {
                 // Calculate total calories for meal
                 const totalKcal = meal.items.reduce((sum, item) => sum + (item.calories || 0), 0);
 
+                const isCelebrating = celebratingMealId === meal.id;
+
                 return (
-                    <div key={meal.id} className={`bg-surface-grey rounded-3xl transition-all border ${isLogged ? 'border-acid-lime/30 bg-acid-lime/5' : 'border-white/5'}`}>
+                    <div
+                        key={meal.id}
+                        className={`relative bg-surface-grey rounded-3xl transition-all duration-300 border overflow-hidden ${
+                            isLogged ? 'border-acid-lime/30 bg-acid-lime/5' : 'border-white/5'
+                        } ${isCelebrating ? 'animate-pulse border-acid-lime/50 shadow-[0_0_24px_rgba(46,204,113,0.2)]' : ''}`}
+                    >
+                        {isCelebrating && (
+                            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-acid-lime font-black text-lg animate-meal-xp pointer-events-none z-10">
+                                +{MEAL_XP} XP
+                            </span>
+                        )}
                         <div className="p-5 flex items-center justify-between cursor-pointer" onClick={() => setOpenMealId(isOpen ? null : meal.id)}>
 
                             {/* Time & Info */}
                             <div className="flex items-center gap-4">
-                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-sm shadow-sm border border-white/5 ${isLogged ? 'bg-acid-lime/20 text-acid-lime' : 'bg-white/5 text-zinc-500 '}`}>
+                                <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-sm shadow-sm border border-white/5 transition-transform ${isLogged ? 'bg-acid-lime/20 text-acid-lime' : 'bg-white/5 text-zinc-500'} ${isCelebrating ? 'scale-110' : ''}`}>
                                     {meal.time || '--:--'}
                                 </div>
                                 <div>
@@ -95,7 +120,7 @@ export default function MealList({ meals, loggedMealIds }: MealListProps) {
                                     <button
                                         onClick={(e) => { e.stopPropagation(); handleLog(meal.id); }}
                                         disabled={isLoading}
-                                        className="px-4 py-2 bg-white/5 border border-white/5 text-zinc-400 rounded-xl text-xs font-bold hover:bg-acid-lime hover:text-black hover:border-acid-lime transition-all"
+                                        className="px-4 py-2 bg-white/5 border border-white/5 text-zinc-400 rounded-xl text-xs font-bold hover:bg-acid-lime hover:text-black hover:border-acid-lime transition-all active:scale-95"
                                     >
                                         {isLoading ? '...' : 'Check-in'}
                                     </button>
@@ -121,5 +146,6 @@ export default function MealList({ meals, loggedMealIds }: MealListProps) {
                 );
             })}
         </div>
+        </>
     );
 }

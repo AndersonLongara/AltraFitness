@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Check, Timer, VideoCamera, Info, X } from "@phosphor-icons/react";
+import { Check, Timer, VideoCamera, Info, X } from "@phosphor-icons/react";
+import * as Dialog from "@radix-ui/react-dialog";
 import { logSet, finishWorkout } from "@/app/actions/workout-execution";
 
 interface WorkoutRunnerProps {
@@ -32,6 +33,8 @@ interface WorkoutRunnerProps {
     }[];
 }
 
+const WORKOUT_XP = 150;
+
 export default function WorkoutRunner({ logId, workout, initialLogSets = [] }: WorkoutRunnerProps) {
     const router = useRouter();
     const [currentExerciseIndex, setCurrentExerciseIndex] = useState(0);
@@ -39,7 +42,13 @@ export default function WorkoutRunner({ logId, workout, initialLogSets = [] }: W
     const [isResting, setIsResting] = useState(false);
     const [restTimeLeft, setRestTimeLeft] = useState(0);
     const [isFinishing, setIsFinishing] = useState(false);
+    const [elapsedSeconds, setElapsedSeconds] = useState(0);
+    const [showExerciseCompleteToast, setShowExerciseCompleteToast] = useState(false);
+    const [showSummary, setShowSummary] = useState(false);
+    const [summaryData, setSummaryData] = useState<{ elapsedSec: number; setsCompleted: number; volumeKg: number; xpEarned: number } | null>(null);
+    const [notesOpen, setNotesOpen] = useState(false);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const elapsedRef = useRef<NodeJS.Timeout | null>(null);
 
     const currentItem = workout.items[currentExerciseIndex];
 
@@ -80,13 +89,21 @@ export default function WorkoutRunner({ logId, workout, initialLogSets = [] }: W
 
     }, [workout, initialLogSets]);
 
-    // Timer Logic
+    // Elapsed workout timer (MM:SS)
+    useEffect(() => {
+        if (showSummary) return;
+        elapsedRef.current = setInterval(() => setElapsedSeconds(s => s + 1), 1000);
+        return () => {
+            if (elapsedRef.current) clearInterval(elapsedRef.current);
+        };
+    }, [showSummary]);
+
+    // Rest timer
     useEffect(() => {
         if (isResting && restTimeLeft > 0) {
             timerRef.current = setTimeout(() => setRestTimeLeft(prev => prev - 1), 1000);
         } else if (restTimeLeft === 0 && isResting) {
             setIsResting(false);
-            // Play sound?
         }
         return () => {
             if (timerRef.current) clearTimeout(timerRef.current);
@@ -102,46 +119,123 @@ export default function WorkoutRunner({ logId, workout, initialLogSets = [] }: W
 
     const handleCompleteSet = async (itemId: string, setIndex: number) => {
         const set = setsData[itemId][setIndex];
-        // Optimistic update
         setSetsData(prev => ({
             ...prev,
             [itemId]: prev[itemId].map((s, i) => i === setIndex ? { ...s, completed: true } : s)
         }));
 
-        // Start Rest Timer
         if (currentItem.restSeconds) {
             setRestTimeLeft(currentItem.restSeconds);
             setIsResting(true);
         }
 
-        // Server Action
         await logSet(logId, currentItem.exerciseId, setIndex + 1, {
             weight: Number(set.weight) || 0,
             reps: Number(set.reps) || 0
         });
 
-        // Auto Advance? Maybe not, keep user in control.
+        const itemSets = setsData[itemId];
+        const afterUpdate = itemSets.map((s, i) => (i === setIndex ? { ...s, completed: true } : s));
+        const allCompleted = afterUpdate.every(s => s.completed);
+        if (allCompleted && currentExerciseIndex < workout.items.length - 1) {
+            setShowExerciseCompleteToast(true);
+            setTimeout(() => {
+                setShowExerciseCompleteToast(false);
+                setCurrentExerciseIndex(prev => prev + 1);
+            }, 1500);
+        }
     };
 
     const handleFinish = async () => {
         if (!confirm("Tem certeza que deseja finalizar o treino?")) return;
         setIsFinishing(true);
-        await finishWorkout(logId);
-        router.push('/student'); // Or a summary page
+        const result = await finishWorkout(logId);
+        const xpEarned = result?.xpEarned ?? WORKOUT_XP;
+        const setsCompleted = Object.values(setsData).flat().filter(s => s.completed).length;
+        const volumeKg = Object.entries(setsData).reduce((sum, [, itemSets]) => {
+            return sum + itemSets.filter(s => s.completed).reduce((s, set) => s + (Number(set.weight) || 0), 0);
+        }, 0);
+        setSummaryData({
+            elapsedSec: elapsedSeconds,
+            setsCompleted,
+            volumeKg: Math.round(volumeKg * 10) / 10,
+            xpEarned,
+        });
+        setShowSummary(true);
+        setIsFinishing(false);
     };
 
-    const progress = ((currentExerciseIndex) / workout.items.length) * 100;
+    const progress = workout.items.length ? (currentExerciseIndex / workout.items.length) * 100 : 0;
+    const elapsedMM = Math.floor(elapsedSeconds / 60);
+    const elapsedSS = elapsedSeconds % 60;
+    const elapsedStr = `${String(elapsedMM).padStart(2, '0')}:${String(elapsedSS).padStart(2, '0')}`;
+
+    if (showSummary && summaryData) {
+        return (
+            <div className="min-h-screen bg-deep-black flex flex-col text-white font-primary relative overflow-hidden">
+                <style>{`
+                    @keyframes confetti-fall {
+                        0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+                        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+                    }
+                    .workout-confetti { animation: confetti-fall linear forwards; position: absolute; }
+                `}</style>
+                {[...Array(20)].map((_, i) => (
+                    <div
+                        key={i}
+                        className="workout-confetti w-2 h-3 rounded-sm"
+                        style={{
+                            left: `${(i * 7) % 100}%`,
+                            backgroundColor: ['#2ecc71', '#fde047', '#f97316', '#fff'][i % 4],
+                            animationDelay: `${i * 0.08}s`,
+                            animationDuration: `${2 + (i % 3) * 0.3}s`,
+                        }}
+                    />
+                ))}
+                <div className="flex-1 flex flex-col items-center justify-center p-8 relative z-10">
+                    <span className="text-acid-lime text-sm font-black uppercase tracking-widest mb-4">Treino concluído!</span>
+                    <div className="grid grid-cols-2 gap-6 text-center mb-10">
+                        <div>
+                            <p className="text-4xl font-black text-white font-mono">
+                                {String(Math.floor(summaryData.elapsedSec / 60)).padStart(2, '0')}:{String(summaryData.elapsedSec % 60).padStart(2, '0')}
+                            </p>
+                            <p className="text-xs text-zinc-500 font-bold uppercase mt-1">Tempo</p>
+                        </div>
+                        <div>
+                            <p className="text-4xl font-black text-white">{summaryData.setsCompleted}</p>
+                            <p className="text-xs text-zinc-500 font-bold uppercase mt-1">Séries</p>
+                        </div>
+                        <div>
+                            <p className="text-4xl font-black text-white">{summaryData.volumeKg} kg</p>
+                            <p className="text-xs text-zinc-500 font-bold uppercase mt-1">Volume</p>
+                        </div>
+                        <div>
+                            <p className="text-4xl font-black text-acid-lime">+{summaryData.xpEarned} XP</p>
+                            <p className="text-xs text-zinc-500 font-bold uppercase mt-1">Ganho</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => router.push('/student')}
+                        className="px-8 py-4 bg-acid-lime text-deep-black rounded-2xl font-black uppercase tracking-wider"
+                    >
+                        Voltar ao início
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-deep-black flex flex-col text-white font-primary">
             {/* Header */}
             <div className="bg-surface-grey/80 backdrop-blur-md px-6 py-4 flex items-center justify-between border-b border-white/5 z-20 sticky top-0">
-                <button onClick={() => router.back()} className="text-zinc-400 hover:text-white">
+                <button onClick={() => router.back()} className="text-zinc-400 hover:text-white p-1">
                     <X size={24} />
                 </button>
-                <div className="flex flex-col items-center">
-                    <span className="text-[10px] font-bold text-acid-lime uppercase tracking-widest shadow-[0_0_10px_rgba(189,255,0,0.2)]">Treino em Andamento</span>
-                    <span className="font-bold text-white text-sm">{workout.title}</span>
+                <div className="flex flex-col items-center flex-1 min-w-0">
+                    <span className="text-[10px] font-bold text-acid-lime uppercase tracking-widest">Treino em Andamento</span>
+                    <span className="font-bold text-white text-sm truncate w-full text-center">{workout.title}</span>
+                    <span className="text-lg font-mono font-black text-acid-lime mt-0.5">{elapsedStr}</span>
                 </div>
                 <button
                     onClick={handleFinish}
@@ -157,6 +251,26 @@ export default function WorkoutRunner({ logId, workout, initialLogSets = [] }: W
                 <div className="h-full bg-acid-lime shadow-[0_0_10px_rgba(189,255,0,0.5)] transition-all duration-300" style={{ width: `${progress}%` }} />
             </div>
 
+            {/* Exercise Dots */}
+            <div className="flex justify-center gap-1.5 py-2 bg-deep-black/50">
+                {workout.items.map((_, idx) => (
+                    <div
+                        key={idx}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                            idx < currentExerciseIndex ? 'bg-acid-lime' :
+                            idx === currentExerciseIndex ? 'bg-white scale-125 animate-pulse' : 'bg-zinc-600'
+                        }`}
+                    />
+                ))}
+            </div>
+
+            {/* Toast: Exercício completo! */}
+            {showExerciseCompleteToast && (
+                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-xl bg-acid-lime text-deep-black text-sm font-bold animate-in fade-in duration-200">
+                    Exercício completo!
+                </div>
+            )}
+
             {/* Active Exercise */}
             <div className="flex-1 overflow-y-auto pb-32">
                 <div className="p-6">
@@ -164,15 +278,10 @@ export default function WorkoutRunner({ logId, workout, initialLogSets = [] }: W
                         <h1 className="text-2xl font-black text-white leading-tight">
                             {currentItem?.exercise.name}
                         </h1>
-                        <div className="text-right">
-                            <div className="text-3xl font-black text-zinc-700">
-                                {currentExerciseIndex + 1}<span className="text-lg text-zinc-800">/{workout.items.length}</span>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Metadata */}
-                    <div className="flex gap-2 mb-8">
+                    <div className="flex gap-2 mb-8 flex-wrap">
                         {currentItem?.exercise.videoUrl && (
                             <button
                                 onClick={() => window.open(currentItem.exercise.videoUrl ?? undefined, '_blank')}
@@ -182,14 +291,34 @@ export default function WorkoutRunner({ logId, workout, initialLogSets = [] }: W
                             </button>
                         )}
                         {currentItem?.notes && (
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-lg text-xs font-bold">
+                            <button
+                                onClick={() => setNotesOpen(true)}
+                                className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-lg text-xs font-bold"
+                            >
                                 <Info weight="fill" /> Notas
                             </button>
                         )}
                         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-surface-grey text-zinc-400 border border-white/5 rounded-lg text-xs font-bold ml-auto">
-                            <Timer weight="bold" /> {currentItem?.restSeconds}s
+                            <Timer weight="bold" /> {currentItem?.restSeconds ?? 0}s
                         </div>
                     </div>
+
+                    {/* Notes Drawer */}
+                    <Dialog.Root open={notesOpen} onOpenChange={setNotesOpen}>
+                        <Dialog.Portal>
+                            <Dialog.Overlay className="fixed inset-0 bg-black/60 z-50" />
+                            <Dialog.Content className="fixed bottom-0 left-0 right-0 z-50 max-h-[50vh] rounded-t-3xl bg-surface-grey border border-white/10 p-6 animate-in slide-in-from-bottom duration-300">
+                                <Dialog.Title className="sr-only">Notas do exercício</Dialog.Title>
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="font-bold text-white">Notas</span>
+                                    <Dialog.Close asChild>
+                                        <button className="p-2 rounded-xl bg-white/5 text-zinc-400 hover:text-white" aria-label="Fechar"><X size={20} /></button>
+                                    </Dialog.Close>
+                                </div>
+                                <p className="text-zinc-300 text-sm whitespace-pre-wrap">{currentItem?.notes ?? ''}</p>
+                            </Dialog.Content>
+                        </Dialog.Portal>
+                    </Dialog.Root>
 
                     {/* Sets */}
                     <div className="space-y-3">

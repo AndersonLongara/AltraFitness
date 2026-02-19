@@ -50,8 +50,8 @@ export default function StudentSidebar() {
                         >
                             <item.icon size={28} weight={active ? "fill" : "duotone"} />
 
-                            {/* Tooltip */}
-                            <span className="absolute left-16 bg-white text-deep-black text-xs font-bold py-2 px-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 shadow-lg">
+                            {/* Tooltip - delay curto */}
+                            <span className="absolute left-16 bg-surface-grey border border-white/10 text-white text-xs font-bold py-2 px-3 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-150 delay-100 whitespace-nowrap pointer-events-none z-50 shadow-xl">
                                 {item.label}
                             </span>
                         </Link>

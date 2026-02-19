@@ -6,21 +6,22 @@ import { logHydration } from "@/app/actions/gamification"; // We will create thi
 
 interface HydrationTrackerProps {
     initialAmount: number;
-    dailyGoal?: number; // Default 2500ml
+    dailyGoal?: number; // Default 2500ml (meta do treinador no plano nutricional)
+    onLogSuccess?: () => void;
 }
 
-export default function HydrationTracker({ initialAmount, dailyGoal = 2500 }: HydrationTrackerProps) {
+export default function HydrationTracker({ initialAmount, dailyGoal = 2500, onLogSuccess }: HydrationTrackerProps) {
     const [amount, setAmount] = useState(initialAmount);
     const [loading, setLoading] = useState(false);
 
     const handleAddWater = async (addAmount: number) => {
         setLoading(true);
-        // Optimistic UI update
         const newAmount = amount + addAmount;
         setAmount(newAmount);
 
         try {
             await logHydration(addAmount);
+            onLogSuccess?.();
         } catch (error) {
             console.error("Failed to log hydration", error);
             setAmount(amount); // Revert on error

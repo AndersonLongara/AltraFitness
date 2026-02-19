@@ -184,6 +184,7 @@ export const workoutPlans = sqliteTable('workout_plans', {
 });
 
 // Workouts (Prescriptions - Now linked to a Plan/Ficha)
+// suggestedDayOfWeek: 0=Segunda, 1=Terça, ... 6=Domingo (para o personal sugerir o dia; treino do dia usa isso ou override do aluno)
 export const workouts = sqliteTable('workouts', {
     id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
     trainerId: text('trainer_id').notNull().references(() => trainers.id),
@@ -191,10 +192,20 @@ export const workouts = sqliteTable('workouts', {
     planId: text('plan_id').references(() => workoutPlans.id, { onDelete: 'cascade' }), // Optional for backward compatibility, but ideally required for new logic
     title: text('title').notNull(), // e.g., "Treino A - Peito"
     status: text('status').default('pending'), // pending, completed, skipped
-    scheduledDate: integer('scheduled_date', { mode: 'timestamp' }),
+    scheduledDate: integer('scheduled_date', { mode: 'timestamp' }), // legado / opcional; se null, usa suggestedDayOfWeek
+    suggestedDayOfWeek: integer('suggested_day_of_week'), // 0=Segunda .. 6=Domingo
     completedAt: integer('completed_at', { mode: 'timestamp' }),
     createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
     updatedAt: integer('updated_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
+});
+
+// Override do aluno: "neste dia quero fazer este treino" (substituir o sugerido)
+export const workoutDateOverrides = sqliteTable('workout_date_overrides', {
+    id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+    studentId: text('student_id').notNull().references(() => students.id, { onDelete: 'cascade' }),
+    targetDate: integer('target_date').notNull(), // Unix seconds (start of day) — inteiro evita incompatibilidade com LibSQL
+    workoutId: text('workout_id').notNull().references(() => workouts.id, { onDelete: 'cascade' }),
+    createdAt: integer('created_at', { mode: 'timestamp' }).default(sql`(strftime('%s', 'now'))`),
 });
 
 // Workout Items (Join Table: Workout <-> Exercise)
@@ -443,6 +454,17 @@ export const workoutItemsRelations = relations(workoutItems, ({ one }) => ({
     exercise: one(exercises, {
         fields: [workoutItems.exerciseId],
         references: [exercises.id],
+    }),
+}));
+
+export const workoutDateOverridesRelations = relations(workoutDateOverrides, ({ one }) => ({
+    student: one(students, {
+        fields: [workoutDateOverrides.studentId],
+        references: [students.id],
+    }),
+    workout: one(workouts, {
+        fields: [workoutDateOverrides.workoutId],
+        references: [workouts.id],
     }),
 }));
 
@@ -891,6 +913,7 @@ export const studentsRelations = relations(students, ({ one, many }) => ({
     nutritionalPlans: many(nutritionalPlans),
     moodLogs: many(moodLogs),
     workoutLogs: many(workoutLogs),
+    workoutDateOverrides: many(workoutDateOverrides),
     hydrationLogs: many(hydrationLogs),
     gamificationLogs: many(gamificationLogs),
     forms: many(studentForms),
@@ -910,6 +933,7 @@ export const schema = {
     workoutPlans,
     workouts,
     workoutItems,
+    workoutDateOverrides,
     foods,
     nutritionalPlans,
     meals,
@@ -941,6 +965,7 @@ export const schema = {
     workoutPlansRelations,
     workoutsRelations,
     workoutItemsRelations,
+    workoutDateOverridesRelations,
     nutritionalPlansRelations,
     mealsRelations,
     mealItemsRelations,

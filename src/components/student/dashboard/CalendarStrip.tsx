@@ -26,8 +26,8 @@ export default function CalendarStrip() {
     };
 
     return (
-        <div className="w-full overflow-x-auto no-scrollbar py-2">
-            <div className="flex justify-between items-center gap-2 px-1">
+        <div className="w-full overflow-x-auto no-scrollbar py-2 -mx-1">
+            <div className="flex items-stretch gap-2 min-w-min px-1">
                 {days.map((date) => {
                     const dateStr = format(date, 'yyyy-MM-dd');
                     const isSelected = dateStr === format(selectedDate, 'yyyy-MM-dd');
@@ -37,31 +37,28 @@ export default function CalendarStrip() {
                         <button
                             key={date.toString()}
                             onClick={() => handleDateClick(date)}
-                            className={`flex flex-col items-center justify-center w-12 h-16 rounded-full transition-all duration-300 relative group
+                            type="button"
+                            className={`flex flex-col items-center justify-center flex-shrink-0 w-[52px] min-h-[56px] py-2 rounded-2xl transition-all duration-200 relative select-none
+                                active:scale-95
                                 ${isSelected
-                                    ? 'bg-transparent border border-acid-lime text-white scale-110 shadow-[0_0_15px_rgba(204,255,0,0.3)]'
-                                    : 'bg-transparent text-zinc-500 hover:text-zinc-300'
+                                    ? 'bg-acid-lime/15 border-2 border-acid-lime text-white shadow-[0_0_20px_rgba(46,204,113,0.25)]'
+                                    : 'bg-surface-grey/50 border border-white/5 text-zinc-500 hover:bg-white/5 hover:text-zinc-300 hover:border-white/10'
                                 }
                             `}
                         >
-                            {/* Day Label (Sun, Mon) */}
-                            <span className="text-[10px] font-medium uppercase tracking-wider mb-1">
+                            {/* Dia da semana - uma linha só, sem colar no próximo */}
+                            <span className={`text-[10px] font-semibold uppercase tracking-wider mb-1 leading-tight ${isSelected ? 'text-white/90' : 'text-zinc-500'}`}>
                                 {format(date, 'EEE', { locale: ptBR }).replace('.', '')}
                             </span>
 
-                            {/* Day Number */}
-                            <span className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-zinc-400'}`}>
+                            {/* Número do dia */}
+                            <span className={`text-base font-black tabular-nums leading-none ${isSelected ? 'text-white' : 'text-zinc-400'}`}>
                                 {format(date, 'd')}
                             </span>
 
-                            {/* Today Indicator */}
+                            {/* Indicador de hoje quando não selecionado */}
                             {isToday && !isSelected && (
-                                <div className="absolute -bottom-1 w-1 h-1 rounded-full bg-acid-lime" />
-                            )}
-
-                            {/* Selected Indicator Ring (Partial) */}
-                            {isSelected && (
-                                <div className="absolute inset-0 rounded-full border-t-2 border-acid-lime opacity-100" />
+                                <div className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-acid-lime shadow-[0_0_6px_rgba(46,204,113,0.6)]" />
                             )}
                         </button>
                     );
