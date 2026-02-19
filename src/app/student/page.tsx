@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { students, nutritionalPlans, meals, workoutLogs, mealLogs } from "@/db/schema";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { eq, and, gte, lte, asc } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Trophy, ArrowRight, BowlFood } from "@phosphor-icons/react/dist/ssr";
@@ -19,12 +19,13 @@ import MoodTracker from "@/components/student/dashboard/MoodTracker";
 import TodaysWorkoutCard from "@/components/student/dashboard/TodaysWorkoutCard";
 import DailyScoreRing from "@/components/student/dashboard/DailyScoreRing";
 import MissionAccomplished from "@/components/student/dashboard/MissionAccomplished";
+import { getCachedCurrentUser } from "@/lib/cached-auth";
 
 export const dynamic = 'force-dynamic';
 
 export default async function StudentDashboardPage() {
     const { userId } = await auth();
-    const user = await currentUser();
+    const user = await getCachedCurrentUser();
     if (!userId || !user) return redirect("/sign-in");
 
     const email = user.emailAddresses[0]?.emailAddress;
@@ -38,76 +39,68 @@ export default async function StudentDashboardPage() {
 
     if (!student) return redirect("/onboarding");
 
-    // Check if student profile is complete
-    const profileStatus = await checkStudentProfileComplete();
-    const isProfileIncomplete = !profileStatus.complete;
-
-    // Sempre mostrar atividades de hoje
+    // Datas de referência (sempre hoje no dashboard)
     const requestedDate = new Date();
-    const today = startOfDay(new Date());
-    const queryDate = startOfDay(requestedDate);
+    const startOfCurrentWeek = startOfWeek(requestedDate, { weekStartsOn: 1 });
 
-    // 1. Treino do dia: override do aluno > scheduledDate (legado) > suggestedDayOfWeek do plano
-    const dailyWorkout = await getDailyWorkout(student.id, requestedDate);
-
-    // 2. Meals for requested date
-    const nutritionalPlan = await db.query.nutritionalPlans.findFirst({
-        where: and(
-            eq(nutritionalPlans.studentId, student.id),
-            eq(nutritionalPlans.active, true)
-        ),
-        with: {
-            meals: {
-                orderBy: [asc(meals.order)],
-                with: {
-                    items: true
+    // Busca todos os dados em paralelo — elimina ~8 roundtrips sequenciais
+    const [
+        profileStatus,
+        dailyWorkout,
+        nutritionalPlan,
+        loggedMeals,
+        isWorkoutDone,
+        hydrationTotal,
+        weeklyWorkouts,
+        pendingForms,
+        todaysMood,
+    ] = await Promise.all([
+        checkStudentProfileComplete(),
+        getDailyWorkout(student.id, requestedDate),
+        db.query.nutritionalPlans.findFirst({
+            where: and(
+                eq(nutritionalPlans.studentId, student.id),
+                eq(nutritionalPlans.active, true)
+            ),
+            with: {
+                meals: {
+                    orderBy: [asc(meals.order)],
+                    with: { items: true }
                 }
             }
-        }
-    });
+        }),
+        db.query.mealLogs.findMany({
+            where: and(
+                eq(mealLogs.studentId, student.id),
+                gte(mealLogs.eatenAt, startOfDay(requestedDate)),
+                lte(mealLogs.eatenAt, endOfDay(requestedDate))
+            )
+        }),
+        db.query.workoutLogs.findFirst({
+            where: and(
+                eq(workoutLogs.studentId, student.id),
+                gte(workoutLogs.endedAt, startOfDay(requestedDate)),
+                lte(workoutLogs.endedAt, endOfDay(requestedDate)),
+                eq(workoutLogs.status, 'completed')
+            )
+        }),
+        getTodaysHydration(student.id, requestedDate),
+        db.query.workoutLogs.findMany({
+            where: and(
+                eq(workoutLogs.studentId, student.id),
+                gte(workoutLogs.endedAt, startOfCurrentWeek),
+                eq(workoutLogs.status, 'completed')
+            )
+        }),
+        getStudentPendingForms(student.id),
+        getTodaysMood(student.id, requestedDate),
+    ]);
 
-    // 3. Activity Logs for synchronization
-    const loggedMeals = await db.query.mealLogs.findMany({
-        where: and(
-            eq(mealLogs.studentId, student.id),
-            gte(mealLogs.eatenAt, startOfDay(requestedDate)),
-            lte(mealLogs.eatenAt, endOfDay(requestedDate))
-        )
-    });
-
-    const isWorkoutDone = await db.query.workoutLogs.findFirst({
-        where: and(
-            eq(workoutLogs.studentId, student.id),
-            gte(workoutLogs.endedAt, startOfDay(requestedDate)),
-            lte(workoutLogs.endedAt, endOfDay(requestedDate)),
-            eq(workoutLogs.status, 'completed')
-        )
-    });
-
-    // Hydration
-    const hydrationTotal = await getTodaysHydration(student.id, requestedDate);
+    const isProfileIncomplete = !profileStatus.complete;
+    const isViewingToday = true; // dashboard sempre mostra hoje
     const waterGoal = nutritionalPlan?.waterGoalMl || 2500;
-
-    // Weekly Progress Logic
-    const startOfCurrentWeek = startOfWeek(new Date(), { weekStartsOn: 1 }); // Monday
-    const weeklyWorkouts = await db.query.workoutLogs.findMany({
-        where: and(
-            eq(workoutLogs.studentId, student.id),
-            gte(workoutLogs.endedAt, startOfCurrentWeek),
-            eq(workoutLogs.status, 'completed')
-        )
-    });
-
-    // Weekly Goal (Mocked or from Plan if exists - currently hardcoded to 5 in design)
     const weeklyGoal = 5;
     const weeklyProgress = Math.round((weeklyWorkouts.length / weeklyGoal) * 100);
-
-    // 4. Pending Forms
-    const pendingForms = await getStudentPendingForms(student.id);
-
-    // 5. Humor do dia — pergunta só quando estiver vendo a data de hoje
-    const isViewingToday = format(requestedDate, 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd');
-    const todaysMood = isViewingToday ? await getTodaysMood(student.id, requestedDate) : null;
 
     // 6. Pontuação do dia (0–100%): treino 35%, dieta 35%, água 30%
     const totalMeals = nutritionalPlan?.meals?.length ?? 0;

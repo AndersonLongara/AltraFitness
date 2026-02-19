@@ -7,7 +7,9 @@ import WorkoutList from "@/components/student/workout/WorkoutList";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
-export const dynamic = "force-dynamic";
+// Router cache: allows Next.js to serve cached RSC payload on client-side navigation.
+// Workout data changes infrequently during a session; revalidates every 60s.
+export const revalidate = 60;
 
 export default async function StudentWorkoutsPage() {
     const { userId } = await auth();

@@ -32,6 +32,7 @@ export default function StudentBottomNav() {
                         <Link
                             key={item.href}
                             href={item.href}
+                            prefetch={true}
                             className={`flex flex-col items-center gap-0.5 min-w-0 flex-1 transition-all duration-200 ${active ? 'text-acid-lime' : 'text-zinc-500 hover:text-zinc-300'}`}
                         >
                             <div className={`p-2 rounded-2xl transition-all duration-200 ${active ? 'bg-acid-lime/15 shadow-[0_0_12px_rgba(46,204,113,0.25)]' : 'bg-transparent hover:bg-white/5'}`}>

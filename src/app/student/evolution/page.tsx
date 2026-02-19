@@ -12,7 +12,8 @@ import { getStudentStats, getWorkoutHistory, getStudentPhotos } from "@/app/acti
 import { getStudentAssessments } from "@/app/actions/assessments";
 import AssessmentHistory from "@/components/student/evolution/AssessmentHistory";
 
-export const dynamic = "force-dynamic";
+// Evolution data (charts, photos, assessments) changes rarely during a session.
+export const revalidate = 60;
 
 export default async function EvolutionPage() {
     const { userId } = await auth();

@@ -3,7 +3,8 @@ import ProfilePageContent from "@/components/student/profile/ProfilePageContent"
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+// Profile changes rarely during a session; allow router cache.
+export const revalidate = 60;
 
 export default async function ProfilePage() {
     const { userId } = await auth();
