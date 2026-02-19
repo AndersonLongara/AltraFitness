@@ -41,7 +41,7 @@ import { createCustomer, createPayment } from "@/lib/asaas";
 import type { BillingType } from "@/lib/asaas";
 import { getPlatformAsaasConfig } from "@/lib/platform-asaas-config";
 import { clerkClient } from "@clerk/nextjs/server";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath } from "next/cache";
 
 const DEFAULT_SUPERADMIN_STATS = {
   totalTrainers: 0,
@@ -849,8 +849,6 @@ export async function deleteUserByUserId(
       const result = await deleteTrainerUser(userId);
       revalidatePath('/superadmin/users');
       revalidatePath('/superadmin/trainers');
-      revalidateTag('superadmin-users');
-      revalidateTag('superadmin-trainers');
       return result;
     }
 
@@ -885,7 +883,6 @@ export async function deleteUserByUserId(
       console.log('[deleteUserByUserId] Erro ao remover do Clerk (pode já não existir):', e);
     }
     revalidatePath('/superadmin/users');
-    revalidateTag('superadmin-users');
     console.log('[deleteUserByUserId] Exclusão concluída (sem role)');
     return { ok: true };
   }
@@ -902,8 +899,6 @@ export async function deleteUserByUserId(
     const result = await deleteTrainerUser(userId);
     revalidatePath('/superadmin/users');
     revalidatePath('/superadmin/trainers');
-    revalidateTag('superadmin-users');
-    revalidateTag('superadmin-trainers');
     return result;
   }
 
@@ -945,8 +940,6 @@ export async function deleteUserByUserId(
   
   revalidatePath('/superadmin/users');
   revalidatePath('/superadmin/students');
-  revalidateTag('superadmin-users');
-  revalidateTag('superadmin-students');
   console.log('[deleteUserByUserId] Exclusão concluída com sucesso');
   return { ok: true };
 }
