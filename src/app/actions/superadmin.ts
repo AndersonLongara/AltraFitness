@@ -41,7 +41,7 @@ import { createCustomer, createPayment } from "@/lib/asaas";
 import type { BillingType } from "@/lib/asaas";
 import { getPlatformAsaasConfig } from "@/lib/platform-asaas-config";
 import { clerkClient } from "@clerk/nextjs/server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 const DEFAULT_SUPERADMIN_STATS = {
   totalTrainers: 0,
@@ -766,6 +766,8 @@ export async function getSuperAdminUsers(): Promise<SuperAdminUserRow[]> {
   const trainerMap = Object.fromEntries(allTrainerRows.map((t) => [t.id, t]));
 
   const result: SuperAdminUserRow[] = [];
+  const clerkUserCache = new Map<string, any>();
+  
   for (const row of roles) {
     const role = row.role as "superadmin" | "trainer" | "student";
     let name = "";
@@ -781,11 +783,14 @@ export async function getSuperAdminUsers(): Promise<SuperAdminUserRow[]> {
       try {
         const client = await clerkClient();
         const user = await client.users.getUser(row.userId);
+        clerkUserCache.set(row.userId, user);
         name = [user.firstName, user.lastName].filter(Boolean).join(" ") || user.emailAddresses[0]?.emailAddress || row.userId;
         email = user.emailAddresses[0]?.emailAddress ?? null;
         if (user.createdAt) createdAt = new Date(user.createdAt).toISOString();
-      } catch {
-        name = row.userId.slice(0, 12) + "…";
+      } catch (err) {
+        // User may have been deleted from Clerk, skip this entry
+        console.log(`[getSuperAdminUsers] Erro ao buscar usuário ${row.userId} no Clerk:`, err);
+        continue;
       }
     }
 
@@ -841,6 +846,8 @@ export async function deleteUserByUserId(
       console.log('[deleteUserByUserId] Erro ao remover do Clerk (pode já não existir):', e);
     }
     revalidatePath('/superadmin/users');
+    revalidateTag('superadmin-users');
+    console.log('[deleteUserByUserId] Exclusão concluída (sem role)');
     return { ok: true };
   }
 
@@ -856,6 +863,8 @@ export async function deleteUserByUserId(
     const result = await deleteTrainerUser(userId);
     revalidatePath('/superadmin/users');
     revalidatePath('/superadmin/trainers');
+    revalidateTag('superadmin-users');
+    revalidateTag('superadmin-trainers');
     return result;
   }
 
@@ -897,6 +906,8 @@ export async function deleteUserByUserId(
   
   revalidatePath('/superadmin/users');
   revalidatePath('/superadmin/students');
+  revalidateTag('superadmin-users');
+  revalidateTag('superadmin-students');
   console.log('[deleteUserByUserId] Exclusão concluída com sucesso');
   return { ok: true };
 }

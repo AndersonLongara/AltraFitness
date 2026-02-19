@@ -34,12 +34,15 @@ export default function StudentsListingClient({ students }: { students: Student[
     setError(null);
     const result = await deleteStudentByStudentId(deleting.id);
     setIsDeleting(false);
-    setDeleting(null);
     if ("error" in result) {
       setError(result.error);
+      setDeleting(null);
       return;
     }
-    router.refresh();
+    
+    // Aguardar um pouco e recarregar
+    await new Promise(resolve => setTimeout(resolve, 500));
+    window.location.reload();
   }
 
   async function handleToggleActive(s: Student) {

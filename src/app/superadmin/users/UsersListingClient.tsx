@@ -34,12 +34,17 @@ export default function UsersListingClient({ users }: { users: SuperAdminUserRow
     setError(null);
     const result = await deleteUserByUserId(deleting.userId);
     setIsDeleting(false);
-    setDeleting(null);
     if ("error" in result) {
       setError(result.error);
+      setDeleting(null);
       return;
     }
-    router.refresh();
+    
+    // Aguardar um pouco para o Clerk processar
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    // Force hard reload to bypass all caches
+    window.location.reload();
   }
 
   return (
